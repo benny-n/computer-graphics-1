@@ -176,9 +176,35 @@ CWinApp theApp;
 
 using namespace std;
 
+int sanity_tests() {
+	mat4 a = mat4(
+		vec4(1, 2, 3, 4),
+		vec4(5, 6, 7, 8),
+		vec4(9, 10, 11, 12),
+		vec4(13, 14, 15, 16)
+	);
+	mat3 b = mat3(
+		vec3(1, 2, 3),
+		vec3(4, 5, 6),
+		vec3(7, 8, 9)
+	);
+	mat2 c = mat2(
+		vec2(1, 2),
+		vec2(3, 4)
+	);
+	a = transpose(a);
+	b = transpose(b);
+	c = transpose(c);
+	std::cout << a << std::endl;
+	std::cout << b << std::endl;
+	std::cout << c << std::endl;
+	return 0;
+}
+
 int main( int argc, char **argv )
 {
-	int nRetCode = 0;
+	
+	int nRetCode = sanity_tests();
 	
 	// initialize MFC and print and error on failure
 	if (!AfxWinInit(::GetModuleHandle(NULL), NULL, ::GetCommandLine(), 0))

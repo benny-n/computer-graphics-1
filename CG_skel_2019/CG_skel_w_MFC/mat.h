@@ -22,9 +22,13 @@ class mat2 {
     mat2( const vec2& a, const vec2& b )
 	{ _m[0] = a;  _m[1] = b;  }
 
-	/*BUG*/
-    mat2( GLfloat m00, GLfloat m10, GLfloat m01, GLfloat m11 )
-	{ _m[0] = vec2( 0, 0 ); _m[1] = vec2( 0, 0 ); }
+    mat2( 
+        GLfloat m00, GLfloat m01, 
+        GLfloat m10, GLfloat m11 
+    ){ 
+        _m[0] = vec2(m00, m01); 
+        _m[1] = vec2(m10, m11); 
+    }
 
     mat2( const mat2& m ) {
 	if ( *this != m ) {
@@ -49,7 +53,7 @@ class mat2 {
 
 	
     mat2 operator - ( const mat2& m ) const
-	{ return mat2( 0, 0 ); } /*BUG*/
+	{ return mat2( _m[0]-m[0], _m[1] - m[1] ); } 
 
     mat2 operator * ( const GLfloat s ) const 
 	{ return mat2( s*_m[0], s*_m[1] ); }
@@ -64,11 +68,17 @@ class mat2 {
 	{ return m * s; }
 	
     mat2 operator * ( const mat2& m ) const {
-	mat2  a( 0.0 );
+        mat2  a(0.0);
 
-	/*BUG*/
+        for (int i = 0; i < 2; ++i) {
+            for (int j = 0; j < 2; ++j) {
+                for (int k = 0; k < 2; ++k) {
+                    a[i][j] += _m[i][k] * m[k][j];
+                }
+            }
+        }
 
-	return a;
+        return a;
     }
 
     //
@@ -81,7 +91,7 @@ class mat2 {
     }
 
     mat2& operator -= ( const mat2& m ) {
-	_m[0] -= 0;  _m[1] -= 0;  /*BUG*/
+	_m[0] -= m[0];  _m[1] -= m[1];  
 	return *this;
     }
 
@@ -91,11 +101,7 @@ class mat2 {
     }
 
     mat2& operator *= ( const mat2& m ) {
-	mat2  a( 0.0 );
-
-	/*BUG*/
-
-	return *this = a;
+	    return *this = *this * m;
     }
     
     mat2& operator /= ( const GLfloat s ) {
@@ -171,10 +177,11 @@ class mat3 {
     mat3( const vec3& a, const vec3& b, const vec3& c )
 	{ _m[0] = a;  _m[1] = b;  _m[2] = c;  }
 
-    mat3( GLfloat m00, GLfloat m10, GLfloat m20,
-	  GLfloat m01, GLfloat m11, GLfloat m21,
-	  GLfloat m02, GLfloat m12, GLfloat m22 ) 
-	{
+    mat3( 
+        GLfloat m00, GLfloat m01, GLfloat m02,
+	    GLfloat m10, GLfloat m11, GLfloat m12,
+	    GLfloat m20, GLfloat m21, GLfloat m22 
+    ){
 	    _m[0] = vec3( m00, m01, m02 );
 	    _m[1] = vec3( m10, m11, m12 );
 	    _m[2] = vec3( m20, m21, m22 );
@@ -220,17 +227,17 @@ class mat3 {
 	{ return m * s; }
 	
     mat3 operator * ( const mat3& m ) const {
-	mat3  a( 0.0 );
+	    mat3  a( 0.0 );
 
-	for ( int i = 0; i < 3; ++i ) {
-	    for ( int j = 0; j < 3; ++j ) {
-		for ( int k = 0; k < 3; ++k ) {
-		    a[i][j] += _m[i][k] * m[k][j];
-		}
+	    for ( int i = 0; i < 3; ++i ) {
+	        for ( int j = 0; j < 3; ++j ) {
+		        for ( int k = 0; k < 3; ++k ) {
+		            a[i][j] += _m[i][k] * m[k][j];
+		        }
+	        }
 	    }
-	}
 
-	return a;
+	    return a;
     }
 
     //
@@ -253,17 +260,17 @@ class mat3 {
     }
 
     mat3& operator *= ( const mat3& m ) {
-	mat3  a( 0.0 );
+	    mat3  a( 0.0 );
 
-	for ( int i = 0; i < 3; ++i ) {
-	    for ( int j = 0; j < 3; ++j ) {
-		for ( int k = 0; k < 3; ++k ) {
-		    a[i][j] += _m[i][k] * m[k][j];
-		}
+	    for ( int i = 0; i < 3; ++i ) {
+	        for ( int j = 0; j < 3; ++j ) {
+		        for ( int k = 0; k < 3; ++k ) {
+		            a[i][j] += _m[i][k] * m[k][j];
+		        }
+	        }
 	    }
-	}
 
-	return *this = a;
+	    return *this = a;
     }
 
     mat3& operator /= ( const GLfloat s ) {
@@ -278,9 +285,11 @@ class mat3 {
     //
 
     vec3 operator * ( const vec3& v ) const {  // m * v
-	return vec3( 0,
-		     0, /*BUG*/
-		     0 );
+	    return vec3( 
+            dot(_m[0], v),
+            dot(_m[1], v),
+            dot(_m[2], v)
+        );
     }
 	
     //
@@ -321,7 +330,11 @@ mat3 matrixCompMult( const mat3& A, const mat3& B ) {
 
 inline
 mat3 transpose( const mat3& A ) {
-    return mat3( 0,0,0,0,0,0,0,0,0); /*BUG*/
+    return mat3(
+        A[0][0], A[1][0], A[2][0],
+        A[0][1], A[1][1], A[2][1], 
+        A[0][2], A[1][2], A[2][2]
+    );
 }
 
 //----------------------------------------------------------------------------
@@ -335,7 +348,7 @@ class mat4 {
 
    public:
     //
-    //  --- Constructors and Destructors ---
+    //  --- Constructors and Destructors ---`
     //
 
     mat4( const GLfloat d = GLfloat(1.0) )  // Create a diagional matrix
@@ -344,10 +357,11 @@ class mat4 {
     mat4( const vec4& a, const vec4& b, const vec4& c, const vec4& d )
 	{ _m[0] = a;  _m[1] = b;  _m[2] = c;  _m[3] = d; }
 
-    mat4( GLfloat m00, GLfloat m10, GLfloat m20, GLfloat m30,
-	  GLfloat m01, GLfloat m11, GLfloat m21, GLfloat m31,
-	  GLfloat m02, GLfloat m12, GLfloat m22, GLfloat m32,
-	  GLfloat m03, GLfloat m13, GLfloat m23, GLfloat m33 )
+    mat4( 
+        GLfloat m00, GLfloat m01, GLfloat m02, GLfloat m03,
+	    GLfloat m10, GLfloat m11, GLfloat m12, GLfloat m13,
+	    GLfloat m20, GLfloat m21, GLfloat m22, GLfloat m23,
+	    GLfloat m30, GLfloat m31, GLfloat m32, GLfloat m33 )
 	{
 	    _m[0] = vec4( m00, m01, m02, m03 );
 	    _m[1] = vec4( m10, m11, m12, m13 );
@@ -396,17 +410,17 @@ class mat4 {
 	{ return m * s; }
 	
     mat4 operator * ( const mat4& m ) const {
-	mat4  a( 0.0 );
+	    mat4  a( 0.0 );
 
-	for ( int i = 0; i < 4; ++i ) {
-	    for ( int j = 0; j < 4; ++j ) {
-		for ( int k = 0; k < 4; ++k ) {
-		    a[i][j] += _m[i][k] * m[k][j];
-		}
+	    for ( int i = 0; i < 4; ++i ) {
+	        for ( int j = 0; j < 4; ++j ) {
+		        for ( int k = 0; k < 4; ++k ) {
+		            a[i][j] += _m[i][k] * m[k][j];
+		        }
+	        }
 	    }
-	}
 
-	return a;
+	    return a;
     }
 
     //
@@ -433,9 +447,9 @@ class mat4 {
 
 	for ( int i = 0; i < 4; ++i ) {
 	    for ( int j = 0; j < 4; ++j ) {
-		for ( int k = 0; k < 4; ++k ) {
-		    a[i][j] += _m[i][k] * m[k][j];
-		}
+		    for ( int k = 0; k < 4; ++k ) {
+		        a[i][j] += _m[i][k] * m[k][j];
+		    }
 	    }
 	}
 
@@ -502,10 +516,12 @@ mat4 matrixCompMult( const mat4& A, const mat4& B ) {
 
 inline
 mat4 transpose( const mat4& A ) {
-    return mat4( A[0][0], A[1][0], A[2][0], A[3][0],
-		 A[0][1], A[1][1], A[2][1], A[3][1],
-		 A[0][2], A[1][2], A[2][2], A[3][2],
-		 A[0][3], A[1][3], A[2][3], A[3][3] );
+    return mat4( 
+        A[0][0], A[1][0], A[2][0], A[3][0],
+		A[0][1], A[1][1], A[2][1], A[3][1],
+		A[0][2], A[1][2], A[2][2], A[3][2],
+		A[0][3], A[1][3], A[2][3], A[3][3] 
+    );
 }
 
 //////////////////////////////////////////////////////////////////////////////
