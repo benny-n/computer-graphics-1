@@ -1,0 +1,5 @@
+
+*.tlog
+*.log
+*.ipch
+CG_skel_2019/.vs
