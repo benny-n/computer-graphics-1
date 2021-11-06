@@ -564,6 +564,30 @@ mat4 RotateX( const GLfloat theta )
     return c;
 }
 
+inline
+mat4 RotateY( const GLfloat theta )
+{
+    GLfloat angle = (M_PI/180.0) * theta;
+
+    mat4 c;
+    c[2][2] = c[0][0] = cos(angle);
+    c[2][0] = sin(angle);
+    c[0][2] = -c[2][0];
+    return c;
+}
+
+inline
+mat4 RotateZ( const GLfloat theta )
+{
+    GLfloat angle = (M_PI/180.0) * theta;
+
+    mat4 c;
+    c[0][0] = c[1][1] = cos(angle);
+    c[1][0] = sin(angle);
+    c[0][1] = -c[1][0];
+    return c;
+}
+
 
 //----------------------------------------------------------------------------
 //
@@ -574,9 +598,9 @@ inline
 mat4 Translate( const GLfloat x, const GLfloat y, const GLfloat z )
 {
     mat4 c;
-    c[0][0] = x;
-    c[0][0] = y;  /*BUG*/
-    c[0][0] = z;
+    c[0][3] = x;
+    c[1][3] = y;  
+    c[2][3] = z;
     return c;
 }
 
@@ -602,8 +626,8 @@ mat4 Scale( const GLfloat x, const GLfloat y, const GLfloat z )
 {
     mat4 c;
     c[0][0] = x;
-    c[0][0] = y; /*BUG*/
-    c[0][0] = z;
+    c[1][1] = y; 
+    c[2][2] = z;
     return c;
 }
 

@@ -3,6 +3,10 @@
 
 #include "stdafx.h"
 #include "CG_skel_w_MFC.h"
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 
 #ifdef _DEBUG
@@ -39,16 +43,20 @@ bool lb_down,rb_down,mb_down;
 
 void display( void )
 {
+	//TODO
 //Call the scene and ask it to draw itself
+	scene->draw();
 }
 
 void reshape( int width, int height )
 {
+	//TODO
 //update the renderer's buffers
 }
 
 void keyboard( unsigned char key, int x, int y )
 {
+	//BONUS
 	switch ( key ) {
 	case 033:
 		exit( EXIT_SUCCESS );
@@ -73,7 +81,7 @@ void mouse(int button, int state, int x, int y)
 			mb_down = (state==GLUT_UP)?0:1;	
 			break;
 	}
-
+	//TODO
 	// add your code
 }
 
@@ -99,6 +107,7 @@ void fileMenu(int id)
 				scene->loadOBJModel((LPCTSTR)dlg.GetPathName());
 			}
 			break;
+		//MAYBE
 	}
 }
 
@@ -203,7 +212,6 @@ int sanity_tests() {
 
 int main( int argc, char **argv )
 {
-	
 	int nRetCode = sanity_tests();
 	
 	// initialize MFC and print and error on failure
