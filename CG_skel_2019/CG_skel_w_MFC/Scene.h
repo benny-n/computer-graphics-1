@@ -9,7 +9,7 @@ using namespace std;
 class Model {
 protected:
 	virtual ~Model() {}
-	void virtual draw()=0;
+	void virtual draw(Renderer&)=0;
 };
 
 
@@ -30,9 +30,8 @@ public:
 	void Frustum( const float left, const float right,
 		const float bottom, const float top,
 		const float zNear, const float zFar );
-	mat4 Perspective( const float fovy, const float aspect,
+	void Perspective( const float fovy, const float aspect,
 		const float zNear, const float zFar);
-
 };
 
 class Scene {

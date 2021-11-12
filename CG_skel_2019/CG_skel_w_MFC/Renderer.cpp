@@ -45,6 +45,112 @@ void Renderer::SetDemoBuffer()
 		m_outBuffer[INDEX(m_width,i,256,0)]=1;	m_outBuffer[INDEX(m_width,i,256,1)]=0;	m_outBuffer[INDEX(m_width,i,256,2)]=1;
 
 	}
+
+}
+
+void Renderer::ColorPixel(int x, int y, float r, float g, float b) {
+	try {
+		m_outBuffer[INDEX(m_width, x, y, 0)] = r;
+		m_outBuffer[INDEX(m_width, x, y, 1)] = g;
+		m_outBuffer[INDEX(m_width, x, y, 2)] = b;
+	}
+	catch (exception) {
+		cout << "skipped" << endl;
+		return;
+	}	
+}
+
+static void ChoosePixlesForCanonicalLine(int ys[], int x1, int y1) { // Bresenham Algorithm
+	int d = 2 * y1 - x1;
+	int de = 2 * y1;
+	int dne = de - 2 * x1;
+
+	for (int x = 0, y = 0; x < x1; x++)
+	{
+		if (d < 0) d += de;
+		else {
+			y++;
+			d += dne;
+		}
+		ys[x] = y;
+	}
+}
+
+void Renderer::DrawLine(int x1, int y1, int x2, int y2) {
+	float m;
+	if (x1 == x2) m = 2; // anything greater than 1 so we reflect by y=x
+	else m = (y2 - y1) / float(x2 - x1);
+	if (m >= 0) {
+		if (m <= 1) { // Just need to move to origin
+			int num_pixels = abs(x2 - x1);
+			auto ys =new int[num_pixels]();
+			ChoosePixlesForCanonicalLine(ys, x2 - x1, y2 - y1);
+			for (int x = 0; x < num_pixels; x++)
+			{
+				ColorPixel(x + x1, ys[x] + y1);
+			}
+		}
+		else { // move to origin and reflect by y=x
+			int num_pixels = abs(y2 - y1);
+			auto ys = new int[num_pixels]();
+			ChoosePixlesForCanonicalLine(ys, y2 - y1, x2 - x1); // first translate, then reflect (swap x and y)
+			for (int x = 0; x < num_pixels; x++)
+			{
+				ColorPixel(ys[x] + x1, x + y1, 1, 0, 0); // first reflect back, then translate back
+			}
+		}
+	}
+	
+	else {
+		if (m >= -1) { // move to origin and reflect by x=0
+			int num_pixels = abs(x2 - x1);
+			auto ys = new int[num_pixels]();
+			ChoosePixlesForCanonicalLine(ys, x2 - x1, y1 - y2); // first translate, then reflect (minus on y)
+			for (int x = 0; x < num_pixels; x++, 0, 1, 0)
+			{
+				ColorPixel(x + x1, -(ys[x]) + y1); // first reflect back, then translate back
+			}
+		}
+		else { // move to origin, reflect by x=0 and then reflect by y=x
+			int num_pixels = abs(y2 - y1);
+			auto ys = new int[num_pixels]();
+			ChoosePixlesForCanonicalLine(ys, y1 - y2, x2 - x1); // first translate, then reflect (minus on y) and reflect again (swap x and y)
+			for (int x = 0; x < num_pixels; x++)
+			{
+				ColorPixel(ys[x] + x1, -x + y1, 0, 0, 1); // first reflect back on y=x, then reflect back on x=0, then translate back
+			}
+		}
+	}
+
+}
+
+void Renderer::SetCameraTransform(const mat4& cTransform) { m_cTransform = cTransform; }
+void Renderer::SetProjection(const mat4& projection) { m_projection = projection;  }
+void Renderer::SetObjectMatrices(const mat4& oTransform, const mat3& nTransform) {
+	m_oTransform = oTransform;
+	m_nTransform = nTransform;
+}
+
+
+void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals) {
+	mat4 project;
+	project[2][2] = 0;
+	const mat4 world_transform = Translate(m_width / 2, m_height / 2, 0);
+	const mat4 final_transformation = project * m_projection * m_cTransform * world_transform * m_oTransform ;
+	vec2 triangles[3];
+
+	for (int i = 0; i < vertices->size(); i+=3)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			vec4 vertex((*vertices)[i+j]);
+			vertex = final_transformation * vertex;
+			triangles[j] = vec2(vertex.x, vertex.y);
+		}
+		DrawLine(triangles[0].x, triangles[0].y, triangles[1].x, triangles[1].y);
+		DrawLine(triangles[1].x, triangles[1].y, triangles[2].x, triangles[2].y);
+		DrawLine(triangles[2].x, triangles[2].y, triangles[0].x, triangles[0].y);
+	}
 }
 
 

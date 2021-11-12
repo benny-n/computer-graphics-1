@@ -6,11 +6,10 @@
 
 using namespace std;
 
-class MeshModel : public Model
-{
+class MeshModel : public Model {
 protected :
 	MeshModel() {}
-	vec3 *vertex_positions;
+	vector<vec3> vertex_positions;
 	//add more attributes
 	mat4 _model_transform;
 	mat4 _world_transform;
@@ -20,7 +19,24 @@ public:
 
 	MeshModel(string fileName);
 	~MeshModel(void);
-	void loadFile(string fileName);
-	void draw();
+	virtual void loadFile(string fileName);
+	void draw(Renderer& renderer) override;
 	
 };
+
+class PrimMeshModel : public MeshModel {
+public:
+	virtual ~PrimMeshModel() = 0;
+	void loadFile(string fileName) override {}
+};
+
+class CubeMeshModel : public PrimMeshModel {
+public:
+	CubeMeshModel();
+};
+
+class PyramidMeshModel : public MeshModel {
+public:
+	PyramidMeshModel();
+};
+

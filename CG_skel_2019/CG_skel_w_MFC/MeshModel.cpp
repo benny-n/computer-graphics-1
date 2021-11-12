@@ -108,7 +108,7 @@ void MeshModel::loadFile(string fileName)
 	//Then vertex_positions should contain:
 	//vertex_positions={v1,v2,v3,v1,v3,v4}
 
-	vertex_positions = new vec3[faces.size() * 3]; 
+	vertex_positions = vector<vec3>(faces.size() * 3);
 	// iterate through all stored faces and create triangles
 	int k=0;
 	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it)
@@ -122,7 +122,115 @@ void MeshModel::loadFile(string fileName)
 
 
 
-void MeshModel::draw()
+void MeshModel::draw(Renderer& renderer)
 {
-	//TODO
+	renderer.SetObjectMatrices(_model_transform, _normal_transform);
+	renderer.DrawTriangles(&vertex_positions);
 }
+
+// Prim
+PrimMeshModel::~PrimMeshModel(){}
+
+// Cube
+CubeMeshModel::CubeMeshModel() {
+	_model_transform = Scale(15,15,15);
+	vertex_positions = vector<vec3>(36);
+
+	// First Face
+		// First Triangle
+	vertex_positions[0] = vec3(-1, -1, 1);
+	vertex_positions[1] = vec3(-1, -1, -1);
+	vertex_positions[2] = vec3(1, -1, 1);
+		// Second Triangle
+	vertex_positions[3] = vec3(-1, -1, -1);
+	vertex_positions[4] = vec3(1, -1, -1);
+	vertex_positions[5] = vec3(1, -1, 1);
+
+	// Second Face
+		// First Triangle
+	vertex_positions[6] = vec3(1, -1, 1);
+	vertex_positions[7] = vec3(1, -1, -1);
+	vertex_positions[8] = vec3(1, 1, 1);
+		// Second Triangle
+	vertex_positions[9] = vec3(1, -1, -1);
+	vertex_positions[10] = vec3(1, 1, -1);
+	vertex_positions[11] = vec3(1, 1, 1);
+
+	// Third Face
+		// First Triangle
+	vertex_positions[12] = vec3(-1, -1, 1);
+	vertex_positions[13] = vec3(1, -1, 1);
+	vertex_positions[14] = vec3(-1, 1, 1);
+		// Second Triangle
+	vertex_positions[15] = vec3(1, -1, 1);
+	vertex_positions[16] = vec3(1, 1, 1);
+	vertex_positions[17] = vec3(-1, -1, 1);
+
+	// Fourth Face
+		// First Triangle
+	vertex_positions[18] = vec3(-1, 1, 1);
+	vertex_positions[19] = vec3(1, 1, 1);
+	vertex_positions[20] = vec3(-1, 1, -1);
+		// Second Triangle
+	vertex_positions[21] = vec3(-1, 1, -1);
+	vertex_positions[22] = vec3(1, 1, 1);
+	vertex_positions[23] = vec3(1, 1, -1);
+
+	// Fifth Face
+		// First Triangle
+	vertex_positions[24] = vec3(1, -1, 1);
+	vertex_positions[25] = vec3(1, 1, 1);
+	vertex_positions[26] = vec3(1, -1, -1);
+		// Second Triangle
+	vertex_positions[27] = vec3(1, -1, -1);
+	vertex_positions[28] = vec3(1, 1, 1);
+	vertex_positions[29] = vec3(1, 1, -1);
+
+	// Sixth Face
+		// First Triangle
+	vertex_positions[30] = vec3(-1, -1, -1);
+	vertex_positions[31] = vec3(-1, 1, -1);
+	vertex_positions[32] = vec3(1, -1, -1);
+		// Second Triangle
+	vertex_positions[33] = vec3(1, -1, -1);
+	vertex_positions[34] = vec3(-1, -1, -1);
+	vertex_positions[35] = vec3(1, 1, -1);
+}
+
+// Pyramid
+PyramidMeshModel::PyramidMeshModel() {
+	_model_transform = Scale(15, 15, 15);
+	vertex_positions = vector<vec3>(18);
+
+	// Base
+		// First Triangle
+	vertex_positions[0] = vec3(-1, 0, 1);
+	vertex_positions[1] = vec3(-1, 0, -1);
+	vertex_positions[2] = vec3(1, 0, 1);
+		// Second Triangle
+	vertex_positions[3] = vec3(-1, 0, -1);
+	vertex_positions[4] = vec3(1, 0, -1);
+	vertex_positions[5] = vec3(1, 0, 1);
+
+	// First Face
+	vertex_positions[6] = vec3(1, 0, 1);
+	vertex_positions[7] = vec3(1, 0, -1);
+	vertex_positions[8] = vec3(0, 2, 0);
+
+	// Second Face
+	vertex_positions[9] = vec3(1, 0, -1);
+	vertex_positions[10] = vec3(-1, 0, -1);
+	vertex_positions[11] = vec3(0, 2, 0);
+
+	// Third Face
+	vertex_positions[12] = vec3(-1, 0, 1);
+	vertex_positions[13] = vec3(-1, 0, 1);
+	vertex_positions[14] = vec3(0, 2, 0);
+
+	// Fourth Face
+	vertex_positions[15] = vec3(-1, 0, 1);
+	vertex_positions[16] = vec3(1, 0, 1);
+	vertex_positions[17] = vec3(0, 2, 0);
+}
+
+
