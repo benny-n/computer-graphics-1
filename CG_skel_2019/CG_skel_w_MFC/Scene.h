@@ -18,6 +18,7 @@ class Light {
 };
 
 class Camera {
+public:
 	mat4 cTransform;
 	mat4 projection;
 

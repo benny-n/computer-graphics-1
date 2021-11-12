@@ -77,8 +77,15 @@ static void ChoosePixlesForCanonicalLine(int ys[], int x1, int y1) { // Bresenha
 }
 
 void Renderer::DrawLine(int x1, int y1, int x2, int y2) {
+	if (x1 > x2) {
+		swap(x1, x2);
+		swap(y1, y2);
+	}
 	float m;
-	if (x1 == x2) m = 2; // anything greater than 1 so we reflect by y=x
+	if (x1 == x2) {
+		m = 2; // anything greater than 1 so we reflect by y=x
+		if (y1 > y2) swap(y1, y2);
+	}
 	else m = (y2 - y1) / float(x2 - x1);
 	if (m >= 0) {
 		if (m <= 1) { // Just need to move to origin
@@ -138,6 +145,15 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 	const mat4 world_transform = Translate(m_width / 2, m_height / 2, 0);
 	const mat4 final_transformation = project * m_projection * m_cTransform * world_transform * m_oTransform ;
 	vec2 triangles[3];
+	/*for (int i = 0; i < vertices->size(); i++)
+	{
+		vec4 vertex((*vertices)[i]);
+		vertex = m_oTransform * vertex;
+		vertex = world_transform * vertex;
+		vertex = m_cTransform * vertex;
+		vertex = m_projection * vertex;
+		vertex = project * vertex;
+	}*/
 
 	for (int i = 0; i < vertices->size(); i+=3)
 	{

@@ -62,10 +62,10 @@ void Scene::draw() {
 	//TODO
 	// 1. Send the renderer the current camera transform and the projection
 	// 2. Tell all models to draw themselves
-	PyramidMeshModel Pyramid;
-	Pyramid.draw(*m_renderer);
+	PyramidMeshModel pyramid;
+	//pyramid.draw(*m_renderer);
 	CubeMeshModel cube;
-	//cube.draw(*m_renderer);
+	cube.draw(*m_renderer);
 	m_renderer->SwapBuffers();
 }
 
