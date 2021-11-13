@@ -33,7 +33,9 @@ public:
 	Renderer(int width, int height);
 	~Renderer(void);
 	void SetDemoBuffer();
+	void Reshape(int width, int height);
 	void ColorPixel(int x, int y, float r = 1, float g = 1, float b = 1);
+	void ClearPixel(int x, int y);
 	void DrawLine(int x1, int y1, int x2, int y2);
 	void Init();
 	void SetCameraTransform(const mat4& cTransform);

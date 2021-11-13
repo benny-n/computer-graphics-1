@@ -48,10 +48,17 @@ void Renderer::SetDemoBuffer()
 
 }
 
+void Renderer::Reshape(int width, int height){
+	m_width = width;
+	m_height = height;
+}
+
 void Renderer::ColorPixel(int x, int y, float r, float g, float b) {
 	try {
 		x += m_width / 2;
 		y += m_height / 2;
+		if (x >= m_width || x < 0) return; //clip
+		if (y >= m_height || y < 0) return; //clip
 		m_outBuffer[INDEX(m_width, x, y, 0)] = r;
 		m_outBuffer[INDEX(m_width, x, y, 1)] = g;
 		m_outBuffer[INDEX(m_width, x, y, 2)] = b;
@@ -60,6 +67,15 @@ void Renderer::ColorPixel(int x, int y, float r, float g, float b) {
 		cout << "skipped" << endl;
 		return;
 	}	
+}
+
+//TODO: TEMPORARY full implementation until we fix the += /2 thing in the function above
+void Renderer::ClearPixel(int x, int y) {
+	if (x >= m_width || x < 0) return; //clip
+	if (y >= m_height || y < 0) return; //clip
+	m_outBuffer[INDEX(m_width, x, y, 0)] = 0.0;
+	m_outBuffer[INDEX(m_width, x, y, 1)] = 0.0;
+	m_outBuffer[INDEX(m_width, x, y, 2)] = 0.0;
 }
 
 static void ChoosePixlesForCanonicalLine(int ys[], int x1, int y1) { // Bresenham Algorithm
@@ -172,6 +188,13 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 }
 
 
+void Renderer::ClearColorBuffer() {
+	for (int x = 0; x < m_width; x++) {
+		for (int y = 0; y < m_height; y++) {
+			ClearPixel(x, y);
+		}
+	}
+}
 
 
 

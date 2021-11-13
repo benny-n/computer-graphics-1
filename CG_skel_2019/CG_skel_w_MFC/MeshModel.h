@@ -20,7 +20,7 @@ public:
 	MeshModel(string fileName);
 	~MeshModel(void);
 	virtual void loadFile(string fileName);
-	void transform(const mat4& m);
+	void transform(const mat4& m) override;
 	void draw(Renderer& renderer) override;
 	
 };

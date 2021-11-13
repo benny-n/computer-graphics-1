@@ -30,3 +30,12 @@
 
 
 // TODO: reference additional headers your program requires here
+#include "vec.h"
+#include "mat.h"
+#include "Scene.h"
+#include "Renderer.h"
+#include "InitShader.h"
+#include "Editor.h"
+#include <string>
+
+#define BUFFER_OFFSET( offset )   ((GLvoid*) (offset))

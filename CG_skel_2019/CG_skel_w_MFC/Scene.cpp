@@ -85,33 +85,24 @@ void Scene::loadPyramidModel() {
 	models.push_back(model);
 }
 
+int Scene::transfromActiveModel(const mat4& m){
+	if (models.empty()) return -1;
+	models[activeModel]->transform(m);
+	return 0;
+}
+
 void Scene::draw() {
 	//TODO
 	// 1. Send the renderer the current camera transform and the projection
 	// 2. Tell all models to draw themselves
-	
-	
-	
-	/*Camera c;
-	c.LookAt(vec4(25, 25, 50, 1), vec4(0, 0, 0, 1), vec4(0, 1, 0, 1));
-	c.Frustum(-15, 15, -15, 15, 10, 25);
-	m_renderer->SetCameraTransform(c.getTransform());
-	m_renderer->SetProjection(c.getProjection());
-	PyramidMeshModel pyramid;
-	pyramid.draw(*m_renderer);
-	CubeMeshModel cube;
-	cube.draw(*m_renderer);
-	MeshModel banana("banana.obj");
-	banana.draw(*m_renderer);
-	cout << "drew" << endl;*/
+	m_renderer->ClearColorBuffer();
 
 	auto active_camera = cameras[activeCamera];
-	m_renderer->SetCameraTransform(active_camera.get()->getTransform());
-	m_renderer->SetProjection(active_camera.get()->getProjection());
+	m_renderer->SetCameraTransform(active_camera->getTransform());
+	m_renderer->SetProjection(active_camera->getProjection());
 
 	for each (auto model in models) {
-		auto mesh_model = dynamic_cast<MeshModel*>(model.get());
-		mesh_model->draw(*m_renderer);
+		model->draw(*m_renderer);
 	}
 	m_renderer->SwapBuffers();
 }

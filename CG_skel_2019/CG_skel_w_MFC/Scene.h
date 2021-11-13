@@ -9,7 +9,9 @@ using namespace std;
 class Model {
 protected:
 	virtual ~Model() {}
-	void virtual draw(Renderer&)=0;
+public:
+	void virtual transform(const mat4& m) = 0;
+	void virtual draw(Renderer&) = 0;
 };
 
 
@@ -52,6 +54,7 @@ public:
 	void loadOBJModel(string fileName);
 	void loadCubeModel();
 	void loadPyramidModel();
+	int transfromActiveModel(const mat4& m);
 	void draw();
 	void drawDemo();
 	
