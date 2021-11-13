@@ -15,6 +15,7 @@ class Renderer
 	mat4 m_projection;
 	mat4 m_oTransform;
 	mat3 m_nTransform;
+	vec3 colors[4];
 
 
 	void CreateBuffers(int width, int height);
@@ -33,9 +34,11 @@ public:
 	Renderer(int width, int height);
 	~Renderer(void);
 	void SetDemoBuffer();
+	void SetColor(const vec3& color);
+	void SetVisualizeSlopes();
 	void Reshape(int width, int height);
-	void ColorPoint(int x, int y, float r = 1, float g = 1, float b = 1);
-	void ColorPixel(int x, int y, float r, float g, float b);
+	void ColorPoint(int x, int y, const vec3& color = vec3(1));
+	void ColorPixel(int x, int y, const vec3& color = vec3(1));
 	void ClearPixel(int x, int y);
 	void DrawLine(int x1, int y1, int x2, int y2);
 	void Init();

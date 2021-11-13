@@ -9,21 +9,28 @@ using namespace std;
 class Model {
 
 public:
+	Model() : draw_boundry_box(false) {}
 	void virtual transform(const mat4& m, bool is_rotation = false) = 0;
 	void virtual draw(Renderer&) = 0;
+	const string& getName();
 
 protected:
 	virtual ~Model() {}
 	class BoundryBox {
 	public:
+		vector<vec3> vertex_positions;
 		vec4 vmin;
 		vec4 vmax;
 
-		BoundryBox() : vmin(vec3(FLT_MAX)), vmax(vec3(FLT_MIN)) {}
+		BoundryBox() : vertex_positions(24), vmin(vec3(FLT_MAX)), vmax(vec3(FLT_MIN)) {}
+		void initVertexPositions();
+		void transform(const mat4& m);
 		vec4 center();
-		void draw(Renderer* renderer);
+		void draw(Renderer& renderer);
 	};
 	BoundryBox boundry_box;
+	bool draw_boundry_box;
+	string name;
 };
 
 
@@ -63,6 +70,7 @@ class Scene {
 public:
 	Scene();
 	Scene(Renderer *renderer);
+	const vector<ModelPtr>& getModels();
 	void loadOBJModel(string fileName);
 	void loadCubeModel();
 	void loadPyramidModel();

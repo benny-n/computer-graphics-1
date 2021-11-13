@@ -10,11 +10,13 @@ Renderer::Renderer() :m_width(512), m_height(512)
 {
 	InitOpenGLRendering();
 	CreateBuffers(512,512);
+	SetVisualizeSlopes();
 }
 Renderer::Renderer(int width, int height) :m_width(width), m_height(height)
 {
 	InitOpenGLRendering();
 	CreateBuffers(width,height);
+	SetVisualizeSlopes();
 }
 
 Renderer::~Renderer(void)
@@ -49,6 +51,19 @@ void Renderer::SetDemoBuffer()
 
 }
 
+void Renderer::SetColor(const vec3& color)
+{
+	colors[0] = colors[1] = colors[2] = colors[3] = color;
+}
+
+void Renderer::SetVisualizeSlopes()
+{
+	colors[0] = vec3(1);
+	colors[1] = vec3(1, 0, 0);
+	colors[2] = vec3(0, 1, 0);
+	colors[3] = vec3(0, 0, 1);
+}
+
 void Renderer::Reshape(int width, int height){
 	CreateBuffers(width, height);
 	m_outBuffer = (GLfloat*)realloc(m_outBuffer, sizeof(GLfloat) * (3 * m_width * m_height));
@@ -56,23 +71,22 @@ void Renderer::Reshape(int width, int height){
 	m_height = height;
 }
 
-void Renderer::ColorPoint(int x, int y, float r, float g, float b) {
+void Renderer::ColorPoint(int x, int y, const vec3& color) {
 	x += m_width / 2;
 	y += m_height / 2;
-	ColorPixel(x, y, r, g, b);
+	ColorPixel(x, y, color);
 }
 
-void Renderer::ColorPixel(int x, int y, float r, float g, float b) {
+void Renderer::ColorPixel(int x, int y, const vec3& color) {
 	if (x >= m_width || x < 0) return; //clip
 	if (y >= m_height || y < 0) return; //clip
-	m_outBuffer[INDEX(m_width, x, y, 0)] = r;
-	m_outBuffer[INDEX(m_width, x, y, 1)] = g;
-	m_outBuffer[INDEX(m_width, x, y, 2)] = b;
-
+	m_outBuffer[INDEX(m_width, x, y, 0)] = color.x;
+	m_outBuffer[INDEX(m_width, x, y, 1)] = color.y;
+	m_outBuffer[INDEX(m_width, x, y, 2)] = color.z;
 }
 
 void Renderer::ClearPixel(int x, int y) {
-	ColorPixel(x, y, 0.0, 0.0, 0.0);
+	ColorPixel(x, y, vec3());
 }
 
 static void ChoosePixlesForCanonicalLine(int ys[], int x1, int y1) { // Bresenham Algorithm
@@ -109,7 +123,7 @@ void Renderer::DrawLine(int x1, int y1, int x2, int y2) {
 			ChoosePixlesForCanonicalLine(ys, x2 - x1, y2 - y1);
 			for (int x = 0; x < num_pixels; x++)
 			{
-				ColorPoint(x + x1, ys[x] + y1);
+				ColorPoint(x + x1, ys[x] + y1, colors[0]);
 			}
 		}
 		else { // move to origin and reflect by y=x
@@ -118,7 +132,7 @@ void Renderer::DrawLine(int x1, int y1, int x2, int y2) {
 			ChoosePixlesForCanonicalLine(ys, y2 - y1, x2 - x1); // first translate, then reflect (swap x and y)
 			for (int x = 0; x < num_pixels; x++)
 			{
-				ColorPoint(ys[x] + x1, x + y1, 1, 0, 0); // first reflect back, then translate back
+				ColorPoint(ys[x] + x1, x + y1, colors[1]); // first reflect back, then translate back
 			}
 		}
 	}
@@ -128,9 +142,9 @@ void Renderer::DrawLine(int x1, int y1, int x2, int y2) {
 			int num_pixels = abs(x2 - x1);
 			auto ys = new int[num_pixels]();
 			ChoosePixlesForCanonicalLine(ys, x2 - x1, y1 - y2); // first translate, then reflect (minus on y)
-			for (int x = 0; x < num_pixels; x++, 0, 1, 0)
+			for (int x = 0; x < num_pixels; x++)
 			{
-				ColorPoint(x + x1, -(ys[x]) + y1); // first reflect back, then translate back
+				ColorPoint(x + x1, -(ys[x]) + y1, colors[2]); // first reflect back, then translate back
 			}
 		}
 		else { // move to origin, reflect by x=0 and then reflect by y=x
@@ -139,7 +153,7 @@ void Renderer::DrawLine(int x1, int y1, int x2, int y2) {
 			ChoosePixlesForCanonicalLine(ys, y1 - y2, x2 - x1); // first translate, then reflect (minus on y) and reflect again (swap x and y)
 			for (int x = 0; x < num_pixels; x++)
 			{
-				ColorPoint(ys[x] + x1, -x + y1, 0, 0, 1); // first reflect back on y=x, then reflect back on x=0, then translate back
+				ColorPoint(ys[x] + x1, -x + y1, colors[3]); // first reflect back on y=x, then reflect back on x=0, then translate back
 			}
 		}
 	}

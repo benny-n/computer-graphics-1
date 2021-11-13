@@ -97,7 +97,7 @@ void keyboard(unsigned char key, int x, int y)
 		handle_err_code(status);
 	}
 	else {
-		scene->draw();
+		glutPostRedisplay();
 	}
 }
 
@@ -118,12 +118,10 @@ void mouse(int button, int state, int x, int y)
 		mb_down = (state == GLUT_UP) ? 0 : 1;
 		break;
 	case MOUSE_WHEEL_UP:
-		cout << "rolling up" << endl;
 		status = scene->transformActiveModel(Scale(1.1));
 		break;
 	case MOUSE_WHEEL_DOWN:
 		status = scene->transformActiveModel(Scale(0.9));
-		cout << "rolling down" << endl;
 		break;
 	}
 
@@ -157,7 +155,8 @@ void fileMenu(int id)
 		{
 			std::string s((LPCTSTR)dlg.GetPathName());
 			scene->loadOBJModel((LPCTSTR)dlg.GetPathName());
-			scene->draw();
+			glutPostRedisplay();
+			initMenu();
 		}
 		break;
 	}
@@ -168,23 +167,19 @@ void addPrimMenu(int id) {
 	{
 	case CUBE:
 		scene->loadCubeModel();
-		scene->draw();
+		glutPostRedisplay();
+		initMenu();
 		break;
 	case PYRAMID:
 		scene->loadPyramidModel();
-		scene->draw();
+		glutPostRedisplay();
+		initMenu();
 		break;
 	}
 }
 
-void addModelMenu(int id) {
-	switch (id)
-	{
-	case FROM_FILE:
-		break;
-	case PRIM:
-		break;
-	}
+void selectModelMenu(int id) {
+	scene->activeModel = id;
 }
 
 void mainMenu(int id)
@@ -209,12 +204,20 @@ void initMenu()
 	glutAddMenuEntry("Cube", CUBE);
 	glutAddMenuEntry("Pyramid", PYRAMID);
 
-	int menuAddModel = glutCreateMenu(addModelMenu);
+	int menuAddModel = glutCreateMenu(nullptr); // has only sub menus so needs no function
 	glutAddSubMenu("From File", menuFile);
 	glutAddSubMenu("Add Primitive Model", menuAddPrim);
 
+	int menuSelectModel = glutCreateMenu(selectModelMenu);
+	int counter = 0;
+	for each (auto model in scene->getModels()) {
+		glutAddMenuEntry((model->getName() + " " + to_string(counter)).c_str(), counter);
+		counter++;
+	}
+
 	glutCreateMenu(mainMenu);
 	glutAddSubMenu("Add Model", menuAddModel);
+	glutAddSubMenu("Select Model", menuSelectModel);
 	glutAddMenuEntry("Demo", MAIN_DEMO);
 	glutAddMenuEntry("About", MAIN_ABOUT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);

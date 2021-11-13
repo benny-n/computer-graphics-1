@@ -60,8 +60,13 @@ vec2 vec2fFromStream(std::istream & aStream)
 	return vec2(x, y);
 }
 
-MeshModel::MeshModel(string fileName)
-{
+
+// MeshModel
+MeshModel::MeshModel(string fileName) : use_visualize_slopes(true) {
+	string base_filename = fileName.substr(fileName.find_last_of("/\\") + 1);
+	string::size_type const p(base_filename.find_last_of('.'));
+	name = base_filename.substr(0, p);
+
 	loadFile(fileName);
 }
 
@@ -110,6 +115,7 @@ void MeshModel::loadFile(string fileName)
 			//cout << "Found unknown line Type \"" << lineType << "\"" << endl;
 		}
 	}
+	boundry_box.initVertexPositions();
 	const float normalize_size = max(
 		max(boundry_box.vmax.x - boundry_box.vmin.x, boundry_box.vmax.y - boundry_box.vmin.y), 
 		boundry_box.vmax.z - boundry_box.vmin.z
@@ -137,20 +143,31 @@ void MeshModel::loadFile(string fileName)
 	}
 }
 
+void MeshModel::setColor(const vec3& c)
+{
+	color = c;
+}
+
 void MeshModel::transform(const mat4& m, bool is_rotation) {
 	if (is_rotation) {
 		mat4 rotation = Translate(boundry_box.center()) * m * Translate(-boundry_box.center());
 		_model_transform = rotation * _model_transform;
+		boundry_box.transform(rotation);
 	}
 	else {
 		_model_transform = m * _model_transform;
+		boundry_box.transform(m);
 	}
 }
 
 void MeshModel::draw(Renderer& renderer)
 {
+	if (use_visualize_slopes) renderer.SetVisualizeSlopes();
+	else renderer.SetColor(color);
 	renderer.SetObjectMatrices(_model_transform, _normal_transform);
 	renderer.DrawTriangles(&vertex_positions);
+	if (draw_boundry_box) boundry_box.draw(renderer);
+	boundry_box.draw(renderer);
 }
 
 // Prim
@@ -158,6 +175,7 @@ PrimMeshModel::~PrimMeshModel(){}
 
 // Cube
 CubeMeshModel::CubeMeshModel() {
+	name = "cube";
 	vertex_positions = vector<vec3>(36);
 
 	// First Face
@@ -223,6 +241,7 @@ CubeMeshModel::CubeMeshModel() {
 	// Boundry box in this case is just the cube itself
 	boundry_box.vmax = vec4(1);
 	boundry_box.vmin = vec4(vec3(-1));
+	boundry_box.initVertexPositions();
 
 	//transform
 	transform(Scale(25, 25, 25));
@@ -230,6 +249,7 @@ CubeMeshModel::CubeMeshModel() {
 
 // Pyramid
 PyramidMeshModel::PyramidMeshModel() {
+	name = "pyramid";
 	vertex_positions = vector<vec3>(18);
 
 	// Base
@@ -265,6 +285,7 @@ PyramidMeshModel::PyramidMeshModel() {
 	// Boundry box
 	boundry_box.vmax = vec4(vec3(1, 2, 1));
 	boundry_box.vmin = vec4(vec3(-1, 0, -1));
+	boundry_box.initVertexPositions();
 
 	//transform
 	transform(Scale(45, 45, 45));

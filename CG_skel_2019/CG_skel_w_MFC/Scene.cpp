@@ -7,23 +7,59 @@ using namespace std;
 
 //Boundry Box
 
+void Model::BoundryBox::initVertexPositions()
+{
+	// First Face (bottom)
+	vertex_positions[0] = vec3(vmin.x, vmin.y, vmax.z);
+	vertex_positions[1] = vec3(vmin.x, vmin.y, vmin.z);
+	vertex_positions[2] = vec3(vmax.x, vmin.y, vmin.z);
+	vertex_positions[3] = vec3(vmax.x, vmin.y, vmax.z);
+	// Second Face (front)
+	vertex_positions[4] = vec3(vmax.x, vmin.y, vmax.z);
+	vertex_positions[5] = vec3(vmin.x, vmin.y, vmax.z);
+	vertex_positions[6] = vec3(vmin.x, vmax.y, vmax.z);
+	vertex_positions[7] = vec3(vmax.x, vmax.y, vmax.z);
+	// Third Face (top)
+	vertex_positions[8] = vec3(vmax.x, vmax.y, vmax.z);
+	vertex_positions[9] = vec3(vmin.x, vmax.y, vmax.z);
+	vertex_positions[10] = vec3(vmin.x, vmax.y, vmin.z);
+	vertex_positions[11] = vec3(vmax.x, vmax.y, vmin.z);
+	// Fourth Face (back)
+	vertex_positions[12] = vec3(vmax.x, vmax.y, vmin.z);
+	vertex_positions[13] = vec3(vmax.x, vmin.y, vmin.z);
+	vertex_positions[14] = vec3(vmin.x, vmin.y, vmin.z);
+	vertex_positions[15] = vec3(vmin.x, vmax.y, vmin.z);
+	// Fifth Face (left)
+	vertex_positions[16] = vec3(vmin.x, vmax.y, vmin.z);
+	vertex_positions[17] = vec3(vmin.x, vmin.y, vmin.z);
+	vertex_positions[18] = vec3(vmin.x, vmin.y, vmax.z);
+	vertex_positions[19] = vec3(vmin.x, vmax.y, vmax.z);
+	// Sixth Face (right)
+	vertex_positions[20] = vec3(vmax.x, vmax.y, vmax.z);
+	vertex_positions[21] = vec3(vmax.x, vmax.y, vmin.z);
+	vertex_positions[22] = vec3(vmax.x, vmin.y, vmin.z);
+	vertex_positions[23] = vec3(vmax.x, vmax.y, vmin.z);
+}
+
+void Model::BoundryBox::transform(const mat4& m)
+{
+	vmin = m * vmin;
+	vmax = m * vmax;
+}
+
 vec4 Model::BoundryBox::center(){
 	return (vmin + vmax) / 2.0;
 }
 
-void Model::BoundryBox::draw(Renderer* renderer){
-	
-	vector<vec3> vertices(24);
-	
-	// First Face (bottom)
-	vertices[0] = vec3(vmin.x, vmin.y, vmax.z);
-	vertices[1] = vec3(vmin.x, vmin.y, vmin.z);
-	vertices[2] = vec3(vmax.x, vmin.y, vmin.z);
-	vertices[3] = vec3(vmax.x, vmin.y, vmax.z);
+void Model::BoundryBox::draw(Renderer& renderer){
+	renderer.SetColor(vec3(0.5));
+	renderer.DrawSquares(&vertex_positions);
+}
 
-	vertices[1] = vec3(vmax.x, vmin.y, vmax.z);
-
-	//renderer->DrawSquares();
+// Model
+const string& Model::getName()
+{
+	return name;
 }
 
 // Camera
@@ -89,6 +125,11 @@ Scene::Scene() : m_renderer(), activeModel(0), activeLight(0), activeCamera(0) {
 Scene::Scene(Renderer* renderer) : m_renderer(renderer), activeModel(0), activeLight(0), activeCamera(0) {
 	auto default_camera = make_shared<Camera>();
 	cameras.push_back(default_camera);
+}
+
+const vector<ModelPtr>& Scene::getModels()
+{
+	return models;
 }
 
 void Scene::loadOBJModel(string fileName) {
