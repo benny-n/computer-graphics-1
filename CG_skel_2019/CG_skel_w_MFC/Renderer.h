@@ -34,14 +34,17 @@ public:
 	~Renderer(void);
 	void SetDemoBuffer();
 	void Reshape(int width, int height);
-	void ColorPixel(int x, int y, float r = 1, float g = 1, float b = 1);
+	void ColorPoint(int x, int y, float r = 1, float g = 1, float b = 1);
+	void ColorPixel(int x, int y, float r, float g, float b);
 	void ClearPixel(int x, int y);
 	void DrawLine(int x1, int y1, int x2, int y2);
 	void Init();
 	void SetCameraTransform(const mat4& cTransform);
 	void SetProjection(const mat4& projection);
 	void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform);
+	mat4 CalcFinalTransformation();
 	void DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals=NULL);
+	void DrawSquares(const vector<vec3>* vertices);
 	void SwapBuffers();
 	void ClearColorBuffer();
 	void ClearDepthBuffer();

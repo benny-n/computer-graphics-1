@@ -7,11 +7,23 @@
 using namespace std;
 
 class Model {
+
+public:
+	void virtual transform(const mat4& m, bool is_rotation = false) = 0;
+	void virtual draw(Renderer&) = 0;
+
 protected:
 	virtual ~Model() {}
-public:
-	void virtual transform(const mat4& m) = 0;
-	void virtual draw(Renderer&) = 0;
+	class BoundryBox {
+	public:
+		vec4 vmin;
+		vec4 vmax;
+
+		BoundryBox() : vmin(vec3(FLT_MAX)), vmax(vec3(FLT_MIN)) {}
+		vec4 center();
+		void draw(Renderer* renderer);
+	};
+	BoundryBox boundry_box;
 };
 
 
@@ -54,7 +66,7 @@ public:
 	void loadOBJModel(string fileName);
 	void loadCubeModel();
 	void loadPyramidModel();
-	int transfromActiveModel(const mat4& m);
+	int transformActiveModel(const mat4& m, bool is_rotation = false);
 	void draw();
 	void drawDemo();
 	

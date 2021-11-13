@@ -74,7 +74,6 @@ void MeshModel::loadFile(string fileName)
 	ifstream ifile(fileName.c_str());
 	vector<FaceIdcs> faces;
 	vector<vec3> vertices;
-	float min_x = FLT_MAX, max_x = FLT_MIN, min_y = FLT_MAX, max_y = FLT_MIN, min_z = FLT_MAX, max_z = FLT_MIN;
 	// while not end of file
 	while (!ifile.eof())
 	{
@@ -91,12 +90,12 @@ void MeshModel::loadFile(string fileName)
 		// based on the type parse data
 		if (lineType == "v") {
 			vec3 vertex = vec3fFromStream(issLine);
-			min_x = min(min_x, vertex.x);
-			min_y = min(min_y, vertex.y);
-			min_z = min(min_z, vertex.z);
-			max_x = max(max_x, vertex.x);
-			max_y = max(max_y, vertex.y);
-			max_z = max(max_z, vertex.z);
+			boundry_box.vmin.x = min(boundry_box.vmin.x, vertex.x);
+			boundry_box.vmin.y = min(boundry_box.vmin.y, vertex.y);
+			boundry_box.vmin.z = min(boundry_box.vmin.z, vertex.z);
+			boundry_box.vmax.x = max(boundry_box.vmax.x, vertex.x);
+			boundry_box.vmax.y = max(boundry_box.vmax.y, vertex.y);
+			boundry_box.vmax.z = max(boundry_box.vmax.z, vertex.z);
 			vertices.push_back(vertex);
 		}
 			
@@ -111,9 +110,13 @@ void MeshModel::loadFile(string fileName)
 			//cout << "Found unknown line Type \"" << lineType << "\"" << endl;
 		}
 	}
-	const float normalize_size = max(max(max_x - min_x, max_y - min_y), max_z - min_z);
+	const float normalize_size = max(
+		max(boundry_box.vmax.x - boundry_box.vmin.x, boundry_box.vmax.y - boundry_box.vmin.y), 
+		boundry_box.vmax.z - boundry_box.vmin.z
+	);
 	const float normalize_factor = 200 / normalize_size;
-	_model_transform = Scale(normalize_factor);
+	//_model_transform = Scale(normalize_factor);
+	transform(Scale(normalize_factor));
 
 	//Vertex_positions is an array of vec3. Every three elements define a triangle in 3D.
 	//If the face part of the obj is
@@ -134,8 +137,14 @@ void MeshModel::loadFile(string fileName)
 	}
 }
 
-void MeshModel::transform(const mat4& m) {
-	_model_transform = m * _model_transform;
+void MeshModel::transform(const mat4& m, bool is_rotation) {
+	if (is_rotation) {
+		mat4 rotation = Translate(boundry_box.center()) * m * Translate(-boundry_box.center());
+		_model_transform = rotation * _model_transform;
+	}
+	else {
+		_model_transform = m * _model_transform;
+	}
 }
 
 void MeshModel::draw(Renderer& renderer)
@@ -149,7 +158,6 @@ PrimMeshModel::~PrimMeshModel(){}
 
 // Cube
 CubeMeshModel::CubeMeshModel() {
-	_model_transform = Scale(25,25,25);
 	vertex_positions = vector<vec3>(36);
 
 	// First Face
@@ -211,11 +219,17 @@ CubeMeshModel::CubeMeshModel() {
 	vertex_positions[33] = vec3(1, -1, -1);
 	vertex_positions[34] = vec3(-1, -1, -1);
 	vertex_positions[35] = vec3(1, 1, -1);
+
+	// Boundry box in this case is just the cube itself
+	boundry_box.vmax = vec4(1);
+	boundry_box.vmin = vec4(vec3(-1));
+
+	//transform
+	transform(Scale(25, 25, 25));
 }
 
 // Pyramid
 PyramidMeshModel::PyramidMeshModel() {
-	_model_transform = Scale(45, 45, 45);
 	vertex_positions = vector<vec3>(18);
 
 	// Base
@@ -247,6 +261,13 @@ PyramidMeshModel::PyramidMeshModel() {
 	vertex_positions[15] = vec3(-1, 0, 1);
 	vertex_positions[16] = vec3(1, 0, 1);
 	vertex_positions[17] = vec3(0, 2, 0);
+
+	// Boundry box
+	boundry_box.vmax = vec4(vec3(1, 2, 1));
+	boundry_box.vmin = vec4(vec3(-1, 0, -1));
+
+	//transform
+	transform(Scale(45, 45, 45));
 }
 
 

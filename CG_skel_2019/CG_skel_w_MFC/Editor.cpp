@@ -32,43 +32,62 @@ void reshape(int width, int height)
 	//cout << width << endl;
 	//cout << height << endl;
 	////TODO
-	//renderer->Reshape(width, height);
-	//scene->draw();
+	renderer->Reshape(width, height);
+	scene->draw();
 //update the renderer's buffers
 }
 
 void keyboard(unsigned char key, int x, int y)
 {
 	int status;
-	//FOR DEBUG : cout << "pressed key: " << key << " on x: "  << x << " and y: " << y << endl;
+	//cout << "pressed key: " << key << " on x: "  << x << " and y: " << y << endl;
 	switch (key) {
 	case 033:
 		exit(EXIT_SUCCESS);
 		break;	
 	case 'z':
-		status = scene->transfromActiveModel(Scale(1.1));
+		status = scene->transformActiveModel(Scale(SCALE_UP));
 		break;
 	case 'x':
-		status = scene->transfromActiveModel(Scale(0.9));
+		status = scene->transformActiveModel(Scale(SCALE_DOWN));
 		break;
-	case 'a':
-		status = scene->transfromActiveModel(RotateY(5.0));
+	case 'D':
+		status = scene->transformActiveModel(RotateY(ROTATE), true);
+		break;
+	case 'A':
+		status = scene->transformActiveModel(RotateY(-ROTATE), true);
+		break;	
+	case 'W':
+		status = scene->transformActiveModel(RotateX(ROTATE), true);
+		break;
+	case 'S':
+		status = scene->transformActiveModel(RotateX(-ROTATE), true);
+		break;
+	case 'Q':
+		status = scene->transformActiveModel(RotateZ(ROTATE), true);
+		break;
+	case 'E':
+		status = scene->transformActiveModel(RotateZ(-ROTATE), true);
 		break;
 	case 'd':
-		status = scene->transfromActiveModel(RotateY(-5.0));
+		status = scene->transformActiveModel(Translate(TRANSLATE, 0, 0));
 		break;	
+	case 'a':
+		status = scene->transformActiveModel(Translate(-TRANSLATE, 0, 0));
+		break;
 	case 'w':
-		status = scene->transfromActiveModel(RotateX(5.0));
+		status = scene->transformActiveModel(Translate(0, TRANSLATE, 0));
 		break;
 	case 's':
-		status = scene->transfromActiveModel(RotateX(-5.0));
+		status = scene->transformActiveModel(Translate(0, -TRANSLATE, 0));
 		break;
 	case 'q':
-		status = scene->transfromActiveModel(RotateZ(5.0));
+		status = scene->transformActiveModel(Translate(0, 0, TRANSLATE));
 		break;
 	case 'e':
-		status = scene->transfromActiveModel(RotateZ(-5.0));
+		status = scene->transformActiveModel(Translate(0, 0, -TRANSLATE));
 		break;
+
 	default:
 		return;
 	}
@@ -100,10 +119,10 @@ void mouse(int button, int state, int x, int y)
 		break;
 	case MOUSE_WHEEL_UP:
 		cout << "rolling up" << endl;
-		status = scene->transfromActiveModel(Scale(1.1));
+		status = scene->transformActiveModel(Scale(1.1));
 		break;
 	case MOUSE_WHEEL_DOWN:
-		status = scene->transfromActiveModel(Scale(0.9));
+		status = scene->transformActiveModel(Scale(0.9));
 		cout << "rolling down" << endl;
 		break;
 	}

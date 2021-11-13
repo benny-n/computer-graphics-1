@@ -19,6 +19,13 @@
 #define CUBE 1
 #define PYRAMID 2
 
+// define for sensetivity
+#define SENSETIVITY 0.2 //BONUS if we want sensetivity to be interactive, make it a variable
+#define SCALE_UP (1 + SENSETIVITY)
+#define SCALE_DOWN (1 - SENSETIVITY)
+#define ROTATE (50 * SENSETIVITY)
+#define TRANSLATE (100 * SENSETIVITY)
+
 
 void display(void);
 void reshape(int width, int height);

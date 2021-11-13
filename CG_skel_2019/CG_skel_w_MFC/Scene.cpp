@@ -5,6 +5,27 @@
 
 using namespace std;
 
+//Boundry Box
+
+vec4 Model::BoundryBox::center(){
+	return (vmin + vmax) / 2.0;
+}
+
+void Model::BoundryBox::draw(Renderer* renderer){
+	
+	vector<vec3> vertices(24);
+	
+	// First Face (bottom)
+	vertices[0] = vec3(vmin.x, vmin.y, vmax.z);
+	vertices[1] = vec3(vmin.x, vmin.y, vmin.z);
+	vertices[2] = vec3(vmax.x, vmin.y, vmin.z);
+	vertices[3] = vec3(vmax.x, vmin.y, vmax.z);
+
+	vertices[1] = vec3(vmax.x, vmin.y, vmax.z);
+
+	//renderer->DrawSquares();
+}
+
 // Camera
 void Camera::setTransformation(const mat4& transform) {
 	cTransform = transform;
@@ -85,9 +106,9 @@ void Scene::loadPyramidModel() {
 	models.push_back(model);
 }
 
-int Scene::transfromActiveModel(const mat4& m){
+int Scene::transformActiveModel(const mat4& m, bool is_rotation){
 	if (models.empty()) return -1;
-	models[activeModel]->transform(m);
+	models[activeModel]->transform(m, is_rotation);
 	return 0;
 }
 
