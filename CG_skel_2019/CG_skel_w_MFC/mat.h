@@ -632,6 +632,11 @@ mat4 Scale( const GLfloat x, const GLfloat y, const GLfloat z )
 }
 
 inline
+mat4 Scale(const GLfloat x) {
+    return Scale(x, x, x);
+}
+
+inline
 mat4 Scale( const vec3& v )
 {
     return Scale( v.x, v.y, v.z );

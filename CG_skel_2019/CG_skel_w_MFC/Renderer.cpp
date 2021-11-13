@@ -50,11 +50,13 @@ void Renderer::SetDemoBuffer()
 
 void Renderer::ColorPixel(int x, int y, float r, float g, float b) {
 	try {
+		x += m_width / 2;
+		y += m_height / 2;
 		m_outBuffer[INDEX(m_width, x, y, 0)] = r;
 		m_outBuffer[INDEX(m_width, x, y, 1)] = g;
 		m_outBuffer[INDEX(m_width, x, y, 2)] = b;
 	}
-	catch (exception) {
+	catch (...) {
 		cout << "skipped" << endl;
 		return;
 	}	
@@ -142,10 +144,10 @@ void Renderer::SetObjectMatrices(const mat4& oTransform, const mat3& nTransform)
 void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals) {
 	mat4 project;
 	project[2][2] = 0;
-	const mat4 world_transform = Translate(m_width / 2, m_height / 2, 0);
+	const mat4 world_transform = mat4();
 	const mat4 final_transformation = project * m_projection * m_cTransform * world_transform * m_oTransform ;
 	vec2 triangles[3];
-	/*for (int i = 0; i < vertices->size(); i++)
+	for (int i = 0; i < vertices->size(); i++)
 	{
 		vec4 vertex((*vertices)[i]);
 		vertex = m_oTransform * vertex;
@@ -153,7 +155,7 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 		vertex = m_cTransform * vertex;
 		vertex = m_projection * vertex;
 		vertex = project * vertex;
-	}*/
+	}
 
 	for (int i = 0; i < vertices->size(); i+=3)
 	{

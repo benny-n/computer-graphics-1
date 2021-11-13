@@ -74,6 +74,7 @@ void MeshModel::loadFile(string fileName)
 	ifstream ifile(fileName.c_str());
 	vector<FaceIdcs> faces;
 	vector<vec3> vertices;
+	float min_x = FLT_MAX, max_x = FLT_MIN, min_y = FLT_MAX, max_y = FLT_MIN, min_z = FLT_MAX, max_z = FLT_MIN;
 	// while not end of file
 	while (!ifile.eof())
 	{
@@ -88,8 +89,17 @@ void MeshModel::loadFile(string fileName)
 		issLine >> std::ws >> lineType;
 
 		// based on the type parse data
-		if (lineType == "v") 
-			vertices.push_back(vec3fFromStream(issLine));
+		if (lineType == "v") {
+			vec3 vertex = vec3fFromStream(issLine);
+			min_x = min(min_x, vertex.x);
+			min_y = min(min_y, vertex.y);
+			min_z = min(min_z, vertex.z);
+			max_x = max(max_x, vertex.x);
+			max_y = max(max_y, vertex.y);
+			max_z = max(max_z, vertex.z);
+			vertices.push_back(vertex);
+		}
+			
 		else if (lineType == "f") // maybe TODO?
 			faces.push_back(issLine);
 		else if (lineType == "#" || lineType == "")
@@ -98,9 +108,13 @@ void MeshModel::loadFile(string fileName)
 		}
 		else
 		{
-			cout<< "Found unknown line Type \"" << lineType << "\"";
+			//cout << "Found unknown line Type \"" << lineType << "\"" << endl;
 		}
 	}
+	const float normalize_size = max(max(max_x - min_x, max_y - min_y), max_z - min_z);
+	const float normalize_factor = 200 / normalize_size;
+	_model_transform = Scale(normalize_factor);
+
 	//Vertex_positions is an array of vec3. Every three elements define a triangle in 3D.
 	//If the face part of the obj is
 	//f 1 2 3
@@ -115,12 +129,14 @@ void MeshModel::loadFile(string fileName)
 	{
 		for (int i = 0; i < 3; i++)
 		{
-			vertex_positions[k++] = vertices[(*it).v[i]]; 
+			vertex_positions[k++] = vertices[(*it).v[i] - 1]; 
 		}
 	}
 }
 
-
+void MeshModel::transform(const mat4& m) {
+	_model_transform = m * _model_transform;
+}
 
 void MeshModel::draw(Renderer& renderer)
 {
@@ -133,7 +149,7 @@ PrimMeshModel::~PrimMeshModel(){}
 
 // Cube
 CubeMeshModel::CubeMeshModel() {
-	_model_transform = Scale(15,15,15);
+	_model_transform = Scale(25,25,25);
 	vertex_positions = vector<vec3>(36);
 
 	// First Face
@@ -199,7 +215,7 @@ CubeMeshModel::CubeMeshModel() {
 
 // Pyramid
 PyramidMeshModel::PyramidMeshModel() {
-	_model_transform = Scale(15, 15, 15);
+	_model_transform = Scale(45, 45, 45);
 	vertex_positions = vector<vec3>(18);
 
 	// Base

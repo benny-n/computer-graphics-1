@@ -28,9 +28,21 @@
 
 #define BUFFER_OFFSET( offset )   ((GLvoid*) (offset))
 
+#define MOUSE_WHEEL_UP 3
+#define MOUSE_WHEEL_DOWN 4
+
+
+// defines for menus
 #define FILE_OPEN 1
 #define MAIN_DEMO 1
 #define MAIN_ABOUT 2
+
+
+#define FROM_FILE 1
+#define PRIM 2
+
+#define CUBE 1
+#define PYRAMID 2
 
 Scene *scene;
 Renderer *renderer;
@@ -80,6 +92,12 @@ void mouse(int button, int state, int x, int y)
 		case GLUT_MIDDLE_BUTTON:
 			mb_down = (state==GLUT_UP)?0:1;	
 			break;
+		case MOUSE_WHEEL_UP:
+			cout << "rolling up" << endl;
+			break;
+		case MOUSE_WHEEL_DOWN:
+			cout << "rolling down" << endl;
+			break;
 	}
 	//TODO
 	// add your code
@@ -105,9 +123,33 @@ void fileMenu(int id)
 			{
 				std::string s((LPCTSTR)dlg.GetPathName());
 				scene->loadOBJModel((LPCTSTR)dlg.GetPathName());
+				scene->draw();
 			}
 			break;
-		//MAYBE
+	}
+}
+
+void addPrimMenu(int id) {
+	switch (id)
+	{
+	case CUBE:
+		scene->loadCubeModel();
+		scene->draw();
+		break;
+	case PYRAMID:
+		scene->loadPyramidModel();
+		scene->draw();
+		break;
+	}
+}
+
+void addModelMenu(int id) {
+	switch (id)
+	{
+	case FROM_FILE:
+		break;
+	case PRIM:
+		break;
 	}
 }
 
@@ -126,11 +168,19 @@ void mainMenu(int id)
 
 void initMenu()
 {
-
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddMenuEntry("Open..",FILE_OPEN);
+
+	int menuAddPrim = glutCreateMenu(addPrimMenu);
+	glutAddMenuEntry("Cube", CUBE);
+	glutAddMenuEntry("Pyramid", PYRAMID);
+
+	int menuAddModel = glutCreateMenu(addModelMenu);
+	glutAddSubMenu("From File", menuFile);
+	glutAddSubMenu("Add Primitive Model", menuAddPrim);
+	
 	glutCreateMenu(mainMenu);
-	glutAddSubMenu("File",menuFile);
+	glutAddSubMenu("Add Model", menuAddModel);
 	glutAddMenuEntry("Demo",MAIN_DEMO);
 	glutAddMenuEntry("About",MAIN_ABOUT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);

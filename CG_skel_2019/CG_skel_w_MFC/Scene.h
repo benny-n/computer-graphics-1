@@ -18,13 +18,14 @@ class Light {
 };
 
 class Camera {
-public:
 	mat4 cTransform;
 	mat4 projection;
 
 public:
 	void setTransformation(const mat4& transform);
-	void LookAt(const vec4& eye, const vec4& at, const vec4& up );
+	mat4 getTransform();
+	mat4 getProjection();
+	void LookAt(const vec4& eye, const vec4& at, const vec4& up);
 	void Ortho( const float left, const float right,
 		const float bottom, const float top,
 		const float zNear, const float zFar );
@@ -35,17 +36,22 @@ public:
 		const float zNear, const float zFar);
 };
 
-class Scene {
+typedef shared_ptr<Camera> CameraPtr;
+typedef shared_ptr<Model> ModelPtr;
+typedef shared_ptr<Light> LightPtr;
 
-	vector<Model*> models;
-	vector<Light*> lights;
-	vector<Camera*> cameras;
+class Scene {
+	vector<ModelPtr> models;
+	vector<LightPtr> lights;
+	vector<CameraPtr> cameras;
 	Renderer *m_renderer;
 
 public:
-	Scene() {};
-	Scene(Renderer *renderer) : m_renderer(renderer) {};
+	Scene();
+	Scene(Renderer *renderer);
 	void loadOBJModel(string fileName);
+	void loadCubeModel();
+	void loadPyramidModel();
 	void draw();
 	void drawDemo();
 	
