@@ -1,5 +1,5 @@
-
-*.tlog
-*.log
-*.ipch
+*
+!./*.cpp
+!./*.h
+!./*.sln
 CG_skel_2019/.vs
