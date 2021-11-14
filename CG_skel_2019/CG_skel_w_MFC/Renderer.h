@@ -37,7 +37,6 @@ public:
 	void SetColor(const vec3& color);
 	void SetVisualizeSlopes();
 	void Reshape(int width, int height);
-	void ColorPoint(int x, int y, const vec3& color = vec3(1));
 	void ColorPixel(int x, int y, const vec3& color = vec3(1));
 	void ClearPixel(int x, int y);
 	void DrawCamera(const vec4& eye);

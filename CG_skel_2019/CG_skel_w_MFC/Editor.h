@@ -19,6 +19,10 @@
 #define CUBE 1
 #define PYRAMID 2
 
+#define PLOT_BOUNDRY_BOX 1
+#define PLOT_VERTEX_NORMALS 2
+#define PLOT_FACE_NORMALS 3
+
 // define for sensetivity
 #define SENSETIVITY 0.2 //BONUS if we want sensetivity to be interactive, make it a variable
 #define SCALE_UP (1 + SENSETIVITY)
