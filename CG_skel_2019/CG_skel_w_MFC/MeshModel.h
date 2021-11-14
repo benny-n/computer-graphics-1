@@ -23,7 +23,7 @@ public:
 	~MeshModel(void);
 	virtual void loadFile(string fileName);
 	void setColor(const vec3& c);
-	void transform(const mat4& m, bool is_rotation = false) override;
+	void transform(const mat4& m) override;
 	void draw(Renderer* renderer) override;
 	
 };

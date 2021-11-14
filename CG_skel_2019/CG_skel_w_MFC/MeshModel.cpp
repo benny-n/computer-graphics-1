@@ -116,13 +116,6 @@ void MeshModel::loadFile(string fileName)
 		}
 	}
 	boundry_box.initVertexPositions();
-	const float normalize_size = max(
-		max(boundry_box.vmax.x - boundry_box.vmin.x, boundry_box.vmax.y - boundry_box.vmin.y), 
-		boundry_box.vmax.z - boundry_box.vmin.z
-	);
-	const float normalize_factor = 200 / normalize_size;
-	//_model_transform = Scale(normalize_factor);
-	transform(Scale(normalize_factor));
 
 	//Vertex_positions is an array of vec3. Every three elements define a triangle in 3D.
 	//If the face part of the obj is
@@ -148,16 +141,10 @@ void MeshModel::setColor(const vec3& c)
 	color = c;
 }
 
-void MeshModel::transform(const mat4& m, bool is_rotation) {
-	if (is_rotation) {
-		mat4 rotation = Translate(boundry_box.center()) * m * Translate(-boundry_box.center());
-		_model_transform = rotation * _model_transform;
-		boundry_box.transform(rotation);
-	}
-	else {
-		_model_transform = m * _model_transform;
-		boundry_box.transform(m);
-	}
+void MeshModel::transform(const mat4& m) {
+	mat4 rotation = Translate(boundry_box.center()) * m * Translate(-boundry_box.center());
+	_model_transform = rotation * _model_transform;
+	boundry_box.transform(rotation);
 }
 
 void MeshModel::draw(Renderer* renderer)
@@ -168,6 +155,8 @@ void MeshModel::draw(Renderer* renderer)
 	renderer->DrawTriangles(&vertex_positions);
 	if (draw_boundry_box) boundry_box.draw(renderer);
 	boundry_box.draw(renderer);
+	cout << _model_transform << endl;
+	//cout << boundry_box.center() << endl;
 }
 
 // Prim
@@ -178,7 +167,7 @@ CubeMeshModel::CubeMeshModel() {
 	name = "cube";
 	vertex_positions = vector<vec3>(36);
 
-	// First Face
+	// First Face (bottom)
 		// First Triangle
 	vertex_positions[0] = vec3(-1, -1, 1);
 	vertex_positions[1] = vec3(-1, -1, -1);
@@ -188,63 +177,60 @@ CubeMeshModel::CubeMeshModel() {
 	vertex_positions[4] = vec3(1, -1, -1);
 	vertex_positions[5] = vec3(1, -1, 1);
 
-	// Second Face
+	// Second Face (right)
 		// First Triangle
 	vertex_positions[6] = vec3(1, -1, 1);
 	vertex_positions[7] = vec3(1, -1, -1);
-	vertex_positions[8] = vec3(1, 1, 1);
+	vertex_positions[8] = vec3(1, 1, -1);
 		// Second Triangle
-	vertex_positions[9] = vec3(1, -1, -1);
+	vertex_positions[9] = vec3(1, -1, 1);
 	vertex_positions[10] = vec3(1, 1, -1);
 	vertex_positions[11] = vec3(1, 1, 1);
 
-	// Third Face
+	// Third Face (front)
 		// First Triangle
 	vertex_positions[12] = vec3(-1, -1, 1);
 	vertex_positions[13] = vec3(1, -1, 1);
-	vertex_positions[14] = vec3(-1, 1, 1);
+	vertex_positions[14] = vec3(1, 1, 1);
 		// Second Triangle
-	vertex_positions[15] = vec3(1, -1, 1);
+	vertex_positions[15] = vec3(-1, -1, 1);
 	vertex_positions[16] = vec3(1, 1, 1);
-	vertex_positions[17] = vec3(-1, -1, 1);
+	vertex_positions[17] = vec3(-1, 1, 1);
 
-	// Fourth Face
+	// Fourth Face (top)
 		// First Triangle
 	vertex_positions[18] = vec3(-1, 1, 1);
 	vertex_positions[19] = vec3(1, 1, 1);
-	vertex_positions[20] = vec3(-1, 1, -1);
+	vertex_positions[20] = vec3(1, 1, -1);
 		// Second Triangle
 	vertex_positions[21] = vec3(-1, 1, -1);
-	vertex_positions[22] = vec3(1, 1, 1);
+	vertex_positions[22] = vec3(-1, 1, 1);
 	vertex_positions[23] = vec3(1, 1, -1);
 
-	// Fifth Face
+	// Fifth Face (left)
 		// First Triangle
-	vertex_positions[24] = vec3(1, -1, 1);
-	vertex_positions[25] = vec3(1, 1, 1);
-	vertex_positions[26] = vec3(1, -1, -1);
+	vertex_positions[24] = vec3(-1, 1, 1);
+	vertex_positions[25] = vec3(-1, -1, -1);
+	vertex_positions[26] = vec3(-1, -1, 1);
 		// Second Triangle
-	vertex_positions[27] = vec3(1, -1, -1);
-	vertex_positions[28] = vec3(1, 1, 1);
-	vertex_positions[29] = vec3(1, 1, -1);
+	vertex_positions[27] = vec3(-1, -1, -1);
+	vertex_positions[28] = vec3(-1, 1, 1);
+	vertex_positions[29] = vec3(-1, 1, -1);
 
-	// Sixth Face
+	// Sixth Face (back)
 		// First Triangle
 	vertex_positions[30] = vec3(-1, -1, -1);
 	vertex_positions[31] = vec3(-1, 1, -1);
 	vertex_positions[32] = vec3(1, -1, -1);
 		// Second Triangle
 	vertex_positions[33] = vec3(1, -1, -1);
-	vertex_positions[34] = vec3(-1, -1, -1);
+	vertex_positions[34] = vec3(-1, 1, -1);
 	vertex_positions[35] = vec3(1, 1, -1);
 
 	// Boundry box in this case is just the cube itself
 	boundry_box.vmax = vec4(1);
 	boundry_box.vmin = vec4(vec3(-1));
 	boundry_box.initVertexPositions();
-
-	//transform
-	//transform(Scale(25, 25, 25));
 }
 
 // Pyramid
@@ -286,9 +272,6 @@ PyramidMeshModel::PyramidMeshModel() {
 	boundry_box.vmax = vec4(vec3(1, 2, 1));
 	boundry_box.vmin = vec4(vec3(-1, 0, -1));
 	boundry_box.initVertexPositions();
-
-	//transform
-	//transform(Scale(45, 45, 45));
 }
 
 

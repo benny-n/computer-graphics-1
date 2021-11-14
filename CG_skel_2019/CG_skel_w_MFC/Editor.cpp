@@ -52,22 +52,22 @@ void keyboard(unsigned char key, int x, int y)
 		status = scene->transformActiveModel(Scale(SCALE_DOWN));
 		break;
 	case 'D':
-		status = scene->transformActiveModel(RotateY(ROTATE), true);
+		status = scene->transformActiveModel(RotateY(ROTATE));
 		break;
 	case 'A':
-		status = scene->transformActiveModel(RotateY(-ROTATE), true);
+		status = scene->transformActiveModel(RotateY(-ROTATE));
 		break;	
 	case 'W':
-		status = scene->transformActiveModel(RotateX(ROTATE), true);
+		status = scene->transformActiveModel(RotateX(ROTATE));
 		break;
 	case 'S':
-		status = scene->transformActiveModel(RotateX(-ROTATE), true);
+		status = scene->transformActiveModel(RotateX(-ROTATE));
 		break;
 	case 'Q':
-		status = scene->transformActiveModel(RotateZ(ROTATE), true);
+		status = scene->transformActiveModel(RotateZ(ROTATE));
 		break;
 	case 'E':
-		status = scene->transformActiveModel(RotateZ(-ROTATE), true);
+		status = scene->transformActiveModel(RotateZ(-ROTATE));
 		break;
 	case 'd':
 		status = scene->transformActiveModel(Translate(TRANSLATE, 0, 0));

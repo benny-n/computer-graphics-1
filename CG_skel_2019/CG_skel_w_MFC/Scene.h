@@ -10,7 +10,7 @@ class Model {
 
 public:
 	Model() : draw_boundry_box(false) {}
-	void virtual transform(const mat4& m, bool is_rotation = false) = 0;
+	void virtual transform(const mat4& m) = 0;
 	void virtual draw(Renderer*) = 0;
 	const string& getName();
 
@@ -81,7 +81,7 @@ public:
 	void loadPyramidModel();
 	void addCamera();
 	void toggleRenderCameras();
-	int transformActiveModel(const mat4& m, bool is_rotation = false);
+	int transformActiveModel(const mat4& m);
 	void draw();
 	void drawDemo();
 	

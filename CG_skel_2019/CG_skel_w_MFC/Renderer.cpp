@@ -78,8 +78,8 @@ void Renderer::ColorPoint(int x, int y, const vec3& color) {
 	//cout << "y: " << y << endl;
 	int r = (m_width / 2) * (x + 1);
 	int s = (m_height / 2) * (y + 1);
-	r += m_width / 2;
-	s += m_height / 2;
+	//r += m_width / 2;
+	//s += m_height / 2;
 	//cout << "r: " << r << endl;
 	//cout << "s: " << s << endl;
 	ColorPixel(x, y, color);
@@ -142,7 +142,7 @@ void Renderer::DrawLine(int x1, int y1, int x2, int y2) {
 			ChoosePixlesForCanonicalLine(ys, x2 - x1, y2 - y1);
 			for (int x = 0; x < num_pixels; x++)
 			{
-				ColorPoint(x + x1, ys[x] + y1, colors[0]);
+				ColorPixel(x + x1, ys[x] + y1, colors[0]);
 			}
 		}
 		else { // move to origin and reflect by y=x
@@ -151,7 +151,7 @@ void Renderer::DrawLine(int x1, int y1, int x2, int y2) {
 			ChoosePixlesForCanonicalLine(ys, y2 - y1, x2 - x1); // first translate, then reflect (swap x and y)
 			for (int x = 0; x < num_pixels; x++)
 			{
-				ColorPoint(ys[x] + x1, x + y1, colors[1]); // first reflect back, then translate back
+				ColorPixel(ys[x] + x1, x + y1, colors[1]); // first reflect back, then translate back
 			}
 		}
 	}
@@ -163,7 +163,7 @@ void Renderer::DrawLine(int x1, int y1, int x2, int y2) {
 			ChoosePixlesForCanonicalLine(ys, x2 - x1, y1 - y2); // first translate, then reflect (minus on y)
 			for (int x = 0; x < num_pixels; x++)
 			{
-				ColorPoint(x + x1, -(ys[x]) + y1, colors[2]); // first reflect back, then translate back
+				ColorPixel(x + x1, -(ys[x]) + y1, colors[2]); // first reflect back, then translate back
 			}
 		}
 		else { // move to origin, reflect by x=0 and then reflect by y=x
@@ -172,7 +172,7 @@ void Renderer::DrawLine(int x1, int y1, int x2, int y2) {
 			ChoosePixlesForCanonicalLine(ys, y1 - y2, x2 - x1); // first translate, then reflect (minus on y) and reflect again (swap x and y)
 			for (int x = 0; x < num_pixels; x++)
 			{
-				ColorPoint(ys[x] + x1, -x + y1, colors[3]); // first reflect back on y=x, then reflect back on x=0, then translate back
+				ColorPixel(ys[x] + x1, -x + y1, colors[3]); // first reflect back on y=x, then reflect back on x=0, then translate back
 			}
 		}
 	}
@@ -198,8 +198,9 @@ mat4 Renderer::CalcFinalTransformation() {
 
 void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals) {
 
-	mat4 final_transformation = CalcFinalTransformation();
+	const mat4 final_transformation = CalcFinalTransformation();
 	vec2 triangles[3];
+	float r, s;
 
 	for (int i = 0; i < vertices->size(); i+=3)
 	{
@@ -207,7 +208,10 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 		{
 			vec4 vertex((*vertices)[i+j]);
 			vertex = final_transformation * vertex;
-			triangles[j] = vec2(vertex.x, vertex.y);
+			vertex /= vertex.w;
+			r = (m_width / 2) * (vertex.x + 1);
+			s = (m_height / 2) * (vertex.y + 1);
+			triangles[j] = vec2(r, s);
 		}
 		DrawLine(triangles[0].x, triangles[0].y, triangles[1].x, triangles[1].y);
 		DrawLine(triangles[1].x, triangles[1].y, triangles[2].x, triangles[2].y);
@@ -217,8 +221,9 @@ void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 
 void Renderer::DrawSquares(const vector<vec3>* vertices) {
 	
-	mat4 final_transformation = CalcFinalTransformation();
+	const mat4 final_transformation = CalcFinalTransformation();
 	vec2 squares[4];
+	float r, s;
 
 	for (int i = 0; i < vertices->size(); i += 4)
 	{
@@ -226,7 +231,10 @@ void Renderer::DrawSquares(const vector<vec3>* vertices) {
 		{
 			vec4 vertex((*vertices)[i + j]);
 			vertex = final_transformation * vertex;
-			squares[j] = vec2(vertex.x, vertex.y);
+			vertex /= vertex.w;
+			r = (m_width / 2) * (vertex.x + 1);
+			s = (m_height / 2) * (vertex.y + 1);
+			squares[j] = vec2(r, s);
 		}
 		DrawLine(squares[0].x, squares[0].y, squares[1].x, squares[1].y);
 		DrawLine(squares[1].x, squares[1].y, squares[2].x, squares[2].y);

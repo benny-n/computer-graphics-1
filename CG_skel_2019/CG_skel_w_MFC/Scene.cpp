@@ -62,13 +62,13 @@ const string& Model::getName(){
 }
 
 Camera::Camera(){
-	LookAt(vec4(vec3(0, 0, 25)), vec4(vec3()), vec4(vec3(0, 1, 0)));
-	Frustum(-1, 1, -1, 1, -8, -12);
+	LookAt(vec4(vec3(0, 0, 10)), vec4(vec3(0,0,0)), vec4(vec3(0, 1, 0)));
+	Frustum(-5, 5, -5, 5, 2, 20 );
 }
 
 Camera::Camera(const vec4& eye) {
 	LookAt(eye, vec4(vec3()), vec4(vec3(0, 1, 0)));
-	Frustum(-1, 1, -1, 1, -8, -12);
+	Ortho(-1, 1, -1, 1, -8, -12);
 }
 
 // Camera
@@ -174,9 +174,9 @@ void Scene::toggleRenderCameras(){
 	render_cameras = !render_cameras;
 }
 
-int Scene::transformActiveModel(const mat4& m, bool is_rotation){
+int Scene::transformActiveModel(const mat4& m){
 	if (models.empty()) return -1;
-	models[activeModel]->transform(m, is_rotation);
+	models[activeModel]->transform(m);
 	return 0;
 }
 
