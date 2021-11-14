@@ -40,6 +40,7 @@ public:
 	void ColorPoint(int x, int y, const vec3& color = vec3(1));
 	void ColorPixel(int x, int y, const vec3& color = vec3(1));
 	void ClearPixel(int x, int y);
+	void DrawCamera(const vec4& eye);
 	void DrawLine(int x1, int y1, int x2, int y2);
 	void Init();
 	void SetCameraTransform(const mat4& cTransform);

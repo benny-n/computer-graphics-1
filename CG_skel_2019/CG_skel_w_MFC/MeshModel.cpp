@@ -160,12 +160,12 @@ void MeshModel::transform(const mat4& m, bool is_rotation) {
 	}
 }
 
-void MeshModel::draw(Renderer& renderer)
+void MeshModel::draw(Renderer* renderer)
 {
-	if (use_visualize_slopes) renderer.SetVisualizeSlopes();
-	else renderer.SetColor(color);
-	renderer.SetObjectMatrices(_model_transform, _normal_transform);
-	renderer.DrawTriangles(&vertex_positions);
+	if (use_visualize_slopes) renderer->SetVisualizeSlopes();
+	else renderer->SetColor(color);
+	renderer->SetObjectMatrices(_model_transform, _normal_transform);
+	renderer->DrawTriangles(&vertex_positions);
 	if (draw_boundry_box) boundry_box.draw(renderer);
 	boundry_box.draw(renderer);
 }
@@ -244,7 +244,7 @@ CubeMeshModel::CubeMeshModel() {
 	boundry_box.initVertexPositions();
 
 	//transform
-	transform(Scale(25, 25, 25));
+	//transform(Scale(25, 25, 25));
 }
 
 // Pyramid
@@ -288,7 +288,7 @@ PyramidMeshModel::PyramidMeshModel() {
 	boundry_box.initVertexPositions();
 
 	//transform
-	transform(Scale(45, 45, 45));
+	//transform(Scale(45, 45, 45));
 }
 
 

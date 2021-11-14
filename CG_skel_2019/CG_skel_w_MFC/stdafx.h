@@ -39,3 +39,4 @@
 #include <string>
 
 #define BUFFER_OFFSET( offset )   ((GLvoid*) (offset))
+#define SCREEN_COORD(p, dim) (int)(((1.0f + p) * (float)((dim - 1))/2))

@@ -11,7 +11,7 @@ class Model {
 public:
 	Model() : draw_boundry_box(false) {}
 	void virtual transform(const mat4& m, bool is_rotation = false) = 0;
-	void virtual draw(Renderer&) = 0;
+	void virtual draw(Renderer*) = 0;
 	const string& getName();
 
 protected:
@@ -26,7 +26,7 @@ protected:
 		void initVertexPositions();
 		void transform(const mat4& m);
 		vec4 center();
-		void draw(Renderer& renderer);
+		void draw(Renderer* renderer);
 	};
 	BoundryBox boundry_box;
 	bool draw_boundry_box;
@@ -41,11 +41,15 @@ class Light {
 class Camera {
 	mat4 cTransform;
 	mat4 projection;
+	vec4 eye;
 
 public:
+	Camera();
+	explicit Camera(const vec4& eye);
 	void setTransformation(const mat4& transform);
 	mat4 getTransform();
 	mat4 getProjection();
+	void draw(Renderer* renderer);
 	void LookAt(const vec4& eye, const vec4& at, const vec4& up);
 	void Ortho( const float left, const float right,
 		const float bottom, const float top,
@@ -66,6 +70,7 @@ class Scene {
 	vector<LightPtr> lights;
 	vector<CameraPtr> cameras;
 	Renderer *m_renderer;
+	bool render_cameras = false;
 
 public:
 	Scene();
@@ -74,6 +79,8 @@ public:
 	void loadOBJModel(string fileName);
 	void loadCubeModel();
 	void loadPyramidModel();
+	void addCamera();
+	void toggleRenderCameras();
 	int transformActiveModel(const mat4& m, bool is_rotation = false);
 	void draw();
 	void drawDemo();

@@ -24,7 +24,7 @@ public:
 	virtual void loadFile(string fileName);
 	void setColor(const vec3& c);
 	void transform(const mat4& m, bool is_rotation = false) override;
-	void draw(Renderer& renderer) override;
+	void draw(Renderer* renderer) override;
 	
 };
 

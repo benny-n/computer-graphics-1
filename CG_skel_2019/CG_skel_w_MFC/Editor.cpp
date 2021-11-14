@@ -39,7 +39,7 @@ void reshape(int width, int height)
 
 void keyboard(unsigned char key, int x, int y)
 {
-	int status;
+	int status = 0;
 	//cout << "pressed key: " << key << " on x: "  << x << " and y: " << y << endl;
 	switch (key) {
 	case 033:
@@ -86,6 +86,9 @@ void keyboard(unsigned char key, int x, int y)
 		break;
 	case 'e':
 		status = scene->transformActiveModel(Translate(0, 0, -TRANSLATE));
+		break;
+	case 'c':
+		scene->toggleRenderCameras();
 		break;
 
 	default:

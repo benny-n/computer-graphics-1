@@ -51,15 +51,24 @@ vec4 Model::BoundryBox::center(){
 	return (vmin + vmax) / 2.0;
 }
 
-void Model::BoundryBox::draw(Renderer& renderer){
-	renderer.SetColor(vec3(0.5));
-	renderer.DrawSquares(&vertex_positions);
+void Model::BoundryBox::draw(Renderer* renderer){
+	renderer->SetColor(vec3(0.5));
+	renderer->DrawSquares(&vertex_positions);
 }
 
 // Model
-const string& Model::getName()
-{
+const string& Model::getName(){
 	return name;
+}
+
+Camera::Camera(){
+	LookAt(vec4(vec3(0, 0, 25)), vec4(vec3()), vec4(vec3(0, 1, 0)));
+	Frustum(-1, 1, -1, 1, -8, -12);
+}
+
+Camera::Camera(const vec4& eye) {
+	LookAt(eye, vec4(vec3()), vec4(vec3(0, 1, 0)));
+	Frustum(-1, 1, -1, 1, -8, -12);
 }
 
 // Camera
@@ -70,13 +79,19 @@ void Camera::setTransformation(const mat4& transform) {
 mat4 Camera::getTransform() { return cTransform; }
 mat4 Camera::getProjection() { return projection; }
 
+void Camera::draw(Renderer* renderer){
+	renderer->SetColor(vec3(1));
+	renderer->DrawCamera(eye);
+}
+
 void Camera::LookAt(const vec4& eye, const vec4& at, const vec4& up) {
+	this->eye = eye;
 	const vec4 n = normalize(eye - at);
 	const vec4 u = vec4(normalize(cross(up, n)),0);
 	const vec4 v = vec4(normalize(cross(n, u)),0);
 	const vec4 t = vec4(0.0, 0.0, 0.0, 1.0);
 	const mat4 c = mat4(u, v, n, t);
-	cTransform = c * Translate(-eye) * cTransform;
+	cTransform = c * Translate(-eye);
 }
 
 void Camera::Ortho(const float left, const float right,
@@ -117,14 +132,17 @@ void Camera::Perspective(const float fovy, const float aspect,
 }
 
 // Scene
-Scene::Scene() : m_renderer(), activeModel(0), activeLight(0), activeCamera(0) {
-	auto default_camera = make_shared<Camera>();
-	cameras.push_back(default_camera);
-}
+Scene::Scene() : Scene(&Renderer()){}
 
 Scene::Scene(Renderer* renderer) : m_renderer(renderer), activeModel(0), activeLight(0), activeCamera(0) {
 	auto default_camera = make_shared<Camera>();
 	cameras.push_back(default_camera);
+
+	//auto camera_2 = make_shared<Camera>(vec3(20, 20, 20));
+	//cameras.push_back(camera_2);
+
+	//auto camera_3 = make_shared<Camera>(vec3(0, 0, -20));
+	//cameras.push_back(camera_3);
 }
 
 const vector<ModelPtr>& Scene::getModels()
@@ -147,6 +165,15 @@ void Scene::loadPyramidModel() {
 	models.push_back(model);
 }
 
+void Scene::addCamera(){
+	auto camera = make_shared<Camera>();
+	cameras.push_back(camera);
+}
+
+void Scene::toggleRenderCameras(){
+	render_cameras = !render_cameras;
+}
+
 int Scene::transformActiveModel(const mat4& m, bool is_rotation){
 	if (models.empty()) return -1;
 	models[activeModel]->transform(m, is_rotation);
@@ -164,7 +191,12 @@ void Scene::draw() {
 	m_renderer->SetProjection(active_camera->getProjection());
 
 	for each (auto model in models) {
-		model->draw(*m_renderer);
+		model->draw(m_renderer);
+	}
+	if (render_cameras) {
+		for each (auto camera in cameras) {
+			camera->draw(m_renderer);
+		}
 	}
 	m_renderer->SwapBuffers();
 }
