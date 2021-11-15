@@ -33,6 +33,7 @@ public:
 	Renderer();
 	Renderer(int width, int height);
 	~Renderer(void);
+	vec2 GetScreenSize();
 	void SetDemoBuffer();
 	void SetColor(const vec3& color);
 	void SetVisualizeSlopes();

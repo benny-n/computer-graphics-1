@@ -62,7 +62,7 @@ vec2 vec2fFromStream(std::istream & aStream)
 
 
 // MeshModel
-MeshModel::MeshModel(string fileName) : use_visualize_slopes(true) {
+MeshModel::MeshModel(string fileName) {
 	string base_filename = fileName.substr(fileName.find_last_of("/\\") + 1);
 	string::size_type const p(base_filename.find_last_of('.'));
 	name = base_filename.substr(0, p);

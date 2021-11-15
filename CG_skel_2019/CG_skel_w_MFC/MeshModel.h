@@ -8,14 +8,12 @@ using namespace std;
 
 class MeshModel : public Model {
 protected :
-	MeshModel() : use_visualize_slopes(true) {}
+	MeshModel() {}
 	vector<vec3> vertex_positions;
 	//add more attributes
 	mat4 _model_transform;
 	mat4 _world_transform;
 	mat3 _normal_transform;
-	bool use_visualize_slopes;
-	vec3 color;
 
 public:
 

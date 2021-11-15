@@ -35,8 +35,7 @@ int my_main( int argc, char **argv )
 		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
 		/*		...*/
 	}
-	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
-
+	cout << "Using GLEW " << glewGetString(GLEW_VERSION) << endl;
 	
 	
 	renderer = new Renderer(512,512);

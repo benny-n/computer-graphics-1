@@ -102,6 +102,14 @@ struct vec2 {
     friend std::istream& operator >> ( std::istream& is, vec2& v )
 	{ return is >> v.x >> v.y ; }
 
+    friend bool operator< (const vec2& v1, const vec2& v2) {
+        return (v1.x < v2.x) || (v1.x == v2.x && v1.y < v2.y);
+    }
+
+    friend bool operator== (const vec2& v1, const vec2& v2) {
+        return v1.x == v2.x && v1.y == v2.y;
+    }
+
     //
     //  --- Conversion Operators ---
     //

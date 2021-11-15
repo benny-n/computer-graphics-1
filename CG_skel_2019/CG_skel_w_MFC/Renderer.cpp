@@ -6,13 +6,13 @@
 
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 
-Renderer::Renderer() :m_width(512), m_height(512)
+Renderer::Renderer() : m_outBuffer(nullptr), m_width(512), m_height(512)
 {
 	InitOpenGLRendering();
 	CreateBuffers(512,512);
 	SetVisualizeSlopes();
 }
-Renderer::Renderer(int width, int height) :m_width(width), m_height(height)
+Renderer::Renderer(int width, int height) : m_outBuffer(nullptr), m_width(width), m_height(height)
 {
 	InitOpenGLRendering();
 	CreateBuffers(width,height);
@@ -24,14 +24,18 @@ Renderer::~Renderer(void)
 	free(m_outBuffer);
 }
 
-
+vec2 Renderer::GetScreenSize()
+{
+	return vec2(m_width, m_height);
+}
 
 void Renderer::CreateBuffers(int width, int height)
 {
 	m_width=width;
 	m_height=height;	
 	CreateOpenGLBuffer(); //Do not remove this line.
-	m_outBuffer = (GLfloat*)malloc(sizeof(GLfloat) * (3 * m_width * m_height));
+	if (m_outBuffer == nullptr) m_outBuffer = (GLfloat*)malloc(sizeof(GLfloat) * (3 * m_width * m_height));
+	else m_outBuffer = (GLfloat*)realloc(m_outBuffer, sizeof(GLfloat) * (3 * m_width * m_height));
 }
 
 void Renderer::SetDemoBuffer()
@@ -66,9 +70,13 @@ void Renderer::SetVisualizeSlopes()
 
 void Renderer::Reshape(int width, int height){
 	CreateBuffers(width, height);
-	m_outBuffer = (GLfloat*)realloc(m_outBuffer, sizeof(GLfloat) * (3 * m_width * m_height));
-	m_width = width;
-	m_height = height;
+	//m_outBuffer = (GLfloat*)realloc(m_outBuffer, sizeof(GLfloat) * (3 * m_width * m_height));
+	// this is stupid but might save our asses sometime
+	//for (int i = 0; i < 10000 && m_outBuffer == nullptr; i++) m_outBuffer = (GLfloat*)realloc(m_outBuffer, sizeof(GLfloat) * (3 * m_width * m_height));
+	//if (m_outBuffer == nullptr) exit(777);
+	//m_width = width;
+	//m_height = height;
+	//glViewport(0, 0, width, height);
 }
 
 void Renderer::ColorPixel(int x, int y, const vec3& color) {
@@ -94,7 +102,7 @@ void Renderer::DrawCamera(const vec4& eye){
 	DrawLine(final_eye.x, final_eye.y - 5, final_eye.x, final_eye.y + 5);
 }
 
-static void ChoosePixlesForCanonicalLine(int ys[], int x1, int y1) { // Bresenham Algorithm
+static void ChoosePixlesForCanonicalLine(vector<int>& ys, int x1, int y1) { // Bresenham Algorithm
 	int d = 2 * y1 - x1;
 	int de = 2 * y1;
 	int dne = de - 2 * x1;
@@ -117,14 +125,75 @@ void Renderer::DrawLine(int x1, int y1, int x2, int y2) {
 	}
 	float m;
 	if (x1 == x2) {
-		m = 2; // anything greater than 1 so we reflect by y=x
+		m = FLT_MAX; // anything greater than 1 so we reflect by y=x
 		if (y1 > y2) swap(y1, y2);
 	}
 	else m = (y2 - y1) / float(x2 - x1);
+	if (x1 > m_width || x2 < 0 || (y1 < 0 && y2 < 0) || (y1 > m_height && y2 > m_height)) return;	
+
+	if (m==FLT_MAX) {
+		y1 = max(0, y1);
+		y2 = min(m_height, y2);
+	}
+	else if (m == 0) {
+		x1 = max(0, x1);
+		x2 = min(m_width, x2);
+	}
+	else {
+		float n = y1 - m * x1;
+		// clip parts of line that are not on sceen
+		vector<vec2> nominees;
+		// intersect y=0 at (-n/m, 0)
+		float x_a = -n / m;
+		if (0 <= x_a && x_a <= m_width) nominees.push_back(vec2(x_a, 0));
+		// intersect x=0 at (0,n)
+		if (0 <= n && n <= m_height) nominees.push_back(vec2(0, n));
+		// intersect y = m_height at ((m_height - n) / m, m_height)
+		float x_c = (m_height - n) / m;
+		if (0 <= x_c && x_c <= m_width) nominees.push_back(vec2(x_c, m_height));
+		// intersect x = m_width at (m_width, m * m_width + n)
+		float y_d = m * m_width + n;
+		if (0 <= y_d && y_d <= m_height) nominees.push_back(vec2(m_width, y_d));
+
+		switch (nominees.size()) {
+		case 0:
+			return;
+		case 1:
+			//cout << nominees[0] << endl;
+			x1 = x2 = nominees[0].x;
+			y1 = y2 = nominees[0].y;
+			break;
+		default:
+		
+			auto find_closest_intersect = [nominees](int& x, int& y) {
+				float dx, dy;
+				vector<float> distances = { FLT_MAX,FLT_MAX, FLT_MAX, FLT_MAX };
+				for (int i = 0; i < nominees.size(); i++)
+				{
+					dx = nominees[i].x - x;
+					dy = nominees[i].y - y;
+					distances[i] = dx * dx + dy * dy;
+				}
+				// find position of max element in nominees
+				int i = distance(distances.begin(), min_element(distances.begin(), distances.end()));
+				x = nominees[i].x;
+				y = nominees[i].y;
+			};
+		
+			if (!(0 <= x1 && x1 <= m_width && 0 <= y1 && y1 <= m_height)) {
+				find_closest_intersect(x1, y1);
+			}
+			if (!(0 <= x2 && x2 <= m_width && 0 <= y2 && y2 <= m_height)) {
+				find_closest_intersect(x2, y2);
+			}
+			break;
+		}
+	}
+	
 	if (m >= 0) {
 		if (m <= 1) { // Just need to move to origin
 			int num_pixels = abs(x2 - x1);
-			auto ys =new int[num_pixels]();
+			auto ys = vector<int>(num_pixels);
 			ChoosePixlesForCanonicalLine(ys, x2 - x1, y2 - y1);
 			for (int x = 0; x < num_pixels; x++)
 			{
@@ -133,7 +202,7 @@ void Renderer::DrawLine(int x1, int y1, int x2, int y2) {
 		}
 		else { // move to origin and reflect by y=x
 			int num_pixels = abs(y2 - y1);
-			auto ys = new int[num_pixels]();
+			auto ys = vector<int>(num_pixels);
 			ChoosePixlesForCanonicalLine(ys, y2 - y1, x2 - x1); // first translate, then reflect (swap x and y)
 			for (int x = 0; x < num_pixels; x++)
 			{
@@ -145,7 +214,7 @@ void Renderer::DrawLine(int x1, int y1, int x2, int y2) {
 	else {
 		if (m >= -1) { // move to origin and reflect by x=0
 			int num_pixels = abs(x2 - x1);
-			auto ys = new int[num_pixels]();
+			auto ys = vector<int>(num_pixels);
 			ChoosePixlesForCanonicalLine(ys, x2 - x1, y1 - y2); // first translate, then reflect (minus on y)
 			for (int x = 0; x < num_pixels; x++)
 			{
@@ -154,7 +223,7 @@ void Renderer::DrawLine(int x1, int y1, int x2, int y2) {
 		}
 		else { // move to origin, reflect by x=0 and then reflect by y=x
 			int num_pixels = abs(y2 - y1);
-			auto ys = new int[num_pixels]();
+			auto ys = vector<int>(num_pixels);
 			ChoosePixlesForCanonicalLine(ys, y1 - y2, x2 - x1); // first translate, then reflect (minus on y) and reflect again (swap x and y)
 			for (int x = 0; x < num_pixels; x++)
 			{

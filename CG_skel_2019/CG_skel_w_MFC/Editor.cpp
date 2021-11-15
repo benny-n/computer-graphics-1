@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "Editor.h"
+#include<limits>
+
+using namespace std;
 
 int last_x, last_y;
 bool lb_down, rb_down, mb_down;
@@ -16,9 +19,31 @@ void handle_err_code(int err) {
 	}
 }
 
+void inputMessage() {
+	AfxMessageBox(_T("Please enter your wanted parameters in the console window"));
+}
+
+
+float getFloatFromUser(const string& directive)
+{
+	float input = -1;
+	cout << directive << ": ";
+	cin >> input;
+	while (!cin || input < 0 || input > 1) {
+		// Clear the error flag
+		cin.clear();
+		// Ignore the characters to avoid looping forever
+		cin.ignore(LLONG_MAX, '\n');
+		AfxMessageBox(_T("The value you entered is invalid.\n"
+						  "Please try again"));
+		cout << directive << ": ";
+		cin >> input;
+	}
+	return input;
+}
+
 //----------------------------------------------------------------------------
 // Callbacks
-
 void display(void)
 {
 	//TODO
@@ -32,8 +57,15 @@ void reshape(int width, int height)
 	//cout << width << endl;
 	//cout << height << endl;
 	////TODO
+	//cout << "reshape" << endl;
+	const vec2 screenSize = renderer->GetScreenSize();
+	for each (auto model in scene->getModels()) {
+		model->transform(Scale(screenSize.x / width, screenSize.y / height, 1));
+	}
 	renderer->Reshape(width, height);
 	scene->draw();
+	//glViewport(0, 0, width, height);
+
 //update the renderer's buffers
 }
 
@@ -90,6 +122,9 @@ void keyboard(unsigned char key, int x, int y)
 	case 'c':
 		scene->toggleRenderCameras();
 		break;
+	case '\t':
+		scene->iterateModels();
+		break;
 
 	default:
 		return;
@@ -121,10 +156,10 @@ void mouse(int button, int state, int x, int y)
 		mb_down = (state == GLUT_UP) ? 0 : 1;
 		break;
 	case MOUSE_WHEEL_UP:
-		status = scene->transformActiveModel(Scale(1.1));
+		status = scene->transformActiveModel(Scale(SCALE_UP));
 		break;
 	case MOUSE_WHEEL_DOWN:
-		status = scene->transformActiveModel(Scale(0.9));
+		status = scene->transformActiveModel(Scale(SCALE_DOWN));
 		break;
 	}
 
@@ -158,6 +193,7 @@ void fileMenu(int id)
 		{
 			std::string s((LPCTSTR)dlg.GetPathName());
 			scene->loadOBJModel((LPCTSTR)dlg.GetPathName());
+			scene->activeModel = scene->getModels().size() - 1;
 			glutPostRedisplay();
 			initMenu();
 		}
@@ -175,12 +211,48 @@ void addPrimMenu(int id) {
 		scene->loadPyramidModel();	
 		break;
 	}
+	scene->activeModel = scene->getModels().size() - 1;
 	glutPostRedisplay();
 	initMenu();
 }
 
 void selectModelMenu(int id) {
 	scene->activeModel = id;
+}
+
+void changeColorMenu(int id) {
+	switch (id)
+	{
+	case WHITE:
+		scene->changeColor(vec3(1));
+		break;
+	case RED:
+		scene->changeColor(vec3(1, 0, 0));
+		break;
+	case GREEN:
+		scene->changeColor(vec3(0, 1, 0));
+		break;
+	case BLUE:
+		scene->changeColor(vec3(0, 0, 1));
+		break;
+	case YELLOW:
+		scene->changeColor(vec3(1, 1, 0));
+		break;
+	case VISUALIZE_SLOPES:
+		scene->visualizeSlopes();
+		break;
+	case CUSTOM_COLOR:
+		inputMessage();
+		cout << "Please enter rgb values between 0 and 1" << endl;
+		float r = getFloatFromUser("r");
+		float g = getFloatFromUser("g");
+		float b = getFloatFromUser("b");
+		cout << "Custom color: (" << r << ", " << g << ", " << b << ")" << endl;
+		scene->changeColor(vec3(r, g, b));
+		break;
+	
+	}
+	glutPostRedisplay();
 }
 
 void activeModelOptionsMenu(int id) {
@@ -194,10 +266,6 @@ void activeModelOptionsMenu(int id) {
 		scene->togglePlotVertexNormals();
 		break;
 	case PLOT_FACE_NORMALS:
-		string x;
-		cout << "input please: ";
-		cin >> x;
-		cout << "x is " + x << endl;
 		scene->togglePlotFaceNormals();
 		break;
 	}
@@ -244,11 +312,22 @@ void initMenu()
 		counter++;
 	}
 
+	//create change color menu
+	int menuChangeColor = glutCreateMenu(changeColorMenu);
+	glutAddMenuEntry("White", WHITE);
+	glutAddMenuEntry("Red", RED);
+	glutAddMenuEntry("Green", GREEN);
+	glutAddMenuEntry("Blue", BLUE);
+	glutAddMenuEntry("Yellow", YELLOW);
+	glutAddMenuEntry("Visualize Slopes", VISUALIZE_SLOPES);
+	glutAddMenuEntry("Choose custom color", CUSTOM_COLOR);
+
 	//create active model options menu
 	int menuActiveModelOptions = glutCreateMenu(activeModelOptionsMenu);
 	glutAddMenuEntry("Plot Boundry Box", PLOT_BOUNDRY_BOX);
 	glutAddMenuEntry("Plot Vertex Normals", PLOT_VERTEX_NORMALS);
 	glutAddMenuEntry("Plot Face Normals", PLOT_FACE_NORMALS);
+	glutAddSubMenu("Change Color", menuChangeColor);
 
 	//finally, create the main menu and start adding submenus to it
 	glutCreateMenu(mainMenu);

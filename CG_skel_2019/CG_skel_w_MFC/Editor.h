@@ -13,15 +13,29 @@
 #define MAIN_ABOUT 2
 #define SUCCESS 0
 
+// add model menu
 #define FROM_FILE 1
 #define PRIM 2
 
+// add primitive menu
 #define CUBE 1
 #define PYRAMID 2
 
+// active model options menu
 #define PLOT_BOUNDRY_BOX 1
 #define PLOT_VERTEX_NORMALS 2
 #define PLOT_FACE_NORMALS 3
+
+// change color menu
+#define WHITE 1
+#define RED 2
+#define GREEN 3
+#define BLUE 4
+#define YELLOW 5
+#define VISUALIZE_SLOPES 6
+#define CUSTOM_COLOR 7
+
+
 
 // define for sensetivity
 #define SENSETIVITY 0.2 //BONUS if we want sensetivity to be interactive, make it a variable
@@ -30,7 +44,7 @@
 #define ROTATE (60 * SENSETIVITY)
 #define TRANSLATE (SENSETIVITY)
 
-
+float getFloatFromUser(const string& directive);
 void display(void);
 void reshape(int width, int height);
 void keyboard(unsigned char key, int x, int y);

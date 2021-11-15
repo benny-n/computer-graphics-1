@@ -9,13 +9,16 @@ using namespace std;
 class Model {
 
 public:
-	Model() : draw_boundry_box(false), draw_vertex_normals(false), draw_face_normals(false) {}
-	void virtual transform(const mat4& m) = 0;
-	void virtual draw(Renderer*) = 0;
-	const string& getName();
 	bool draw_boundry_box;
 	bool draw_vertex_normals;
 	bool draw_face_normals;
+	bool use_visualize_slopes;
+	vec3 color;
+
+	Model() : draw_boundry_box(false), draw_vertex_normals(false), draw_face_normals(false), use_visualize_slopes(false), color(1) {}
+	void virtual transform(const mat4& m) = 0;
+	void virtual draw(Renderer*) = 0;
+	const string& getName();
 
 protected:
 	virtual ~Model() {}
@@ -86,7 +89,10 @@ public:
 	void togglePlotBoundryBox();
 	void togglePlotVertexNormals();
 	void togglePlotFaceNormals();
+	void changeColor(const vec3& color);
+	void visualizeSlopes();
 	int transformActiveModel(const mat4& m);
+	void iterateModels();
 	void draw();
 	void drawDemo();
 	

@@ -61,6 +61,8 @@ const string& Model::getName(){
 	return name;
 }
 
+
+// Camera
 Camera::Camera(){
 	LookAt(vec4(vec3(0, 0, 10)), vec4(vec3(0,0,0)), vec4(vec3(0, 1, 0)));
 	Frustum(-5, 5, -5, 5, 2, 20 );
@@ -71,7 +73,6 @@ Camera::Camera(const vec4& eye) {
 	Ortho(-1, 1, -1, 1, -8, -12);
 }
 
-// Camera
 void Camera::setTransformation(const mat4& transform) {
 	cTransform = transform;
 }
@@ -186,10 +187,25 @@ void Scene::togglePlotFaceNormals(){
 	models[activeModel]->draw_face_normals = !models[activeModel]->draw_face_normals;
 }
 
+void Scene::changeColor(const vec3& color)
+{
+	models[activeModel]->color = color;
+	models[activeModel]->use_visualize_slopes = false;
+}
+
+void Scene::visualizeSlopes()
+{
+	models[activeModel]->use_visualize_slopes = true;
+}
+
 int Scene::transformActiveModel(const mat4& m){
 	if (models.empty()) return -1;
 	models[activeModel]->transform(m);
 	return 0;
+}
+
+void Scene::iterateModels(){
+	if (!models.empty()) activeModel = (activeModel + 1) % models.size();
 }
 
 void Scene::draw() {
