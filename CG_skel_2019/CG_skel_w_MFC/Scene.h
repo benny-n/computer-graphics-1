@@ -9,10 +9,13 @@ using namespace std;
 class Model {
 
 public:
-	Model() : draw_boundry_box(false) {}
+	Model() : draw_boundry_box(false), draw_vertex_normals(false), draw_face_normals(false) {}
 	void virtual transform(const mat4& m) = 0;
 	void virtual draw(Renderer*) = 0;
 	const string& getName();
+	bool draw_boundry_box;
+	bool draw_vertex_normals;
+	bool draw_face_normals;
 
 protected:
 	virtual ~Model() {}
@@ -29,7 +32,6 @@ protected:
 		void draw(Renderer* renderer);
 	};
 	BoundryBox boundry_box;
-	bool draw_boundry_box;
 	string name;
 };
 
@@ -81,6 +83,9 @@ public:
 	void loadPyramidModel();
 	void addCamera();
 	void toggleRenderCameras();
+	void togglePlotBoundryBox();
+	void togglePlotVertexNormals();
+	void togglePlotFaceNormals();
 	int transformActiveModel(const mat4& m);
 	void draw();
 	void drawDemo();

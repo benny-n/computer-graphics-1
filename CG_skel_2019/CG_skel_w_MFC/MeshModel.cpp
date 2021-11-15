@@ -154,8 +154,8 @@ void MeshModel::draw(Renderer* renderer)
 	renderer->SetObjectMatrices(_model_transform, _normal_transform);
 	renderer->DrawTriangles(&vertex_positions);
 	if (draw_boundry_box) boundry_box.draw(renderer);
-	boundry_box.draw(renderer);
-	cout << _model_transform << endl;
+	//boundry_box.draw(renderer);
+	//cout << _model_transform << endl;
 	//cout << boundry_box.center() << endl;
 }
 

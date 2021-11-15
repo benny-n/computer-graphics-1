@@ -174,6 +174,18 @@ void Scene::toggleRenderCameras(){
 	render_cameras = !render_cameras;
 }
 
+void Scene::togglePlotBoundryBox(){
+	models[activeModel]->draw_boundry_box = !models[activeModel]->draw_boundry_box;
+}
+
+void Scene::togglePlotVertexNormals(){
+	models[activeModel]->draw_vertex_normals = !models[activeModel]->draw_vertex_normals;
+}
+
+void Scene::togglePlotFaceNormals(){
+	models[activeModel]->draw_face_normals = !models[activeModel]->draw_face_normals;
+}
+
 int Scene::transformActiveModel(const mat4& m){
 	if (models.empty()) return -1;
 	models[activeModel]->transform(m);

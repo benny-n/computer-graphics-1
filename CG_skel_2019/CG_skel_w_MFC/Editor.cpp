@@ -170,19 +170,38 @@ void addPrimMenu(int id) {
 	{
 	case CUBE:
 		scene->loadCubeModel();
-		glutPostRedisplay();
-		initMenu();
 		break;
 	case PYRAMID:
-		scene->loadPyramidModel();
-		glutPostRedisplay();
-		initMenu();
+		scene->loadPyramidModel();	
 		break;
 	}
+	glutPostRedisplay();
+	initMenu();
 }
 
 void selectModelMenu(int id) {
 	scene->activeModel = id;
+}
+
+void activeModelOptionsMenu(int id) {
+
+	switch (id)
+	{
+	case PLOT_BOUNDRY_BOX:
+		scene->togglePlotBoundryBox();
+		break;
+	case PLOT_VERTEX_NORMALS:
+		scene->togglePlotVertexNormals();
+		break;
+	case PLOT_FACE_NORMALS:
+		string x;
+		cout << "input please: ";
+		cin >> x;
+		cout << "x is " + x << endl;
+		scene->togglePlotFaceNormals();
+		break;
+	}
+	glutPostRedisplay();
 }
 
 void mainMenu(int id)
@@ -200,17 +219,24 @@ void mainMenu(int id)
 
 void initMenu()
 {
+
+	// Must prepare all submenus before calling "creatMenu" on the main menu!
+	
+	//create file menu (not us)
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddMenuEntry("Open..", FILE_OPEN);
 
+	//create add primitive model menu
 	int menuAddPrim = glutCreateMenu(addPrimMenu);
 	glutAddMenuEntry("Cube", CUBE);
 	glutAddMenuEntry("Pyramid", PYRAMID);
 
+	//create add model menu
 	int menuAddModel = glutCreateMenu(nullptr); // has only sub menus so needs no function
 	glutAddSubMenu("From File", menuFile);
 	glutAddSubMenu("Add Primitive Model", menuAddPrim);
 
+	//create select model menu
 	int menuSelectModel = glutCreateMenu(selectModelMenu);
 	int counter = 0;
 	for each (auto model in scene->getModels()) {
@@ -218,9 +244,22 @@ void initMenu()
 		counter++;
 	}
 
+	//create active model options menu
+	int menuActiveModelOptions = glutCreateMenu(activeModelOptionsMenu);
+	glutAddMenuEntry("Plot Boundry Box", PLOT_BOUNDRY_BOX);
+	glutAddMenuEntry("Plot Vertex Normals", PLOT_VERTEX_NORMALS);
+	glutAddMenuEntry("Plot Face Normals", PLOT_FACE_NORMALS);
+
+	//finally, create the main menu and start adding submenus to it
 	glutCreateMenu(mainMenu);
 	glutAddSubMenu("Add Model", menuAddModel);
-	glutAddSubMenu("Select Model", menuSelectModel);
+
+	//add these menus only if we have models in our scene
+	if (scene->getModels().size() != 0) {
+		glutAddSubMenu("Select Model", menuSelectModel);
+		glutAddSubMenu("Active Model Options", menuActiveModelOptions);
+	}
+
 	glutAddMenuEntry("Demo", MAIN_DEMO);
 	glutAddMenuEntry("About", MAIN_ABOUT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);

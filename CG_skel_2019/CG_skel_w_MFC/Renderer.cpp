@@ -71,20 +71,6 @@ void Renderer::Reshape(int width, int height){
 	m_height = height;
 }
 
-void Renderer::ColorPoint(int x, int y, const vec3& color) {
-	//x += m_width / 2;
-	//y += m_height / 2;
-	//cout << "x: " << x << endl;
-	//cout << "y: " << y << endl;
-	int r = (m_width / 2) * (x + 1);
-	int s = (m_height / 2) * (y + 1);
-	//r += m_width / 2;
-	//s += m_height / 2;
-	//cout << "r: " << r << endl;
-	//cout << "s: " << s << endl;
-	ColorPixel(x, y, color);
-}
-
 void Renderer::ColorPixel(int x, int y, const vec3& color) {
 	if (x >= m_width || x < 0) return; //clip
 	if (y >= m_height || y < 0) return; //clip
@@ -187,12 +173,8 @@ void Renderer::SetObjectMatrices(const mat4& oTransform, const mat3& nTransform)
 }
 
 mat4 Renderer::CalcFinalTransformation() {
-	mat4 project;
-	//project[2][2] = 0;
 	mat4 world_transform = mat4();
-	//world_transform[0][3] = m_width / 2;
-	//world_transform[1][3] = m_height / 2;
-	const mat4 final_transformation = project * m_projection * m_cTransform * world_transform * m_oTransform;
+	const mat4 final_transformation = m_projection * m_cTransform * world_transform * m_oTransform;
 	return final_transformation;
 }
 
