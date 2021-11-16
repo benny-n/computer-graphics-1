@@ -390,6 +390,11 @@ class mat4 {
     //  --- (non-modifying) Arithematic Operators ---
     //
 
+    mat4 operator - () const  // unary minus operator
+    {
+        return mat4(-_m[0], -_m[1], -_m[2], -_m[3]);
+    }
+
     mat4 operator + ( const mat4& m ) const
 	{ return mat4( _m[0]+m[0], _m[1]+m[1], _m[2]+m[2], _m[3]+m[3] ); }
 
@@ -499,6 +504,20 @@ class mat4 {
 
     operator GLfloat* ()
 	{ return static_cast<GLfloat*>( &_m[0].x ); }
+
+    //
+    // our functions
+    //
+    bool isDiagonal() const {
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                if (i != j && _m[i][j] != 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 };
 
 //
@@ -553,7 +572,7 @@ vec4 mvmult( const mat4& a, const vec4& b )
 //
 
 inline
-mat4 RotateX( const GLfloat theta )
+mat4 rotateX( const GLfloat theta )
 {
     GLfloat angle = (M_PI/180.0) * theta;
 
@@ -565,7 +584,7 @@ mat4 RotateX( const GLfloat theta )
 }
 
 inline
-mat4 RotateY( const GLfloat theta )
+mat4 rotateY( const GLfloat theta )
 {
     GLfloat angle = (M_PI/180.0) * theta;
 
@@ -577,7 +596,7 @@ mat4 RotateY( const GLfloat theta )
 }
 
 inline
-mat4 RotateZ( const GLfloat theta )
+mat4 rotateZ( const GLfloat theta )
 {
     GLfloat angle = (M_PI/180.0) * theta;
 
@@ -595,7 +614,7 @@ mat4 RotateZ( const GLfloat theta )
 //
 
 inline
-mat4 Translate( const GLfloat x, const GLfloat y, const GLfloat z )
+mat4 translate( const GLfloat x, const GLfloat y, const GLfloat z )
 {
     mat4 c;
     c[0][3] = x;
@@ -605,15 +624,15 @@ mat4 Translate( const GLfloat x, const GLfloat y, const GLfloat z )
 }
 
 inline
-mat4 Translate( const vec3& v )
+mat4 translate( const vec3& v )
 {
-    return Translate( v.x, v.y, v.z );
+    return translate( v.x, v.y, v.z );
 }
 
 inline
-mat4 Translate( const vec4& v )
+mat4 translate( const vec4& v )
 {
-    return Translate( v.x, v.y, v.z );
+    return translate( v.x, v.y, v.z );
 }
 
 //----------------------------------------------------------------------------
@@ -622,7 +641,7 @@ mat4 Translate( const vec4& v )
 //
 
 inline
-mat4 Scale( const GLfloat x, const GLfloat y, const GLfloat z )
+mat4 scale( const GLfloat x, const GLfloat y, const GLfloat z )
 {
     mat4 c;
     c[0][0] = x;
@@ -632,14 +651,14 @@ mat4 Scale( const GLfloat x, const GLfloat y, const GLfloat z )
 }
 
 inline
-mat4 Scale(const GLfloat x) {
-    return Scale(x, x, x);
+mat4 scale(const GLfloat x) {
+    return scale(x, x, x);
 }
 
 inline
-mat4 Scale( const vec3& v )
+mat4 scale( const vec3& v )
 {
-    return Scale( v.x, v.y, v.z );
+    return scale( v.x, v.y, v.z );
 }
 
 //----------------------------------------------------------------------------

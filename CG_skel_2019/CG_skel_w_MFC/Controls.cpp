@@ -1,27 +1,13 @@
 #include "stdafx.h"
-#include "Editor.h"
+#include "Controls.h"
 #include<limits>
 
 using namespace std;
 
-int last_x, last_y;
-bool lb_down, rb_down, mb_down;
-extern Scene* scene;
-extern Renderer* renderer;
-
-void handle_err_code(int err) {
-	switch (err) {
-	case -1:
-		AfxMessageBox(_T("Add a model before transforming!"));
-		break;
-	default:
-		break;
-	}
-}
-
-void inputMessage() {
-	AfxMessageBox(_T("Please enter your wanted parameters in the console window"));
-}
+int gLastX, gLastY;
+bool gLbDown, gRbDown, gMbDown;
+extern Scene* gScene;
+extern Renderer* gRenderer;
 
 
 float getFloatFromUser(const string& directive)
@@ -42,97 +28,85 @@ float getFloatFromUser(const string& directive)
 	return input;
 }
 
+void inputMessage() { AfxMessageBox(_T("Please enter your wanted parameters in the console window")); }
+
 //----------------------------------------------------------------------------
 // Callbacks
-void display(void)
-{
-	//TODO
-//Call the scene and ask it to draw itself
-	scene->draw();
-}
+void display(void) { gScene->draw(); }
 
 void reshape(int width, int height)
 {
 	//cout << width << " " << height << endl;
-	//const vec2 screenSize = renderer->GetScreenSize();
-	/*for each (auto model in scene->getModels()) {
-		model->transform(Scale(screenSize.x / width, screenSize.y / height, 1));
-	}*/
-
-	renderer->Reshape(width, height);
-	scene->draw();
-	//glViewport(0, 0, width, height);
-
-//update the renderer's buffers
+	gRenderer->reshape(width, height);
+	gScene->draw();
 }
 
 void keyboard(unsigned char key, int x, int y)
 {
-	//cout << "pressed key: " << key << " on x: "  << x << " and y: " << y << endl;
+	//cout << "pressed key: " << int(key) << " on x: "  << x << " and y: " << y << endl;
 	switch (key) {
 	case 033:
 		exit(EXIT_SUCCESS);
 		break;	
 	case 'z':
-		scene->transformActive(Scale(SCALE_UP));
+		gScene->transformActive(scale(SCALE_UP));
 		break;
 	case 'x':
-		scene->transformActive(Scale(SCALE_DOWN));
+		gScene->transformActive(scale(SCALE_DOWN));
 		break;
 	case 'D':
-		 scene->transformActive(RotateY(ROTATE));
+		 gScene->transformActive(ROTATE, RotationAxis::Y);
 		break;
 	case 'A':
-		 scene->transformActive(RotateY(-ROTATE));
+		 gScene->transformActive(-ROTATE, RotationAxis::Y);
 		break;	
 	case 'W':
-		 scene->transformActive(RotateX(ROTATE));
+		 gScene->transformActive(ROTATE, RotationAxis::X);
 		break;
 	case 'S':
-		 scene->transformActive(RotateX(-ROTATE));
+		 gScene->transformActive(-ROTATE, RotationAxis::X);
 		break;
 	case 'Q':
-		 scene->transformActive(RotateZ(ROTATE));
+		 gScene->transformActive(ROTATE, RotationAxis::Z);
 		break;
 	case 'E':
-		 scene->transformActive(RotateZ(-ROTATE));
+		 gScene->transformActive(-ROTATE, RotationAxis::Z);
 		break;
 	case 'd':
-		 scene->transformActive(Translate(TRANSLATE, 0, 0));
+		 gScene->transformActive(vec3(TRANSLATE, 0, 0));
 		break;	
 	case 'a':
-		 scene->transformActive(Translate(-TRANSLATE, 0, 0));
+		 gScene->transformActive(vec3(-TRANSLATE, 0, 0));
 		break;
 	case 'w':
-		 scene->transformActive(Translate(0, TRANSLATE, 0));
+		 gScene->transformActive(vec3(0, TRANSLATE, 0));
 		break;
 	case 's':
-		 scene->transformActive(Translate(0, -TRANSLATE, 0));
+		 gScene->transformActive(vec3(0, -TRANSLATE, 0));
 		break;
 	case 'q':
-		 scene->transformActive(Translate(0, 0, TRANSLATE));
+		 gScene->transformActive(vec3(0, 0, TRANSLATE));
 		break;
 	case 'e':
-		 scene->transformActive(Translate(0, 0, -TRANSLATE));
+		 gScene->transformActive(vec3(0, 0, -TRANSLATE));
 		break;
 	case 'c':
-		scene->toggleRenderCameras();
+		gScene->toggleRenderCameras();
 		break;
 	case '\t':
-		scene->iterateActive();
+		gScene->iterateActive();
+		break;
+	case ' ':
+		gScene->toggleControlCamera();
+		break;
+	case 23:
+		gScene->toggleControlWorld();
 		break;
 
 	default:
 		return;
 	}
-
-	//handle status
-	if (status != SUCCESS) {
-		handle_err_code(status);
-	}
-	else {
-		glutPostRedisplay();
-	}
+	glutPostRedisplay();
 }
 
 void mouse(int button, int state, int x, int y)
@@ -143,40 +117,32 @@ void mouse(int button, int state, int x, int y)
 	//set down flags
 	switch (button) {
 	case GLUT_LEFT_BUTTON:
-		lb_down = (state == GLUT_UP) ? 0 : 1;
+		gLbDown = (state == GLUT_UP) ? 0 : 1;
 		break;
 	case GLUT_RIGHT_BUTTON:
-		rb_down = (state == GLUT_UP) ? 0 : 1;
+		gRbDown = (state == GLUT_UP) ? 0 : 1;
 		break;
 	case GLUT_MIDDLE_BUTTON:
-		mb_down = (state == GLUT_UP) ? 0 : 1;
+		gMbDown = (state == GLUT_UP) ? 0 : 1;
 		break;
 	case MOUSE_WHEEL_UP:
-		status = scene->transformActive(Scale(SCALE_UP));
+		gScene->transformActive(scale(SCALE_UP));
 		break;
 	case MOUSE_WHEEL_DOWN:
-		status = scene->transformActive(Scale(SCALE_DOWN));
+		gScene->transformActive(scale(SCALE_DOWN));
 		break;
 	}
-
-	//TODO
-	// add your code
-	if (status != SUCCESS) {
-		handle_err_code(status);
-	}
-	else {
-		scene->draw();
-	}
+	glutPostRedisplay();
 }
 
 void motion(int x, int y)
 {
 	// calc difference in mouse movement
-	int dx = x - last_x;
-	int dy = y - last_y;
+	int dx = x - gLastX;
+	int dy = y - gLastY;
 	// update last x,y
-	last_x = x;
-	last_y = y;
+	gLastX = x;
+	gLastY = y;
 }
 
 void fileMenu(int id)
@@ -188,8 +154,9 @@ void fileMenu(int id)
 		if (dlg.DoModal() == IDOK)
 		{
 			std::string s((LPCTSTR)dlg.GetPathName());
-			scene->loadOBJModel((LPCTSTR)dlg.GetPathName());
-			scene->activeModel = scene->getModels().size() - 1;
+			gScene->loadOBJModel((LPCTSTR)dlg.GetPathName());
+			gScene->mActiveModel = gScene->getModels().size() - 1;
+			gScene->setControlCamera(false);
 			glutPostRedisplay();
 			initMenu();
 		}
@@ -201,41 +168,42 @@ void addPrimMenu(int id) {
 	switch (id)
 	{
 	case CUBE:
-		scene->loadCubeModel();
+		gScene->addCubeModel();
 		break;
 	case PYRAMID:
-		scene->loadPyramidModel();	
+		gScene->addPyramidModel();	
 		break;
 	}
-	scene->activeModel = scene->getModels().size() - 1;
+	gScene->mActiveModel = gScene->getModels().size() - 1;
+	gScene->setControlCamera(false);
 	glutPostRedisplay();
 	initMenu();
 }
 
 void selectModelMenu(int id) {
-	scene->activeModel = id;
+	gScene->mActiveModel = id;
 }
 
 void changeColorMenu(int id) {
 	switch (id)
 	{
 	case WHITE:
-		scene->changeColor(vec3(1));
+		gScene->changeColor(vec3(1));
 		break;
 	case RED:
-		scene->changeColor(vec3(1, 0, 0));
+		gScene->changeColor(vec3(1, 0, 0));
 		break;
 	case GREEN:
-		scene->changeColor(vec3(0, 1, 0));
+		gScene->changeColor(vec3(0, 1, 0));
 		break;
 	case BLUE:
-		scene->changeColor(vec3(0, 0, 1));
+		gScene->changeColor(vec3(0, 0, 1));
 		break;
 	case YELLOW:
-		scene->changeColor(vec3(1, 1, 0));
+		gScene->changeColor(vec3(1, 1, 0));
 		break;
 	case VISUALIZE_SLOPES:
-		scene->visualizeSlopes();
+		gScene->visualizeSlopes();
 		break;
 	case CUSTOM_COLOR:
 		inputMessage();
@@ -244,7 +212,7 @@ void changeColorMenu(int id) {
 		float g = getFloatFromUser("g");
 		float b = getFloatFromUser("b");
 		cout << "Custom color: (" << r << ", " << g << ", " << b << ")" << endl;
-		scene->changeColor(vec3(r, g, b));
+		gScene->changeColor(vec3(r, g, b));
 		break;
 	
 	}
@@ -256,16 +224,16 @@ void activeModelOptionsMenu(int id) {
 	switch (id)
 	{
 	case PLOT_BOUNDRY_BOX:
-		scene->togglePlotBoundryBox();
+		gScene->togglePlotBoundryBox();
 		break;
 	case PLOT_VERTEX_NORMALS:
-		scene->togglePlotVertexNormals();
+		gScene->togglePlotVertexNormals();
 		break;
 	case PLOT_FACE_NORMALS:
-		scene->togglePlotFaceNormals();
+		gScene->togglePlotFaceNormals();
 		break;
 	case REMOVE_ACTIVE_MODEL:
-		scene->removeActiveModel();
+		gScene->removeActiveModel();
 		initMenu();
 		break;
 	}
@@ -276,9 +244,9 @@ void mainMenu(int id)
 {
 	switch (id)
 	{
-	case MAIN_DEMO:
-		scene->drawDemo();
-		break;
+	//case MAIN_DEMO:
+	//	gScene->drawDemo();
+	//	break;
 	case MAIN_ABOUT:
 		AfxMessageBox(_T("Computer Graphics"));
 		break;
@@ -307,7 +275,7 @@ void initMenu()
 	//create select model menu
 	int menuSelectModel = glutCreateMenu(selectModelMenu);
 	int counter = 0;
-	for each (auto model in scene->getModels()) {
+	for each (auto model in gScene->getModels()) {
 		glutAddMenuEntry((model->getName() + " " + to_string(counter)).c_str(), counter);
 		counter++;
 	}
@@ -335,12 +303,12 @@ void initMenu()
 	glutAddSubMenu("Add Model", menuAddModel);
 
 	//add these menus only if we have models in our scene
-	if (scene->getModels().size() != 0) {
+	if (gScene->getModels().size() != 0) {
 		glutAddSubMenu("Select Model", menuSelectModel);
 		glutAddSubMenu("Active Model Options", menuActiveModelOptions);
 	}
 
-	glutAddMenuEntry("Demo", MAIN_DEMO);
+	//glutAddMenuEntry("Demo", MAIN_DEMO);
 	glutAddMenuEntry("About", MAIN_ABOUT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }

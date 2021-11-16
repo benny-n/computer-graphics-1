@@ -13,8 +13,8 @@
 #endif
 
 // The one and only application object
-Scene *scene;
-Renderer *renderer;
+Scene *gScene;
+Renderer *gRenderer;
 
 int my_main( int argc, char **argv )
 {
@@ -38,8 +38,8 @@ int my_main( int argc, char **argv )
 	cout << "Using GLEW " << glewGetString(GLEW_VERSION) << endl;
 	
 	
-	renderer = new Renderer(512,512);
-	scene = new Scene(renderer);
+	gRenderer = new Renderer(512,512);
+	gScene = new Scene(gRenderer);
 	//----------------------------------------------------------------------------
 	// Initialize Callbacks
 
@@ -52,8 +52,8 @@ int my_main( int argc, char **argv )
 	
 
 	glutMainLoop();
-	delete scene;
-	delete renderer;
+	delete gScene;
+	delete gRenderer;
 	return 0;
 }
 
@@ -61,7 +61,7 @@ CWinApp theApp;
 
 using namespace std;
 
-int sanity_tests() {
+int sanityTests() {
 	mat4 a = mat4(
 		vec4(1, 2, 3, 4),
 		vec4(5, 6, 7, 8),

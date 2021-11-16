@@ -97,10 +97,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CG_skel_w_MFC.cpp" />
-    <ClCompile Include="Editor.cpp" />
+    <ClCompile Include="Controls.cpp" />
     <ClCompile Include="InitShader.cpp" />
-    <ClCompile Include="MeshModel.cpp" />
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -109,11 +110,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="CG_skel_w_MFC.h" />
-    <ClInclude Include="Editor.h" />
+    <ClInclude Include="Controls.h" />
     <ClInclude Include="InitShader.h" />
     <ClInclude Include="mat.h" />
-    <ClInclude Include="MeshModel.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Scene.h" />

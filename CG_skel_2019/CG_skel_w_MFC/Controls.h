@@ -36,21 +36,24 @@
 #define VISUALIZE_SLOPES 6
 #define CUSTOM_COLOR 7
 
-
-
 // define for sensetivity
 #define SENSETIVITY 0.2 //BONUS if we want sensetivity to be interactive, make it a variable
-#define SCALE_UP (1 + SENSETIVITY)
-#define SCALE_DOWN (1 / SCALE_UP)
+#define SCALE_UP (1.0 + SENSETIVITY)
+#define SCALE_DOWN (1.0 / SCALE_UP)
 #define ROTATE (60 * SENSETIVITY)
 #define TRANSLATE (SENSETIVITY)
 
 float getFloatFromUser(const string& directive);
+void inputMessage();
 void display(void);
 void reshape(int width, int height);
 void keyboard(unsigned char key, int x, int y);
 void mouse(int button, int state, int x, int y);
 void motion(int x, int y);
 void fileMenu(int id);
+void addPrimMenu(int id);
+void selectModelMenu(int id);
+void changeColorMenu(int id);
+void activeModelOptionsMenu(int id);
 void mainMenu(int id);
 void initMenu();

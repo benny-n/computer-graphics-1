@@ -8,48 +8,46 @@
 using namespace std;
 class Renderer
 {
-	float *m_outBuffer; // 3*width*height
-	float *m_zbuffer; // width*height
-	int m_width, m_height;
-	mat4 m_cTransform;
-	mat4 m_projection;
-	mat4 m_oTransform;
-	mat3 m_nTransform;
-	vec3 colors[4];
+	float *mOutBuffer; // 3*width*height
+	float *mZbuffer; // width*height
+	int mWidth, mHeight;
+	mat4 mCameraTransform;
+	mat4 mProjection;
+	mat4 mObjectTransform;
+	mat3 mNormalTransform;
+	vec3 mColors[4];
 
 
-	void CreateBuffers(int width, int height);
-	void CreateLocalBuffer();
+	void createBuffers(int width, int height);
+	void createLocalBuffer();
 
 	//////////////////////////////
 	// openGL stuff. Don't touch.
 
 	GLuint gScreenTex;
 	GLuint gScreenVtc;
-	void CreateOpenGLBuffer();
-	void InitOpenGLRendering();
+	void createOpenGLBuffer();
+	void initOpenGLRendering();
 	//////////////////////////////
 public:
 	Renderer();
 	Renderer(int width, int height);
 	~Renderer(void);
-	vec2 GetScreenSize();
-	void SetDemoBuffer();
-	void SetColor(const vec3& color);
-	void SetVisualizeSlopes();
-	void Reshape(int width, int height);
-	void ColorPixel(int x, int y, const vec3& color = vec3(1));
-	void ClearPixel(int x, int y);
-	void DrawCamera(const vec4& eye);
-	void DrawLine(int x1, int y1, int x2, int y2);
-	void Init();
-	void SetCameraTransform(const mat4& cTransform);
-	void SetProjection(const mat4& projection);
-	void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform);
-	mat4 CalcFinalTransformation();
-	void DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals=NULL);
-	void DrawSquares(const vector<vec3>* vertices);
-	void SwapBuffers();
-	void ClearColorBuffer();
-	void ClearDepthBuffer();
+	void setDemoBuffer();
+	void setColor(const vec3& color);
+	void setVisualizeSlopes();
+	void reshape(int width, int height);
+	void colorPixel(int x, int y, const vec3& color = vec3(1));
+	void clearPixel(int x, int y);
+	void drawCamera(const vec4& eye);
+	void drawLine(int x1, int y1, int x2, int y2);
+	void setCameraTransform(const mat4& cTransform);
+	void setProjection(const mat4& projection);
+	void setObjectMatrices(const mat4& oTransform, const mat3& nTransform);
+	mat4 calcFinalTransformation();
+	void drawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals=NULL);
+	void drawSquares(const vector<vec3>* vertices);
+	void swapBuffers();
+	void clearColorBuffer();
+	void clearDepthBuffer();
 };
