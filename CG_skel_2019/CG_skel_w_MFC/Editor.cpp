@@ -53,15 +53,12 @@ void display(void)
 
 void reshape(int width, int height)
 {
-	//debug
-	//cout << width << endl;
-	//cout << height << endl;
-	////TODO
-	//cout << "reshape" << endl;
-	const vec2 screenSize = renderer->GetScreenSize();
-	for each (auto model in scene->getModels()) {
+	//cout << width << " " << height << endl;
+	//const vec2 screenSize = renderer->GetScreenSize();
+	/*for each (auto model in scene->getModels()) {
 		model->transform(Scale(screenSize.x / width, screenSize.y / height, 1));
-	}
+	}*/
+
 	renderer->Reshape(width, height);
 	scene->draw();
 	//glViewport(0, 0, width, height);
@@ -71,59 +68,58 @@ void reshape(int width, int height)
 
 void keyboard(unsigned char key, int x, int y)
 {
-	int status = 0;
 	//cout << "pressed key: " << key << " on x: "  << x << " and y: " << y << endl;
 	switch (key) {
 	case 033:
 		exit(EXIT_SUCCESS);
 		break;	
 	case 'z':
-		status = scene->transformActiveModel(Scale(SCALE_UP));
+		scene->transformActive(Scale(SCALE_UP));
 		break;
 	case 'x':
-		status = scene->transformActiveModel(Scale(SCALE_DOWN));
+		scene->transformActive(Scale(SCALE_DOWN));
 		break;
 	case 'D':
-		status = scene->transformActiveModel(RotateY(ROTATE));
+		 scene->transformActive(RotateY(ROTATE));
 		break;
 	case 'A':
-		status = scene->transformActiveModel(RotateY(-ROTATE));
+		 scene->transformActive(RotateY(-ROTATE));
 		break;	
 	case 'W':
-		status = scene->transformActiveModel(RotateX(ROTATE));
+		 scene->transformActive(RotateX(ROTATE));
 		break;
 	case 'S':
-		status = scene->transformActiveModel(RotateX(-ROTATE));
+		 scene->transformActive(RotateX(-ROTATE));
 		break;
 	case 'Q':
-		status = scene->transformActiveModel(RotateZ(ROTATE));
+		 scene->transformActive(RotateZ(ROTATE));
 		break;
 	case 'E':
-		status = scene->transformActiveModel(RotateZ(-ROTATE));
+		 scene->transformActive(RotateZ(-ROTATE));
 		break;
 	case 'd':
-		status = scene->transformActiveModel(Translate(TRANSLATE, 0, 0));
+		 scene->transformActive(Translate(TRANSLATE, 0, 0));
 		break;	
 	case 'a':
-		status = scene->transformActiveModel(Translate(-TRANSLATE, 0, 0));
+		 scene->transformActive(Translate(-TRANSLATE, 0, 0));
 		break;
 	case 'w':
-		status = scene->transformActiveModel(Translate(0, TRANSLATE, 0));
+		 scene->transformActive(Translate(0, TRANSLATE, 0));
 		break;
 	case 's':
-		status = scene->transformActiveModel(Translate(0, -TRANSLATE, 0));
+		 scene->transformActive(Translate(0, -TRANSLATE, 0));
 		break;
 	case 'q':
-		status = scene->transformActiveModel(Translate(0, 0, TRANSLATE));
+		 scene->transformActive(Translate(0, 0, TRANSLATE));
 		break;
 	case 'e':
-		status = scene->transformActiveModel(Translate(0, 0, -TRANSLATE));
+		 scene->transformActive(Translate(0, 0, -TRANSLATE));
 		break;
 	case 'c':
 		scene->toggleRenderCameras();
 		break;
 	case '\t':
-		scene->iterateModels();
+		scene->iterateActive();
 		break;
 
 	default:
@@ -156,10 +152,10 @@ void mouse(int button, int state, int x, int y)
 		mb_down = (state == GLUT_UP) ? 0 : 1;
 		break;
 	case MOUSE_WHEEL_UP:
-		status = scene->transformActiveModel(Scale(SCALE_UP));
+		status = scene->transformActive(Scale(SCALE_UP));
 		break;
 	case MOUSE_WHEEL_DOWN:
-		status = scene->transformActiveModel(Scale(SCALE_DOWN));
+		status = scene->transformActive(Scale(SCALE_DOWN));
 		break;
 	}
 
@@ -268,6 +264,10 @@ void activeModelOptionsMenu(int id) {
 	case PLOT_FACE_NORMALS:
 		scene->togglePlotFaceNormals();
 		break;
+	case REMOVE_ACTIVE_MODEL:
+		scene->removeActiveModel();
+		initMenu();
+		break;
 	}
 	glutPostRedisplay();
 }
@@ -328,6 +328,7 @@ void initMenu()
 	glutAddMenuEntry("Plot Vertex Normals", PLOT_VERTEX_NORMALS);
 	glutAddMenuEntry("Plot Face Normals", PLOT_FACE_NORMALS);
 	glutAddSubMenu("Change Color", menuChangeColor);
+	glutAddMenuEntry("Remove Active Model", REMOVE_ACTIVE_MODEL);
 
 	//finally, create the main menu and start adding submenus to it
 	glutCreateMenu(mainMenu);

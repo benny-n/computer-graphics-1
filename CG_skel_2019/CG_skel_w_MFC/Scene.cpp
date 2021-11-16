@@ -63,9 +63,9 @@ const string& Model::getName(){
 
 
 // Camera
-Camera::Camera(){
-	LookAt(vec4(vec3(0, 0, 10)), vec4(vec3(0,0,0)), vec4(vec3(0, 1, 0)));
-	Frustum(-5, 5, -5, 5, 2, 20 );
+Camera::Camera() {
+	LookAt(vec4(vec3(0, 0, 10)), vec4(vec3(0, 0, 0)), vec4(vec3(0, 1, 0)));
+	Ortho(-10, 10, -10, 10, -8, -12);
 }
 
 Camera::Camera(const vec4& eye) {
@@ -77,7 +77,7 @@ void Camera::setTransformation(const mat4& transform) {
 	cTransform = transform;
 }
 
-mat4 Camera::getTransform() { return cTransform; }
+mat4 Camera::getTransform() { return cTransform * lookAt; }
 mat4 Camera::getProjection() { return projection; }
 
 void Camera::draw(Renderer* renderer){
@@ -92,7 +92,7 @@ void Camera::LookAt(const vec4& eye, const vec4& at, const vec4& up) {
 	const vec4 v = vec4(normalize(cross(n, u)),0);
 	const vec4 t = vec4(0.0, 0.0, 0.0, 1.0);
 	const mat4 c = mat4(u, v, n, t);
-	cTransform = c * Translate(-eye);
+	lookAt = c * Translate(-eye);
 }
 
 void Camera::Ortho(const float left, const float right,
@@ -135,7 +135,7 @@ void Camera::Perspective(const float fovy, const float aspect,
 // Scene
 Scene::Scene() : Scene(&Renderer()){}
 
-Scene::Scene(Renderer* renderer) : m_renderer(renderer), activeModel(0), activeLight(0), activeCamera(0) {
+Scene::Scene(Renderer* renderer) : m_renderer(renderer), render_cameras(false), control_camera(true), activeModel(0), activeLight(0), activeCamera(0) {
 	auto default_camera = make_shared<Camera>();
 	cameras.push_back(default_camera);
 
@@ -198,14 +198,28 @@ void Scene::visualizeSlopes()
 	models[activeModel]->use_visualize_slopes = true;
 }
 
-int Scene::transformActiveModel(const mat4& m){
-	if (models.empty()) return -1;
-	models[activeModel]->transform(m);
-	return 0;
+void Scene::transformActive(const mat4& m){
+	if (control_camera) {
+		// TODO cameras[activeCamera]->transform(m)
+	}
+	else models[activeModel]->transform(m);
 }
 
-void Scene::iterateModels(){
-	if (!models.empty()) activeModel = (activeModel + 1) % models.size();
+void Scene::iterateActive(){
+	if (control_camera) {
+		activeCamera = (activeCamera + 1) % cameras.size();
+	}
+	else {
+		if (!models.empty()) activeModel = (activeModel + 1) % models.size();
+	}
+}
+
+void Scene::removeActiveModel()
+{
+	vector<ModelPtr>::iterator iter = models.begin() + activeModel;
+	models.erase(iter);
+	iterateActive();
+	if (models.empty()) control_camera = true;
 }
 
 void Scene::draw() {

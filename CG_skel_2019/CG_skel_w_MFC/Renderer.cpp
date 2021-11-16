@@ -6,14 +6,13 @@
 
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 
-Renderer::Renderer() : m_outBuffer(nullptr), m_width(512), m_height(512)
-{
+Renderer::Renderer() : m_outBuffer(nullptr), m_width(512), m_height(512) {
 	InitOpenGLRendering();
 	CreateBuffers(512,512);
 	SetVisualizeSlopes();
 }
-Renderer::Renderer(int width, int height) : m_outBuffer(nullptr), m_width(width), m_height(height)
-{
+
+Renderer::Renderer(int width, int height) : m_outBuffer(nullptr), m_width(width), m_height(height) {
 	InitOpenGLRendering();
 	CreateBuffers(width,height);
 	SetVisualizeSlopes();
@@ -32,10 +31,17 @@ vec2 Renderer::GetScreenSize()
 void Renderer::CreateBuffers(int width, int height)
 {
 	m_width=width;
-	m_height=height;	
+	m_height=height;
 	CreateOpenGLBuffer(); //Do not remove this line.
-	if (m_outBuffer == nullptr) m_outBuffer = (GLfloat*)malloc(sizeof(GLfloat) * (3 * m_width * m_height));
-	else m_outBuffer = (GLfloat*)realloc(m_outBuffer, sizeof(GLfloat) * (3 * m_width * m_height));
+	if (m_outBuffer == nullptr) {
+		RECT desktop;
+		const HWND hdesktop = GetDesktopWindow();
+		GetWindowRect(hdesktop, &desktop);
+		m_outBuffer = (GLfloat*)malloc(sizeof(GLfloat) * (3 * desktop.right * desktop.bottom));
+		SwapBuffers();
+		//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_RGB, GL_FLOAT, m_outBuffer);
+	}
+	glutReshapeWindow(width, height);
 }
 
 void Renderer::SetDemoBuffer()
@@ -242,9 +248,11 @@ void Renderer::SetObjectMatrices(const mat4& oTransform, const mat3& nTransform)
 }
 
 mat4 Renderer::CalcFinalTransformation() {
+	//int max_aspect = max(m_height / m_width, m_width / m_height);
 	mat4 world_transform = mat4();
-	const mat4 final_transformation = m_projection * m_cTransform * world_transform * m_oTransform;
-	return final_transformation;
+	if (m_width > m_height) world_transform = Scale(1, m_width / (float)m_height, 1);
+	else  world_transform = Scale(m_height / (float)m_width, 1, 1);
+	return m_projection * m_cTransform * world_transform * m_oTransform;
 }
 
 void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals) {

@@ -25,6 +25,7 @@
 #define PLOT_BOUNDRY_BOX 1
 #define PLOT_VERTEX_NORMALS 2
 #define PLOT_FACE_NORMALS 3
+#define REMOVE_ACTIVE_MODEL 4
 
 // change color menu
 #define WHITE 1

@@ -45,6 +45,7 @@ class Light {
 
 class Camera {
 	mat4 cTransform;
+	mat4 lookAt;
 	mat4 projection;
 	vec4 eye;
 
@@ -75,7 +76,8 @@ class Scene {
 	vector<LightPtr> lights;
 	vector<CameraPtr> cameras;
 	Renderer *m_renderer;
-	bool render_cameras = false;
+	bool render_cameras;
+	bool control_camera;
 
 public:
 	Scene();
@@ -91,8 +93,9 @@ public:
 	void togglePlotFaceNormals();
 	void changeColor(const vec3& color);
 	void visualizeSlopes();
-	int transformActiveModel(const mat4& m);
-	void iterateModels();
+	void transformActive(const mat4& m);
+	void iterateActive();
+	void removeActiveModel();
 	void draw();
 	void drawDemo();
 	
