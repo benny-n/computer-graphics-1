@@ -16,6 +16,11 @@ const vector<ModelPtr>& Scene::getModels()
 	return mModels;
 }
 
+const vector<CameraPtr>& Scene::getCameras()
+{
+	return mCameras;
+}
+
 void Scene::setControlCamera(bool c)
 {
 	if (c == mControlCamera) return;
@@ -44,9 +49,7 @@ void Scene::addCamera(){
 
 void Scene::toggleControlWorld() {
 	mControlWorld = !mControlWorld;
-	cout << "You are now transforming the ";
-	cout << (mControlWorld ? "world" : "object");
-	cout << "!" << endl;
+	printControlMsg();
 }
 
 void Scene::toggleRenderCameras(){
@@ -68,9 +71,7 @@ void Scene::togglePlotFaceNormals(){
 void Scene::toggleControlCamera()
 {
 	mControlCamera = !mControlCamera;
-	cout << "You are now controling the active ";
-	cout << (mControlCamera ? "camera" : "model");
-	cout << "!" << endl;
+	printControlMsg();
 }
 
 void Scene::changeColor(const vec3& color)
@@ -114,13 +115,20 @@ void Scene::transformActive(const vec3& v) {
 	else mModels[mActiveModel]->transform(translate(v));
 }
 
-void Scene::iterateActive(){
-	if (mControlCamera) {
-		mActiveCamera = (mActiveCamera + 1) % mCameras.size();
-	}
+void Scene::iterateActive() {
+	if (mControlCamera) { mActiveCamera = (mActiveCamera + 1) % mCameras.size(); }
 	else {
 		if (!mModels.empty()) mActiveModel = (mActiveModel + 1) % mModels.size();
 	}
+	printControlMsg();
+}
+
+void Scene::printControlMsg() {
+	cout << "Controlling ";
+	if (mControlCamera) cout << "camera " << mActiveCamera;
+	else cout << mModels[mActiveModel]->getName() << " " << mActiveModel;
+	if (mControlWorld) cout << " (world)";
+	cout << endl;
 }
 
 void Scene::removeActiveModel()

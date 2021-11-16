@@ -1,5 +1,10 @@
-*
-!./*.cpp
-!./*.h
-!./*.sln
-CG_skel_2019/.vs
+./*
+!./CG_skel_2019
+CG_skel_2019/*
+!CG_skel_2019/CG_skel_w_MFC/
+CG_skel_2019/CG_skel_w_MFC/*
+!CG_skel_2019/CG_skel_w_MFC/*.cpp
+!CG_skel_2019/CG_skel_w_MFC/*.h
+!CG_skel_2019/CG_skel_w_MFC/*.sln
+!CG_skel_2019/CG_skel_w_MFC/*.vcxproj*
+!CG_skel_2019/CG_skel_w_MFC/*.vcxproj.filters

@@ -8,14 +8,17 @@
 #define MOUSE_WHEEL_DOWN 4
 
 // defines for menus
-#define FILE_OPEN 1
-#define MAIN_DEMO 1
-#define MAIN_ABOUT 2
-#define SUCCESS 0
+// main menu
+#define ADD_CAMERA 1
+#define MAIN_DEMO 2
+#define MAIN_ABOUT 3
 
 // add model menu
 #define FROM_FILE 1
 #define PRIM 2
+
+// open file menu
+#define FILE_OPEN 1
 
 // add primitive menu
 #define CUBE 1
@@ -36,14 +39,23 @@
 #define VISUALIZE_SLOPES 6
 #define CUSTOM_COLOR 7
 
+// active camera options menu
+#define FOCUS 1
+#define ORTHO 2
+#define FRUSTUM 3
+#define PERSPECTIVE 4
+#define LOOK_AT 5
+#define MOVE_TO 6
+#define REMOVE_ACTIVE_CAMERA 7
+
 // define for sensetivity
-#define SENSETIVITY 0.2 //BONUS if we want sensetivity to be interactive, make it a variable
+#define SENSETIVITY 0.2 //TODO make interactive
 #define SCALE_UP (1.0 + SENSETIVITY)
 #define SCALE_DOWN (1.0 / SCALE_UP)
 #define ROTATE (60 * SENSETIVITY)
 #define TRANSLATE (SENSETIVITY)
 
-float getFloatFromUser(const string& directive);
+float getFloatFromUser(const string& directive, bool wantFraction = false);
 void inputMessage();
 void display(void);
 void reshape(int width, int height);
@@ -55,5 +67,7 @@ void addPrimMenu(int id);
 void selectModelMenu(int id);
 void changeColorMenu(int id);
 void activeModelOptionsMenu(int id);
+void selectCameraMenu(int id);
+void activeCameraOptionsMenu(int id);
 void mainMenu(int id);
 void initMenu();

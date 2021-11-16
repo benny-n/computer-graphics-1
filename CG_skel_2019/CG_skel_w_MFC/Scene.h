@@ -26,6 +26,7 @@ public:
 	Scene();
 	Scene(Renderer *renderer);
 	const vector<ModelPtr>& getModels();
+	const vector<CameraPtr>& getCameras();
 	void setControlCamera(bool c);
 	void loadOBJModel(string fileName);
 	void addCubeModel();
@@ -43,6 +44,7 @@ public:
 	void transformActive(const float degrees, const RotationAxis& axis); // for rotating
 	void transformActive(const vec3& v); // for translating
 	void iterateActive();
+	void printControlMsg();
 	void removeActiveModel();
 	void draw();
 	void drawDemo();

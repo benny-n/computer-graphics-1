@@ -10,12 +10,12 @@ extern Scene* gScene;
 extern Renderer* gRenderer;
 
 
-float getFloatFromUser(const string& directive)
+float getFloatFromUser(const string& directive, bool wantFraction)
 {
 	float input = -1;
 	cout << directive << ": ";
 	cin >> input;
-	while (!cin || input < 0 || input > 1) {
+	while (!cin || (wantFraction && (input < 0 || input > 1))) {
 		// Clear the error flag
 		cin.clear();
 		// Ignore the characters to avoid looping forever
@@ -147,20 +147,15 @@ void motion(int x, int y)
 
 void fileMenu(int id)
 {
-	switch (id)
+	CFileDialog dlg(TRUE, _T(".obj"), NULL, NULL, _T("*.obj|*.*"));
+	if (dlg.DoModal() == IDOK)
 	{
-	case FILE_OPEN:
-		CFileDialog dlg(TRUE, _T(".obj"), NULL, NULL, _T("*.obj|*.*"));
-		if (dlg.DoModal() == IDOK)
-		{
-			std::string s((LPCTSTR)dlg.GetPathName());
-			gScene->loadOBJModel((LPCTSTR)dlg.GetPathName());
-			gScene->mActiveModel = gScene->getModels().size() - 1;
-			gScene->setControlCamera(false);
-			glutPostRedisplay();
-			initMenu();
-		}
-		break;
+		std::string s((LPCTSTR)dlg.GetPathName());
+		gScene->loadOBJModel((LPCTSTR)dlg.GetPathName());
+		gScene->mActiveModel = gScene->getModels().size() - 1;
+		gScene->setControlCamera(false);
+		glutPostRedisplay();
+		initMenu();
 	}
 }
 
@@ -208,10 +203,10 @@ void changeColorMenu(int id) {
 	case CUSTOM_COLOR:
 		inputMessage();
 		cout << "Please enter rgb values between 0 and 1" << endl;
-		float r = getFloatFromUser("r");
-		float g = getFloatFromUser("g");
-		float b = getFloatFromUser("b");
-		cout << "Custom color: (" << r << ", " << g << ", " << b << ")" << endl;
+		float r = getFloatFromUser("r", true);
+		float g = getFloatFromUser("g", true);
+		float b = getFloatFromUser("b", true);
+		//cout << "Custom color: (" << r << ", " << g << ", " << b << ")" << endl;
 		gScene->changeColor(vec3(r, g, b));
 		break;
 	
@@ -240,10 +235,69 @@ void activeModelOptionsMenu(int id) {
 	glutPostRedisplay();
 }
 
+void selectCameraMenu(int id) {
+	gScene->mActiveCamera = id;
+}
+
+void activeCameraOptionsMenu(int id) {
+	float left, right, bottom, top, zNear, zFar, fovy, aspect;
+	switch (id)
+	{
+	case FOCUS:
+		break;
+	case ORTHO:
+		inputMessage();
+		cout << "Please enter your desired parameters" << endl;
+		left = getFloatFromUser("left");
+		right = getFloatFromUser("right");
+		bottom = getFloatFromUser("bottom");
+		top = getFloatFromUser("top");
+		zNear = getFloatFromUser("zNear");
+		zFar = getFloatFromUser("zFar");
+		gScene->getCameras()[gScene->mActiveCamera]->ortho(left, right, bottom, top, zNear, zFar);
+		break;
+	case FRUSTUM:
+		inputMessage();
+		cout << "Please enter your desired parameters" << endl;
+		left = getFloatFromUser("left");
+		right = getFloatFromUser("right");
+		bottom = getFloatFromUser("bottom");
+		top = getFloatFromUser("top");
+		zNear = getFloatFromUser("zNear");
+		zFar = getFloatFromUser("zFar");
+		gScene->getCameras()[gScene->mActiveCamera]->frustum(left, right, bottom, top, zNear, zFar);
+		break;
+	case PERSPECTIVE:
+		inputMessage();
+		cout << "Please enter your desired parameters" << endl;
+		fovy = getFloatFromUser("fovy");
+		aspect = getFloatFromUser("aspect ratio");
+		zNear = getFloatFromUser("zNear");
+		zFar = getFloatFromUser("zFar");
+		gScene->getCameras()[gScene->mActiveCamera]->perspective(fovy, aspect, zNear, zFar);
+		break;
+	case LOOK_AT:
+		break;
+	case MOVE_TO:
+		break;
+	case REMOVE_ACTIVE_CAMERA:
+		initMenu();
+		break;
+	}
+	glutPostRedisplay();
+}
+
 void mainMenu(int id)
 {
 	switch (id)
 	{
+	case ADD_CAMERA:
+		gScene->addCamera();
+		gScene->mActiveCamera = gScene->getCameras().size() - 1;
+		gScene->setControlCamera(true);
+		glutPostRedisplay();
+		initMenu();
+		break;
 	//case MAIN_DEMO:
 	//	gScene->drawDemo();
 	//	break;
@@ -298,6 +352,24 @@ void initMenu()
 	glutAddSubMenu("Change Color", menuChangeColor);
 	glutAddMenuEntry("Remove Active Model", REMOVE_ACTIVE_MODEL);
 
+	//create select camera menu
+	int menuSelectCamera = glutCreateMenu(selectCameraMenu);
+	counter = 0;
+	for each (auto camera in gScene->getCameras()) {
+		glutAddMenuEntry(("camera " + to_string(counter)).c_str(), counter);
+		counter++;
+	}
+
+	//create active camera options menu
+	int menuActiveCameraOptions = glutCreateMenu(activeCameraOptionsMenu);
+	glutAddMenuEntry("Focus On Active Model", PLOT_BOUNDRY_BOX);
+	glutAddMenuEntry("Ortho", ORTHO);
+	glutAddMenuEntry("Frustum", FRUSTUM);
+	glutAddMenuEntry("Perspective", PERSPECTIVE);
+	glutAddMenuEntry("Look At", LOOK_AT);
+	glutAddMenuEntry("Move To", MOVE_TO);
+	glutAddMenuEntry("Remove Active Camera", REMOVE_ACTIVE_CAMERA);
+
 	//finally, create the main menu and start adding submenus to it
 	glutCreateMenu(mainMenu);
 	glutAddSubMenu("Add Model", menuAddModel);
@@ -307,6 +379,10 @@ void initMenu()
 		glutAddSubMenu("Select Model", menuSelectModel);
 		glutAddSubMenu("Active Model Options", menuActiveModelOptions);
 	}
+
+	glutAddMenuEntry("Add Camera", ADD_CAMERA);
+	glutAddSubMenu("Select Camera", menuSelectCamera);
+	glutAddSubMenu("Active Camera Options", menuActiveCameraOptions);
 
 	//glutAddMenuEntry("Demo", MAIN_DEMO);
 	glutAddMenuEntry("About", MAIN_ABOUT);
