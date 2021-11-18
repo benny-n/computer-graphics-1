@@ -239,7 +239,6 @@ mat4 Renderer::calcFinalTransformation() {
 }
 
 void Renderer::drawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals) {
-
 	const mat4 finalTransformation = calcFinalTransformation();
 	vec2 triangles[3];
 	float r, s;
@@ -262,7 +261,6 @@ void Renderer::drawTriangles(const vector<vec3>* vertices, const vector<vec3>* n
 }
 
 void Renderer::drawSquares(const vector<vec3>* vertices) {
-	
 	const mat4 finalTransformation = calcFinalTransformation();
 	vec2 squares[4];
 	float r, s;

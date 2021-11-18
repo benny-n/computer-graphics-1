@@ -28,7 +28,8 @@
 #define PLOT_BOUNDRY_BOX 1
 #define PLOT_VERTEX_NORMALS 2
 #define PLOT_FACE_NORMALS 3
-#define REMOVE_ACTIVE_MODEL 4
+#define MOVE_MODEL_TO 4
+#define REMOVE_ACTIVE_MODEL 5
 
 // change color menu
 #define WHITE 1
@@ -45,7 +46,7 @@
 #define FRUSTUM 3
 #define PERSPECTIVE 4
 #define LOOK_AT 5
-#define MOVE_TO 6
+#define MOVE_CAMERA_TO 6
 #define REMOVE_ACTIVE_CAMERA 7
 
 // define for sensetivity

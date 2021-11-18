@@ -193,16 +193,12 @@ void MeshModel::loadFile(string fileName)
 
 void MeshModel::setColor(const vec3& c) { mColor = c; }
 
-void MeshModel::transform(const mat4& m) {
+void MeshModel::transform(const mat4& m, bool transformWorld) {
 	mat4 transformation = translate(mBoundryBox.center()) * m * translate(-mBoundryBox.center());
-	mModelTransform = transformation * mModelTransform;
 	mBoundryBox.transform(transformation);
-}
-
-void MeshModel::transformWorld(const mat4& m) {
-	mat4 transformation = translate(mBoundryBox.center()) * m * translate(-mBoundryBox.center());
-	mWorldTransform = transformation * mWorldTransform;
-	mBoundryBox.transform(transformation);
+	transformWorld ?
+		mWorldTransform = transformation * mWorldTransform :
+		mModelTransform = transformation * mModelTransform;
 }
 
 void MeshModel::draw(Renderer* renderer)

@@ -43,9 +43,9 @@ void reshape(int width, int height)
 
 void keyboard(unsigned char key, int x, int y)
 {
-	//cout << "pressed key: " << int(key) << " on x: "  << x << " and y: " << y << endl;
+	//cout << "pressed key: " << key << " on x: "  << x << " and y: " << y << endl;
 	switch (key) {
-	case 033:
+	case 033: // escape
 		exit(EXIT_SUCCESS);
 		break;	
 	case 'z':
@@ -93,13 +93,31 @@ void keyboard(unsigned char key, int x, int y)
 	case 'c':
 		gScene->toggleRenderCameras();
 		break;
-	case '\t':
+	case 'j':
+		gScene->transformActive(scale(SCALE_UP, 1, 1));
+		break;
+	case 10: // ctrl + j
+		gScene->transformActive(scale(SCALE_DOWN, 1, 1));
+		break;
+	case 'k':
+		gScene->transformActive(scale(1, SCALE_UP, 1));
+		break;
+	case 11: // ctrl + k
+		gScene->transformActive(scale(1, SCALE_DOWN, 1));
+		break;
+	case 'l':
+		gScene->transformActive(scale(1, 1, SCALE_UP));
+		break;
+	case 12: // ctrl + l
+		gScene->transformActive(scale(1, 1, SCALE_DOWN));
+		break;
+	case '\t': // tab
 		gScene->iterateActive();
 		break;
-	case ' ':
+	case ' ': // space bar
 		gScene->toggleControlCamera();
 		break;
-	case 23:
+	case 23: // ctrl + w
 		gScene->toggleControlWorld();
 		break;
 
@@ -150,10 +168,7 @@ void fileMenu(int id)
 	CFileDialog dlg(TRUE, _T(".obj"), NULL, NULL, _T("*.obj|*.*"));
 	if (dlg.DoModal() == IDOK)
 	{
-		std::string s((LPCTSTR)dlg.GetPathName());
 		gScene->loadOBJModel((LPCTSTR)dlg.GetPathName());
-		gScene->mActiveModel = gScene->getModels().size() - 1;
-		gScene->setControlCamera(false);
 		glutPostRedisplay();
 		initMenu();
 	}
@@ -169,8 +184,6 @@ void addPrimMenu(int id) {
 		gScene->addPyramidModel();	
 		break;
 	}
-	gScene->mActiveModel = gScene->getModels().size() - 1;
-	gScene->setControlCamera(false);
 	glutPostRedisplay();
 	initMenu();
 }
@@ -209,7 +222,6 @@ void changeColorMenu(int id) {
 		//cout << "Custom color: (" << r << ", " << g << ", " << b << ")" << endl;
 		gScene->changeColor(vec3(r, g, b));
 		break;
-	
 	}
 	glutPostRedisplay();
 }
@@ -227,6 +239,17 @@ void activeModelOptionsMenu(int id) {
 	case PLOT_FACE_NORMALS:
 		gScene->togglePlotFaceNormals();
 		break;
+	case MOVE_MODEL_TO: {
+		inputMessage();
+		cout << "Please enter coordinates for the model's new location" << endl;
+		float x = getFloatFromUser("x");
+		float y = getFloatFromUser("y");
+		float z = getFloatFromUser("z");
+		//cout << "New coordinates: (" << x << ", " << y << ", " << z << ")" << endl;
+		const vec4 modelCenter = gScene->getModels()[gScene->mActiveModel]->mBoundryBox.center();
+		gScene->transformActive(translate(x - modelCenter.x, y - modelCenter.y, z - modelCenter.z));
+		break;
+	}
 	case REMOVE_ACTIVE_MODEL:
 		gScene->removeActiveModel();
 		initMenu();
@@ -237,14 +260,18 @@ void activeModelOptionsMenu(int id) {
 
 void selectCameraMenu(int id) {
 	gScene->mActiveCamera = id;
+	gScene->printControlMsg();
 }
 
 void activeCameraOptionsMenu(int id) {
-	float left, right, bottom, top, zNear, zFar, fovy, aspect;
+	float left, right, bottom, top, zNear, zFar, fovy, aspect, x, y, z;
 	switch (id)
 	{
-	case FOCUS:
+	case FOCUS: {
+		const vec4 activeModelCenter = gScene->getModels()[gScene->mActiveModel]->mBoundryBox.center();
+		gScene->modifyActiveCamera(activeModelCenter, false);
 		break;
+	}
 	case ORTHO:
 		inputMessage();
 		cout << "Please enter your desired parameters" << endl;
@@ -277,11 +304,27 @@ void activeCameraOptionsMenu(int id) {
 		gScene->getCameras()[gScene->mActiveCamera]->perspective(fovy, aspect, zNear, zFar);
 		break;
 	case LOOK_AT:
+		inputMessage();
+		cout << "Please enter coordinates for the camera's new target" << endl;
+		x = getFloatFromUser("x");
+		y = getFloatFromUser("y");
+		z = getFloatFromUser("z");
+		gScene->modifyActiveCamera(vec4(x, y, z, 1), false);
 		break;
-	case MOVE_TO:
+	case MOVE_CAMERA_TO:
+		inputMessage();
+		cout << "Please enter coordinates for the camera's new location" << endl;
+		x = getFloatFromUser("x");
+		y = getFloatFromUser("y");
+		z = getFloatFromUser("z");
+		gScene->modifyActiveCamera(vec4(x, y, z, 1), true);
 		break;
 	case REMOVE_ACTIVE_CAMERA:
-		initMenu();
+		if (gScene->getCameras().size() == 1) AfxMessageBox(_T("You can't remove your only camera!"));
+		else {
+			gScene->removeActiveCamera();
+			initMenu();
+		}
 		break;
 	}
 	glutPostRedisplay();
@@ -293,8 +336,6 @@ void mainMenu(int id)
 	{
 	case ADD_CAMERA:
 		gScene->addCamera();
-		gScene->mActiveCamera = gScene->getCameras().size() - 1;
-		gScene->setControlCamera(true);
 		glutPostRedisplay();
 		initMenu();
 		break;
@@ -349,6 +390,7 @@ void initMenu()
 	glutAddMenuEntry("Plot Boundry Box", PLOT_BOUNDRY_BOX);
 	glutAddMenuEntry("Plot Vertex Normals", PLOT_VERTEX_NORMALS);
 	glutAddMenuEntry("Plot Face Normals", PLOT_FACE_NORMALS);
+	glutAddMenuEntry("Move To", MOVE_MODEL_TO);
 	glutAddSubMenu("Change Color", menuChangeColor);
 	glutAddMenuEntry("Remove Active Model", REMOVE_ACTIVE_MODEL);
 
@@ -367,7 +409,7 @@ void initMenu()
 	glutAddMenuEntry("Frustum", FRUSTUM);
 	glutAddMenuEntry("Perspective", PERSPECTIVE);
 	glutAddMenuEntry("Look At", LOOK_AT);
-	glutAddMenuEntry("Move To", MOVE_TO);
+	glutAddMenuEntry("Move To", MOVE_CAMERA_TO);
 	glutAddMenuEntry("Remove Active Camera", REMOVE_ACTIVE_CAMERA);
 
 	//finally, create the main menu and start adding submenus to it

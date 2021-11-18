@@ -102,6 +102,10 @@ struct vec2 {
     friend std::istream& operator >> ( std::istream& is, vec2& v )
 	{ return is >> v.x >> v.y ; }
 
+    //
+    // --- comparison operators ---
+    //
+
     friend bool operator< (const vec2& v1, const vec2& v2) {
         return (v1.x < v2.x) || (v1.x == v2.x && v1.y < v2.y);
     }
@@ -238,6 +242,14 @@ struct vec3 {
 
     friend std::istream& operator >> ( std::istream& is, vec3& v )
 	{ return is >> v.x >> v.y >> v.z ; }
+
+    //
+    // --- comparison operators ---
+    //
+
+    friend bool operator== (const vec3& v1, const vec3& v2) {
+        return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z;
+    }
 
     //
     //  --- Conversion Operators ---
@@ -380,6 +392,14 @@ struct vec4 {
 
     friend std::istream& operator >> ( std::istream& is, vec4& v )
 	{ return is >> v.x >> v.y >> v.z >> v.w; }
+
+    //
+    // --- comparison operators ---
+    //
+
+    friend bool operator== (const vec4& v1, const vec4& v2) {
+        return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z && v1.w == v2.w;
+    }
 
     //
     //  --- Conversion Operators ---

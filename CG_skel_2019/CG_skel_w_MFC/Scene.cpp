@@ -21,30 +21,36 @@ const vector<CameraPtr>& Scene::getCameras()
 	return mCameras;
 }
 
-void Scene::setControlCamera(bool c)
-{
-	if (c == mControlCamera) return;
-	toggleControlCamera();
-}
-
 void Scene::loadOBJModel(string fileName) {
 	auto model = make_shared<MeshModel>(fileName);
 	mModels.push_back(model);
+	mActiveModel = mModels.size() - 1;
+	mControlCamera = false;
+	printControlMsg();
 }
 
 void Scene::addCubeModel() {
 	auto model = make_shared<CubeMeshModel>();
 	mModels.push_back(model);
+	mActiveModel = mModels.size() - 1;
+	mControlCamera = false;
+	printControlMsg();
 }
 
 void Scene::addPyramidModel() {
 	auto model = make_shared<PyramidMeshModel>();
 	mModels.push_back(model);
+	mActiveModel = mModels.size() - 1;
+	mControlCamera = false;
+	printControlMsg();
 }
 
 void Scene::addCamera(){
 	auto camera = make_shared<Camera>();
 	mCameras.push_back(camera);
+	mActiveCamera = mCameras.size() - 1;
+	mControlCamera = true;
+	printControlMsg();
 }
 
 void Scene::toggleControlWorld() {
@@ -87,7 +93,7 @@ void Scene::visualizeSlopes()
 
 void Scene::transformActive(const mat4& m){
 	if (mControlCamera) mCameras[mActiveCamera]->transform(m);
-	else mModels[mActiveModel]->transform(m);
+	else mModels[mActiveModel]->transform(m, mControlWorld);
 }
 
 void Scene::transformActive(const float degrees, const RotationAxis& axis) {
@@ -105,14 +111,41 @@ void Scene::transformActive(const float degrees, const RotationAxis& axis) {
 			rotation = rotateZ(degrees);
 			break;
 		}
-		if (mControlWorld) mModels[mActiveModel]->transformWorld(rotation);
-		else mModels[mActiveModel]->transform(rotation);
+		mModels[mActiveModel]->transform(rotation, mControlWorld);
 	}
 }
 
 void Scene::transformActive(const vec3& v) {
 	if (mControlCamera) mCameras[mActiveCamera]->transform(v);
-	else mModels[mActiveModel]->transform(translate(v));
+	else mModels[mActiveModel]->transform(translate(v), mControlWorld);
+}
+
+void Scene::modifyActiveCamera(const vec4& v, bool isEye) 
+{
+	const CameraPtr activeCamera = mCameras[mActiveCamera];
+ 	vec3 vector0, modifiedEye, modifiedAt;
+	if (isEye) {
+		const vec4 at = activeCamera->getAt();
+		modifiedAt = vec3(at.x, at.y, at.z);
+		modifiedEye = vec3(v.x, v.y, v.z);
+		while (modifiedAt == vector0 || modifiedEye == vector0) {
+			modifiedAt.x++;
+			modifiedEye.x++;
+		}
+		const vec4 newUp = cross(modifiedEye, modifiedAt); // doesn't work when one of them is 0 vector
+		activeCamera->lookAt(v, at, newUp);
+	}
+	else { // is at
+		const vec4 eye = activeCamera->getEye();
+		modifiedAt = vec3(v.x, v.y, v.z);
+		modifiedEye = vec3(eye.x, eye.y, eye.z);
+		while (modifiedAt == vector0 || modifiedEye == vector0) {
+			modifiedAt.x++;
+			modifiedEye.x++;
+		}
+		const vec4 newUp = cross(modifiedEye, modifiedAt); // doesn't work when one of them is 0 vector
+		activeCamera->lookAt(eye, v, newUp);
+	}
 }
 
 void Scene::iterateActive() {
@@ -138,6 +171,16 @@ void Scene::removeActiveModel()
 	if (mActiveModel > 0) mActiveModel--;
 	else if (mModels.size() > 0) mActiveModel = mModels.size() - 1;
 	else mControlCamera = true;
+	if (!mControlCamera) printControlMsg();
+}
+
+void Scene::removeActiveCamera()
+{
+	vector<CameraPtr>::iterator iter = mCameras.begin() + mActiveCamera;
+	mCameras.erase(iter);
+	if (mActiveCamera > 0) mActiveCamera--;
+	else mActiveCamera = mCameras.size() - 1;
+	if (mControlCamera) printControlMsg();
 }
 
 void Scene::draw() {

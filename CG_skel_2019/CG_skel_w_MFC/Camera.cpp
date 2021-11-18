@@ -12,6 +12,16 @@ Camera::Camera(const vec4& eye) {
 	ortho(-10, 10, -10, 10, 5, 15);
 }
 
+const vec4& Camera::getEye()
+{
+	return mEye;
+}
+
+const vec4& Camera::getAt()
+{
+	return mAt;
+}
+
 void Camera::transform(const mat4& m) {
 	//const mat4 transformation = Translate(eye) * m * Translate(-eye);
 	//cTransform = transformation * cTransform;
@@ -19,8 +29,7 @@ void Camera::transform(const mat4& m) {
 	mCameraTransform = m * mCameraTransform;
 }
 
-void Camera::transform(const float degrees, const RotationAxis& axis)
-{
+void Camera::transform(const float degrees, const RotationAxis& axis) {
 	mat4 rotation;
 	switch (axis) {
 	case RotationAxis::X:

@@ -7,20 +7,6 @@
 using namespace std;
 
 class Model {
-
-public:
-	bool mDrawBoundryBox;
-	bool mDrawVertexNormals;
-	bool mDrawFaceNormals;
-	bool mUseVisualizeSlopes;
-	vec3 mColor;
-
-	Model() : mDrawBoundryBox(false), mDrawVertexNormals(false), mDrawFaceNormals(false), mUseVisualizeSlopes(false), mColor(1) {}
-	const string& getName();
-	void virtual transform(const mat4& m) = 0;
-	void virtual transformWorld(const mat4& m) = 0;
-	void virtual draw(Renderer*) = 0;
-
 protected:
 	virtual ~Model() {}
 	class BoundryBox {
@@ -35,8 +21,20 @@ protected:
 		vec4 center();
 		void draw(Renderer* renderer);
 	};
-	BoundryBox mBoundryBox;
 	string mName;
+
+public:
+	bool mDrawBoundryBox;
+	bool mDrawVertexNormals;
+	bool mDrawFaceNormals;
+	bool mUseVisualizeSlopes;
+	BoundryBox mBoundryBox;
+	vec3 mColor;
+
+	Model() : mDrawBoundryBox(false), mDrawVertexNormals(false), mDrawFaceNormals(false), mUseVisualizeSlopes(false), mColor(1) {}
+	const string& getName();
+	void virtual transform(const mat4& m, bool transformWorld) = 0;
+	void virtual draw(Renderer*) = 0;
 };
 
 
@@ -53,8 +51,7 @@ public:
 	~MeshModel(void);
 	virtual void loadFile(string fileName);
 	void setColor(const vec3& c);
-	void transform(const mat4& m) override;
-	void transformWorld(const mat4& m) override;
+	void transform(const mat4& m, bool transformWorld) override;
 	void draw(Renderer* renderer) override;
 };
 

@@ -16,6 +16,8 @@ class Camera {
 public:
 	Camera();
 	explicit Camera(const vec4& eye);
+	const vec4& getEye();
+	const vec4& getAt();
 	void transform(const mat4& m); // for scaling
 	void transform(const float degrees, const RotationAxis& axis); // for rotating
 	void transform(const vec3& v); // for translatin
