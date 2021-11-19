@@ -258,6 +258,7 @@ PrimMeshModel::~PrimMeshModel(){}
 CubeMeshModel::CubeMeshModel() {
 	mName = "cube";
 	mVertexPositions = vector<vec3>(36);
+	mVertexNormals = vector<vec3>(36);
 
 	// First Face (bottom)
 		// First Triangle
@@ -330,6 +331,7 @@ CubeMeshModel::CubeMeshModel() {
 PyramidMeshModel::PyramidMeshModel() {
 	mName = "pyramid";
 	mVertexPositions = vector<vec3>(18);
+	mVertexNormals = vector<vec3>(18);
 
 	// Base
 		// First Triangle
