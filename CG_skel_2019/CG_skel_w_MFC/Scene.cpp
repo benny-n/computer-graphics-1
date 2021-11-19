@@ -126,30 +126,36 @@ void Scene::transformActive(const vec3& v) {
 	else mModels[mActiveModel]->transform(translate(v), mat4(), mControlWorld);
 }
 
-void Scene::modifyActiveCamera(const vec4& v, bool isEye) 
-{
+void Scene::modifyActiveCamera(const vec4& v, bool isEye) {
 	const CameraPtr activeCamera = mCameras[mActiveCamera];
  	vec3 vector0, modifiedEye, modifiedAt;
 	if (isEye) {
 		const vec4 at = activeCamera->getAt();
 		modifiedAt = vec3(at.x, at.y, at.z);
 		modifiedEye = vec3(v.x, v.y, v.z);
-		while (modifiedAt == vector0 || modifiedEye == vector0) {
+		/*while (modifiedAt == vector0 || modifiedEye == vector0) {
 			modifiedAt.x++;
 			modifiedEye.x++;
+		}*/
+		
+		vec4 newUp = cross(modifiedEye, modifiedAt);
+		while (newUp == vector0) {
+			modifiedAt.x++;
+			modifiedEye.x++;
+			newUp = cross(modifiedEye, modifiedAt);
 		}
-		const vec4 newUp = cross(modifiedEye, modifiedAt); // doesn't work when one of them is 0 vector
 		activeCamera->lookAt(v, at, newUp);
 	}
 	else { // is at
 		const vec4 eye = activeCamera->getEye();
 		modifiedAt = vec3(v.x, v.y, v.z);
 		modifiedEye = vec3(eye.x, eye.y, eye.z);
-		while (modifiedAt == vector0 || modifiedEye == vector0) {
+		vec4 newUp = cross(modifiedEye, modifiedAt);
+		while (newUp == vector0) {
 			modifiedAt.x++;
 			modifiedEye.x++;
+			newUp = cross(modifiedEye, modifiedAt);
 		}
-		const vec4 newUp = cross(modifiedEye, modifiedAt); // doesn't work when one of them is 0 vector
 		activeCamera->lookAt(eye, v, newUp);
 	}
 }

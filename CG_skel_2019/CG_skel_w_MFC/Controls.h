@@ -50,11 +50,11 @@
 #define REMOVE_ACTIVE_CAMERA 7
 
 // define for sensetivity
-#define SENSETIVITY 0.2 //TODO make interactive
-#define SCALE_UP (1.0 + SENSETIVITY)
+
+#define SCALE_UP (1 + 0.2 * gSensetivity)
 #define SCALE_DOWN (1.0 / SCALE_UP)
-#define ROTATE (60 * SENSETIVITY)
-#define TRANSLATE (SENSETIVITY)
+#define ROTATE (12 * gSensetivity)
+#define TRANSLATE (0.2 * gSensetivity)
 
 float getFloatFromUser(const string& directive, bool wantFraction = false);
 void inputMessage();
@@ -62,6 +62,7 @@ void display(void);
 void reshape(int width, int height);
 void keyboard(unsigned char key, int x, int y);
 void mouse(int button, int state, int x, int y);
+void special(int key, int x, int y);
 void motion(int x, int y);
 void fileMenu(int id);
 void addPrimMenu(int id);

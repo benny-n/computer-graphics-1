@@ -43,11 +43,12 @@ int my_main( int argc, char **argv )
 	//----------------------------------------------------------------------------
 	// Initialize Callbacks
 
-	glutDisplayFunc( display );
-	glutKeyboardFunc( keyboard );
-	glutMouseFunc( mouse );
-	glutMotionFunc ( motion );
-	glutReshapeFunc( reshape );
+	glutDisplayFunc(display);
+	glutKeyboardFunc(keyboard);
+	glutMouseFunc(mouse);
+	glutMotionFunc (motion);
+	glutReshapeFunc(reshape);
+	glutSpecialFunc(special);
 	initMenu();
 	
 

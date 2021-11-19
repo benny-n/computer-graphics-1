@@ -54,7 +54,6 @@ vec4 Model::BoundryBox::center() {
 }
 
 void Model::BoundryBox::draw(Renderer* renderer) {
-	renderer->setColor(vec3(0.5));
 	renderer->drawSquares(&mVertexPositions);
 }
 
@@ -324,6 +323,7 @@ CubeMeshModel::CubeMeshModel() {
 	mBoundryBox.mMaxVec = vec4(1);
 	mBoundryBox.mMinVec = vec4(vec3(-1));
 	mBoundryBox.initVertexPositions();
+	calcVertexNormals();
 }
 
 // Pyramid
@@ -352,7 +352,7 @@ PyramidMeshModel::PyramidMeshModel() {
 	mVertexPositions[11] = vec3(0, 2, 0);
 
 	// Third Face
-	mVertexPositions[12] = vec3(-1, 0, 1);
+	mVertexPositions[12] = vec3(-1, 0, -1);
 	mVertexPositions[13] = vec3(-1, 0, 1);
 	mVertexPositions[14] = vec3(0, 2, 0);
 
@@ -365,6 +365,7 @@ PyramidMeshModel::PyramidMeshModel() {
 	mBoundryBox.mMaxVec = vec4(vec3(1, 2, 1));
 	mBoundryBox.mMinVec = vec4(vec3(-1, 0, -1));
 	mBoundryBox.initVertexPositions();
+	calcVertexNormals();
 }
 
 

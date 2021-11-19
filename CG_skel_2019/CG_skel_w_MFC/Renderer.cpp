@@ -68,7 +68,11 @@ void Renderer::setVisualizeSlopes()
 	mColors[3] = vec3(0, 0, 1);
 }
 
-void Renderer::reshape(int width, int height){ createBuffers(width, height); }
+void Renderer::reshape(int width, int height){ 
+	createBuffers(width, height); 
+	if (mWidth > mHeight) mAspectRatioTransform = scale(1, mWidth / (float)mHeight, 1);
+	else  mAspectRatioTransform = scale(mHeight / (float)mWidth, 1, 1);
+}
 
 void Renderer::colorPixel(int x, int y, const vec3& color) {
 	if (x >= mWidth || x < 0) return; //clip
@@ -88,8 +92,8 @@ void Renderer::drawCamera(const vec4& eye){
 	const mat4 finalTransformation = project * mProjection * mCameraTransform;
 	vec4 transformedEye = (finalTransformation * eye) / eye.w;
 	vec3 finalEye = vec3(transformedEye.x, transformedEye.y, transformedEye.w);
-	drawLine(finalEye.x - 5, finalEye.y, finalEye.x + 5, finalEye.y);
-	drawLine(finalEye.x, finalEye.y - 5, finalEye.x, finalEye.y + 5);
+	drawLine(finalEye.x - 5, finalEye.y, finalEye.x + 5, finalEye.y, true);
+	drawLine(finalEye.x, finalEye.y - 5, finalEye.x, finalEye.y + 5, true);
 }
 
 static void choosePixlesForCanonicalLine(vector<int>& ys, int x1, int y1) { // Bresenham Algorithm
@@ -108,7 +112,7 @@ static void choosePixlesForCanonicalLine(vector<int>& ys, int x1, int y1) { // B
 	}
 }
 
-void Renderer::drawLine(int x1, int y1, int x2, int y2) {
+void Renderer::drawLine(int x1, int y1, int x2, int y2, bool isNonModelLine) {
 	if (x1 > x2) {
 		swap(x1, x2);
 		swap(y1, y2);
@@ -187,7 +191,7 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2) {
 			choosePixlesForCanonicalLine(ys, x2 - x1, y2 - y1);
 			for (int x = 0; x < numPixels; x++)
 			{
-				colorPixel(x + x1, ys[x] + y1, mColors[0]);
+				colorPixel(x + x1, ys[x] + y1, (isNonModelLine? vec3(0.5) : mColors[0]));
 			}
 		}
 		else { // move to origin and reflect by y=x
@@ -196,7 +200,7 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2) {
 			choosePixlesForCanonicalLine(ys, y2 - y1, x2 - x1); // first translate, then reflect (swap x and y)
 			for (int x = 0; x < numPixels; x++)
 			{
-				colorPixel(ys[x] + x1, x + y1, mColors[1]); // first reflect back, then translate back
+				colorPixel(ys[x] + x1, x + y1, (isNonModelLine ? vec3(0.5) : mColors[1])); // first reflect back, then translate back
 			}
 		}
 	}
@@ -208,7 +212,7 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2) {
 			choosePixlesForCanonicalLine(ys, x2 - x1, y1 - y2); // first translate, then reflect (minus on y)
 			for (int x = 0; x < numPixels; x++)
 			{
-				colorPixel(x + x1, -(ys[x]) + y1, mColors[2]); // first reflect back, then translate back
+				colorPixel(x + x1, -(ys[x]) + y1, (isNonModelLine ? vec3(0.5) : mColors[2])); // first reflect back, then translate back
 			}
 		}
 		else { // move to origin, reflect by x=0 and then reflect by y=x
@@ -217,7 +221,7 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2) {
 			choosePixlesForCanonicalLine(ys, y1 - y2, x2 - x1); // first translate, then reflect (minus on y) and reflect again (swap x and y)
 			for (int x = 0; x < numPixels; x++)
 			{
-				colorPixel(ys[x] + x1, -x + y1, mColors[3]); // first reflect back on y=x, then reflect back on x=0, then translate back
+				colorPixel(ys[x] + x1, -x + y1, (isNonModelLine ? vec3(0.5) : mColors[3])); // first reflect back on y=x, then reflect back on x=0, then translate back
 			}
 		}
 	}
@@ -231,74 +235,21 @@ void Renderer::setObjectMatrices(const mat4& oTransform, const mat4& nTransform)
 	mNormalTransform = nTransform;
 }
 
-mat4 Renderer::getAspectRatio(){
-	mat4 aspectRatioTransform = mat4();
-	if (mWidth > mHeight) aspectRatioTransform = scale(1, mWidth / (float)mHeight, 1);
-	else  aspectRatioTransform = scale(mHeight / (float)mWidth, 1, 1);
-	return aspectRatioTransform;
-}
-
-void Renderer::calcTriangleAndNormalCoordinates(
-	const vector<vec3>* vertices, 
-	const vector<vec3>* normals,
-	vec2 triangles[3],
-	vec3 triangles3d[3],
-	int i, 
-	int j
-){
-	vec4 vertex((*vertices)[i + j]);
-	vec4 normal(vec3((*normals)[i + j]), 0);
-	vertex = getAspectRatio() * mObjectTransform * vertex;
-	normal = getAspectRatio() * mNormalTransform * normal;
-	triangles3d[j] = vec3(vertex.x, vertex.y, vertex.z);
-	normal = normalize(normal);
-	normal += vertex;
-	vertex = mProjection * mCameraTransform * vertex;
-	normal = mProjection * mCameraTransform * normal;
-	vertex /= vertex.w;
-	normal /= normal.w;
-	float r = (mWidth / 2) * (vertex.x + 1);
-	float s = (mHeight / 2) * (vertex.y + 1);
-	float rn = (mWidth / 2) * (normal.x + 1);
-	float sn = (mHeight / 2) * (normal.y + 1);
-	drawLine(r, s, rn, sn);
-	triangles[j] = vec2(r, s);
-}
-
-void Renderer::calcTriangleCoordinates(
-	const vector<vec3>* vertices, 
-	vec2 triangles[3],
-	vec3 triangles3d[3],
-	int i, 
-	int j
-){
-	vec4 vertex((*vertices)[i + j]);
-	vertex = getAspectRatio() * mObjectTransform * vertex;
-	triangles3d[j] = vec3(vertex.x, vertex.y, vertex.z);
-	vertex = mProjection * mCameraTransform * vertex;
-	vertex /= vertex.w;
-	const float r = (mWidth / 2) * (vertex.x + 1);
-	const float s = (mHeight / 2) * (vertex.y + 1);
-	triangles[j] = vec2(r, s);
-}
-
-void Renderer::calcTriangleAndFaceNormalCoordinates(vec3 triangles3d[3]) {
-	
+void Renderer::calcTriangleAndFaceNormalCoordinates(vec3 triangles3d[3], const mat4& from3dTo2d) {
 	vec3 i = triangles3d[1] - triangles3d[0];
 	vec3 j = triangles3d[2] - triangles3d[0];
 	vec4 normal = vec4(normalize(cross(i, j)), 0.f);
 	vec4 center = (triangles3d[0] + triangles3d[1] + triangles3d[2]) / 3;
 	normal += center;
-	center = mProjection * mCameraTransform * center;
-	normal = mProjection * mCameraTransform * normal;
+	center = from3dTo2d * center;
+	normal = from3dTo2d * normal;
 	center /= center.w;
 	normal /= normal.w;
 	float r = (mWidth / 2) * (center.x + 1);
 	float s = (mHeight / 2) * (center.y + 1);
 	float rn = (mWidth / 2) * (normal.x + 1);
 	float sn = (mHeight / 2) * (normal.y + 1);
-	drawLine(r, s, rn, sn);
-
+	drawLine(r, s, rn, sn, true);
 }
 
 void Renderer::drawTriangles(
@@ -309,27 +260,53 @@ void Renderer::drawTriangles(
 ) {
 	vec2 triangles[3];
 	vec3 triangles3d[3];
+	const mat4 modelTransform = mAspectRatioTransform * mObjectTransform;
+	const mat4 from3dTo2d = mProjection * mCameraTransform;
 
 	for (int i = 0; i < vertices->size(); i+=3)
 	{
-		for (int j = 0; j < 3; j++)
-		{
-			if (drawVertexNormals)
-				calcTriangleAndNormalCoordinates(vertices, normals, triangles, triangles3d, i, j);
-			else
-				calcTriangleCoordinates(vertices, triangles, triangles3d, i, j);
+		for (int j = 0; j < 3; j++) {
+			if (drawVertexNormals) {
+				vec4 vertex((*vertices)[i + j]);
+				vec4 normal(vec3((*normals)[i + j]), 0);
+				vertex = modelTransform * vertex;
+				normal = modelTransform * normal;
+				triangles3d[j] = vec3(vertex.x, vertex.y, vertex.z);
+				normal = normalize(normal);
+				normal += vertex;
+				vertex = from3dTo2d * vertex;
+				normal = from3dTo2d * normal;
+				vertex /= vertex.w;
+				normal /= normal.w;
+				float r = (mWidth / 2) * (vertex.x + 1);
+				float s = (mHeight / 2) * (vertex.y + 1);
+				float rn = (mWidth / 2) * (normal.x + 1);
+				float sn = (mHeight / 2) * (normal.y + 1);
+				drawLine(r, s, rn, sn, true);
+				triangles[j] = vec2(r, s);
+			}
+			else {
+				vec4 vertex((*vertices)[i + j]);
+				vertex = modelTransform * vertex;
+				triangles3d[j] = vec3(vertex.x, vertex.y, vertex.z);
+				vertex = from3dTo2d * vertex;
+				vertex /= vertex.w;
+				const float r = (mWidth / 2) * (vertex.x + 1);
+				const float s = (mHeight / 2) * (vertex.y + 1);
+				triangles[j] = vec2(r, s);
+			}
 		}
 		drawLine(triangles[0].x, triangles[0].y, triangles[1].x, triangles[1].y);
 		drawLine(triangles[1].x, triangles[1].y, triangles[2].x, triangles[2].y);
 		drawLine(triangles[2].x, triangles[2].y, triangles[0].x, triangles[0].y);
 
 		if (drawFaceNormals)
-			calcTriangleAndFaceNormalCoordinates(triangles3d);
+			calcTriangleAndFaceNormalCoordinates(triangles3d, from3dTo2d);
 	}
 }
 
 void Renderer::drawSquares(const vector<vec3>* vertices) {
-	const mat4 finalTransformation = mProjection * mCameraTransform * getAspectRatio() * mObjectTransform;
+	const mat4 finalTransformation = mProjection * mCameraTransform * mAspectRatioTransform * mObjectTransform;
 	vec2 squares[4];
 	float r, s;
 
@@ -344,10 +321,10 @@ void Renderer::drawSquares(const vector<vec3>* vertices) {
 			s = (mHeight / 2) * (vertex.y + 1);
 			squares[j] = vec2(r, s);
 		}
-		drawLine(squares[0].x, squares[0].y, squares[1].x, squares[1].y);
-		drawLine(squares[1].x, squares[1].y, squares[2].x, squares[2].y);
-		drawLine(squares[2].x, squares[2].y, squares[3].x, squares[3].y);
-		drawLine(squares[3].x, squares[3].y, squares[0].x, squares[0].y);
+		drawLine(squares[0].x, squares[0].y, squares[1].x, squares[1].y, true);
+		drawLine(squares[1].x, squares[1].y, squares[2].x, squares[2].y, true);
+		drawLine(squares[2].x, squares[2].y, squares[3].x, squares[3].y, true);
+		drawLine(squares[3].x, squares[3].y, squares[0].x, squares[0].y, true);
 	}
 }
 

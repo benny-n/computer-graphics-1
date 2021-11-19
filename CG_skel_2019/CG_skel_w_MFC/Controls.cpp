@@ -6,6 +6,7 @@ using namespace std;
 
 int gLastX, gLastY;
 bool gLbDown, gRbDown, gMbDown;
+float gSensetivity = 1;
 extern Scene* gScene;
 extern Renderer* gRenderer;
 
@@ -43,7 +44,7 @@ void reshape(int width, int height)
 
 void keyboard(unsigned char key, int x, int y)
 {
-	//cout << "pressed key: " << key << " on x: "  << x << " and y: " << y << endl;
+	//cout << "pressed key: " << key << " key's number: " << int(key) << endl;
 	switch (key) {
 	case 033: // escape
 		exit(EXIT_SUCCESS);
@@ -115,6 +116,7 @@ void keyboard(unsigned char key, int x, int y)
 		gScene->iterateActive();
 		break;
 	case ' ': // space bar
+		if (gScene->getModels().empty()) break;
 		gScene->toggleControlCamera();
 		break;
 	case 23: // ctrl + w
@@ -151,6 +153,19 @@ void mouse(int button, int state, int x, int y)
 		break;
 	}
 	glutPostRedisplay();
+}
+
+void special(int key, int x, int y) {
+	switch (key)
+	{
+	case GLUT_KEY_UP:
+		gSensetivity += 0.1;
+		break;
+	case GLUT_KEY_DOWN:
+		if (gSensetivity < 0.2) AfxMessageBox(_T("Sensetivity at minimum!"));
+		else gSensetivity -= 0.1;
+		break;
+	}
 }
 
 void motion(int x, int y)
