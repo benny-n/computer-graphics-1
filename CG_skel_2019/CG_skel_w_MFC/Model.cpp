@@ -134,6 +134,7 @@ void MeshModel::loadFile(string fileName)
 	ifstream ifile(fileName.c_str());
 	vector<FaceIdcs> faces;
 	vector<vec3> vertices;
+	vector<vec3> vertexNormals;
 	// while not end of file
 	while (!ifile.eof())
 	{
@@ -158,7 +159,9 @@ void MeshModel::loadFile(string fileName)
 			mBoundryBox.mMaxVec.z = max(mBoundryBox.mMaxVec.z, vertex.z);
 			vertices.push_back(vertex);
 		}
-			
+		else if (lineType == "vn"){
+			vertexNormals.push_back(vec3fFromStream(issLine));
+		}
 		else if (lineType == "f") // maybe TODO?
 			faces.push_back(issLine);
 		else if (lineType == "#" || lineType == "")
@@ -180,33 +183,69 @@ void MeshModel::loadFile(string fileName)
 	//mVertexPositions={v1,v2,v3,v1,v3,v4}
 
 	mVertexPositions = vector<vec3>(faces.size() * 3);
+	mVertexNormals = vector<vec3>(faces.size() * 3);
 	// iterate through all stored faces and create triangles
 	int k=0;
 	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it)
 	{
 		for (int i = 0; i < 3; i++)
 		{
-			mVertexPositions[k++] = vertices[(*it).v[i] - 1]; 
+			mVertexPositions[k] = vertices[(*it).v[i] - 1];
+			if (!vertexNormals.empty())
+				mVertexNormals[k] = vertexNormals[(*it).vn[i] - 1];
+			k++;
 		}
 	}
+	if (vertexNormals.empty()) calcVertexNormals();
 }
 
 void MeshModel::setColor(const vec3& c) { mColor = c; }
 
-void MeshModel::transform(const mat4& m, bool transformWorld) {
+void MeshModel::calcVertexNormals(){
+
+	for (int i = 0; i < mVertexPositions.size(); i += 3){
+		const vec3 vi = mVertexPositions[i + 1] - mVertexPositions[i];
+		const vec3 vj = mVertexPositions[i + 2] - mVertexPositions[i];
+		vec3 normal = vec3(normalize(cross(vi, vj)));
+		float area = length((cross(vi, vj)));
+		normal *= area;
+		for (int j = 0; j < mVertexPositions.size(); j++) {
+			if (mVertexPositions[j] == mVertexPositions[i]	   
+			 || mVertexPositions[j] == mVertexPositions[i + 1] 
+			 || mVertexPositions[j] == mVertexPositions[i + 2])
+				mVertexNormals[j] += normal;
+		}
+	}
+	for (int i = 0; i < mVertexNormals.size(); i++) {
+		mVertexNormals[i] = normalize(mVertexNormals[i]);
+	}
+	// map[face] = vector<vertex>
+	// for each vertex
+		// for each face that touches the vertex
+			// face normal * face area
+		// calc normalized sum
+
+}
+
+void MeshModel::transform(const mat4& m, const mat4& g, bool transformWorld) {
 	mat4 transformation = translate(mBoundryBox.center()) * m * translate(-mBoundryBox.center());
+	mat4 normalTransformation = translate(mBoundryBox.center()) * g * translate(-mBoundryBox.center());
 	mBoundryBox.transform(transformation);
-	transformWorld ?
-		mWorldTransform = transformation * mWorldTransform :
+	if (transformWorld) {
+		mWorldTransform = transformation * mWorldTransform;
+	}
+	else {
 		mModelTransform = transformation * mModelTransform;
+		mNormalTransform = normalTransformation * mNormalTransform;
+	}
 }
 
 void MeshModel::draw(Renderer* renderer)
 {
 	if (mUseVisualizeSlopes) renderer->setVisualizeSlopes();
 	else renderer->setColor(mColor);
-	renderer->setObjectMatrices(mWorldTransform * mModelTransform, mNormalTransform);
-	renderer->drawTriangles(&mVertexPositions);
+	renderer->setObjectMatrices(mWorldTransform * mModelTransform, mWorldTransform * mNormalTransform);
+	renderer->drawTriangles(&mVertexPositions, &mVertexNormals, mDrawVertexNormals, mDrawFaceNormals);
 	if (mDrawBoundryBox) mBoundryBox.draw(renderer);
 	//mBoundryBox.draw(renderer);
 	//cout << mModelTransform << endl;

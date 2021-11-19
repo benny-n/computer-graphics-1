@@ -14,7 +14,7 @@ class Renderer
 	mat4 mCameraTransform;
 	mat4 mProjection;
 	mat4 mObjectTransform;
-	mat3 mNormalTransform;
+	mat4 mNormalTransform;
 	vec3 mColors[4];
 
 
@@ -43,9 +43,14 @@ public:
 	void drawLine(int x1, int y1, int x2, int y2);
 	void setCameraTransform(const mat4& cTransform);
 	void setProjection(const mat4& projection);
-	void setObjectMatrices(const mat4& oTransform, const mat3& nTransform);
-	mat4 calcFinalTransformation();
-	void drawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals=NULL);
+	void setObjectMatrices(const mat4& oTransform, const mat4& nTransform);
+	mat4 getAspectRatio();
+	void calcTriangleAndNormalCoordinates(const vector<vec3>* vertices, const vector<vec3>* normals,
+		vec2 triangles[3], vec3 triangles3d[3], int i, int j);
+	void calcTriangleCoordinates(const vector<vec3>* vertices, vec2 triangles[3], vec3 triangles3d[3], int i, int j);
+	void calcTriangleAndFaceNormalCoordinates(vec3 triangles3d[3]);
+	void drawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals,
+		bool drawVertexNormals, bool drawFaceNormals);
 	void drawSquares(const vector<vec3>* vertices);
 	void swapBuffers();
 	void clearColorBuffer();

@@ -91,12 +91,17 @@ void Scene::visualizeSlopes()
 	mModels[mActiveModel]->mUseVisualizeSlopes = true;
 }
 
-void Scene::transformActive(const mat4& m){
+//SCALING
+void Scene::transformActive(const mat4& m){ 
 	if (mControlCamera) mCameras[mActiveCamera]->transform(m);
-	else mModels[mActiveModel]->transform(m, mControlWorld);
+	else {
+		mat4 g = scale(1 / m[0][0], 1 / m[1][1], 1 / m[2][2]);
+		mModels[mActiveModel]->transform(m, g, mControlWorld);
+	}
 }
 
-void Scene::transformActive(const float degrees, const RotationAxis& axis) {
+//ROTATION
+void Scene::transformActive(const float degrees, const RotationAxis& axis) { 
 	if (mControlCamera) mCameras[mActiveCamera]->transform(degrees, axis);
 	else {
 		mat4 rotation;
@@ -111,13 +116,14 @@ void Scene::transformActive(const float degrees, const RotationAxis& axis) {
 			rotation = rotateZ(degrees);
 			break;
 		}
-		mModels[mActiveModel]->transform(rotation, mControlWorld);
+		mModels[mActiveModel]->transform(rotation, rotation, mControlWorld);
 	}
 }
 
+//TRANSLATE
 void Scene::transformActive(const vec3& v) {
 	if (mControlCamera) mCameras[mActiveCamera]->transform(v);
-	else mModels[mActiveModel]->transform(translate(v), mControlWorld);
+	else mModels[mActiveModel]->transform(translate(v), mat4(), mControlWorld);
 }
 
 void Scene::modifyActiveCamera(const vec4& v, bool isEye) 

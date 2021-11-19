@@ -33,7 +33,7 @@ public:
 
 	Model() : mDrawBoundryBox(false), mDrawVertexNormals(false), mDrawFaceNormals(false), mUseVisualizeSlopes(false), mColor(1) {}
 	const string& getName();
-	void virtual transform(const mat4& m, bool transformWorld) = 0;
+	void virtual transform(const mat4& m , const mat4& g, bool transformWorld) = 0;
 	void virtual draw(Renderer*) = 0;
 };
 
@@ -42,16 +42,19 @@ class MeshModel : public Model {
 protected :
 	MeshModel() {}
 	vector<vec3> mVertexPositions;
+	vector<vec3> mVertexNormals;
+	vector<vec3> mFaceNormals;
 	mat4 mModelTransform;
 	mat4 mWorldTransform;
-	mat3 mNormalTransform;
+	mat4 mNormalTransform;
 
 public:
 	MeshModel(string fileName);
 	~MeshModel(void);
 	virtual void loadFile(string fileName);
 	void setColor(const vec3& c);
-	void transform(const mat4& m, bool transformWorld) override;
+	void calcVertexNormals();
+	void transform(const mat4& m, const mat4& g, bool transformWorld) override;
 	void draw(Renderer* renderer) override;
 };
 
