@@ -261,6 +261,7 @@ void Renderer::drawTriangles(
 	vec2 triangles[3];
 	vec3 triangles3d[3];
 	const mat4 modelTransform = mAspectRatioTransform * mObjectTransform;
+	const mat4 normalTransform = mAspectRatioTransform * mNormalTransform;
 	const mat4 from3dTo2d = mProjection * mCameraTransform;
 
 	for (int i = 0; i < vertices->size(); i+=3)
@@ -270,7 +271,7 @@ void Renderer::drawTriangles(
 				vec4 vertex((*vertices)[i + j]);
 				vec4 normal(vec3((*normals)[i + j]), 0);
 				vertex = modelTransform * vertex;
-				normal = modelTransform * normal;
+				normal = normalTransform * normal;
 				triangles3d[j] = vec3(vertex.x, vertex.y, vertex.z);
 				normal = normalize(normal);
 				normal += vertex;
