@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <map>
 
 using namespace std;
 
@@ -201,28 +202,22 @@ void MeshModel::loadFile(string fileName)
 void MeshModel::setColor(const vec3& c) { mColor = c; }
 
 void MeshModel::calcVertexNormals(){
-	for (int i = 0; i < mVertexPositions.size(); i += 3){
-		const vec3 vi = mVertexPositions[i + 1] - mVertexPositions[i];
-		const vec3 vj = mVertexPositions[i + 2] - mVertexPositions[i];
+	map<vec3, vector<int>> vertexIndeces;
+	for (int i = 0; i < mVertexPositions.size(); i++) vertexIndeces[mVertexPositions[i]].push_back(i);
+	for (int i = 0; i < mVertexPositions.size(); i += 3) {
+		const vec3 v1 = mVertexPositions[i];
+		const vec3 v2 = mVertexPositions[i + 1];
+		const vec3 v3 = mVertexPositions[i + 2];
+		const vec3 vi = v2 - v1;
+		const vec3 vj = v3 - v1;
 		vec3 normal = vec3(normalize(cross(vi, vj)));
 		float area = length((cross(vi, vj)));
 		normal *= area;
-		for (int j = 0; j < mVertexPositions.size(); j++) {
-			if (mVertexPositions[j] == mVertexPositions[i]	   
-			 || mVertexPositions[j] == mVertexPositions[i + 1] 
-			 || mVertexPositions[j] == mVertexPositions[i + 2])
-				mVertexNormals[j] += normal;
-		}
+		for each (int index in vertexIndeces[v1]) mVertexNormals[index] += normal;
+		for each (int index in vertexIndeces[v2]) mVertexNormals[index] += normal;
+		for each (int index in vertexIndeces[v3]) mVertexNormals[index] += normal;
 	}
-	for (int i = 0; i < mVertexNormals.size(); i++) {
-		mVertexNormals[i] = normalize(mVertexNormals[i]);
-	}
-	// map[face] = vector<vertex>
-	// for each vertex
-		// for each face that touches the vertex
-			// face normal * face area
-		// calc normalized sum
-
+	for (int i = 0; i < mVertexNormals.size(); i++) mVertexNormals[i] = normalize(mVertexNormals[i]);
 }
 
 void MeshModel::transform(const mat4& m, const mat4& g, bool transformWorld) {
