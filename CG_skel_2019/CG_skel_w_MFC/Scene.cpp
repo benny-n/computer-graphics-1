@@ -171,8 +171,10 @@ void Scene::iterateActive() {
 void Scene::printControlMsg() {
 	cout << "Controlling ";
 	if (mControlCamera) cout << "camera " << mActiveCamera;
-	else cout << mModels[mActiveModel]->getName() << " " << mActiveModel;
-	if (mControlWorld) cout << " (world)";
+	else {
+		cout << mModels[mActiveModel]->getName() << " " << mActiveModel;
+		if (mControlWorld) cout << " (world)";
+	}
 	cout << endl;
 }
 

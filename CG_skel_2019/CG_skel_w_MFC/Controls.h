@@ -11,7 +11,7 @@
 // main menu
 #define ADD_CAMERA 1
 #define MAIN_DEMO 2
-#define MAIN_ABOUT 3
+#define HELP 3
 
 // add model menu
 #define FROM_FILE 1

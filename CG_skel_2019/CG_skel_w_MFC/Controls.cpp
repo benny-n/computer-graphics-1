@@ -357,8 +357,24 @@ void mainMenu(int id)
 	//case MAIN_DEMO:
 	//	gScene->drawDemo();
 	//	break;
-	case MAIN_ABOUT:
-		AfxMessageBox(_T("Computer Graphics"));
+	case HELP:
+		AfxMessageBox(_T(
+		"User input and messages will appear on the console window\n\n"
+		"Keyboard Controls:\n"
+		"a, d - moving model/camera in parralel to X axis\n"
+		"s, w - moving model/camera in parralel to Y axis\n"
+		"q, e - moving model/camera in parralel to Z axis\n"
+		"A, D - rotating model/camera around it's Y axes\n"
+		"S, W - rotating model/camera around it's X axes\n"
+		"Q, E - rotating model/camera around it's Z axes\n"
+		"z, x - scaling model up, down / zoomig camera in, out\n"
+		"j, k, l - non-uniform scaling up along x, y, z axis\n"
+		"ctrl + j, k, l - non-uniform scaling down along x, y, z axis\n\n"
+		"c - switch showing cameras on/off\n"
+		"tab - switch control to next model/camera\n"
+		"space - switch control between model and camera\n"
+		"ctrl + w - switch control between model and model's world\n"
+		));
 		break;
 	}
 }
@@ -442,7 +458,7 @@ void initMenu()
 	glutAddSubMenu("Active Camera Options", menuActiveCameraOptions);
 
 	//glutAddMenuEntry("Demo", MAIN_DEMO);
-	glutAddMenuEntry("About", MAIN_ABOUT);
+	glutAddMenuEntry("Help", HELP);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 //----------------------------------------------------------------------------
