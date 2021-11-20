@@ -229,9 +229,10 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2, bool isNonModelLine) {
 
 void Renderer::setCameraTransform(const mat4& cTransform) { mCameraTransform = cTransform; }
 void Renderer::setProjection(const mat4& projection) { mProjection = projection;  }
-void Renderer::setObjectMatrices(const mat4& oTransform, const mat4& nTransform) {
+void Renderer::setObjectMatrices(const mat4& oTransform, const mat4& nTransform, const mat4& wTransform) {
 	mObjectTransform = oTransform;
 	mNormalTransform = nTransform;
+	mWorldTransform = wTransform;
 }
 
 void Renderer::calcTriangleAndFaceNormalCoordinates(vec3 triangles3d[3], const mat4& from3dTo2d) {
@@ -259,9 +260,10 @@ void Renderer::drawTriangles(
 ) {
 	vec2 triangles[3];
 	vec3 triangles3d[3];
-	const mat4 modelTransform = mAspectRatioTransform * mObjectTransform;
-	const mat4 normalTransform = mAspectRatioTransform * mNormalTransform;
+	const mat4 worldTransform = mAspectRatioTransform * mWorldTransform;
+	const mat4 normalTransform = mAspectRatioTransform * mWorldTransform * mNormalTransform;
 	const mat4 from3dTo2d = mProjection * mCameraTransform;
+	const mat4 worldAndProjection = from3dTo2d * worldTransform;
 
 	for (int i = 0; i < vertices->size(); i+=3)
 	{
@@ -269,9 +271,10 @@ void Renderer::drawTriangles(
 			if (drawVertexNormals) {
 				vec4 vertex((*vertices)[i + j]);
 				vec4 normal(vec3((*normals)[i + j]), 0);
-				vertex = modelTransform * vertex;
-				normal = normalTransform * normal;
+				vertex = mObjectTransform * vertex;
 				triangles3d[j] = vec3(vertex.x, vertex.y, vertex.z);
+				vertex = worldTransform * vertex;
+				normal = normalTransform * normal;
 				normal = normalize(normal);
 				normal += vertex;
 				vertex = from3dTo2d * vertex;
@@ -287,9 +290,9 @@ void Renderer::drawTriangles(
 			}
 			else {
 				vec4 vertex((*vertices)[i + j]);
-				vertex = modelTransform * vertex;
+				vertex = mObjectTransform * vertex;
 				triangles3d[j] = vec3(vertex.x, vertex.y, vertex.z);
-				vertex = from3dTo2d * vertex;
+				vertex = worldAndProjection * vertex;
 				vertex /= vertex.w;
 				const float r = (mWidth / 2) * (vertex.x + 1);
 				const float s = (mHeight / 2) * (vertex.y + 1);
@@ -301,12 +304,12 @@ void Renderer::drawTriangles(
 		drawLine(triangles[2].x, triangles[2].y, triangles[0].x, triangles[0].y);
 
 		if (drawFaceNormals)
-			calcTriangleAndFaceNormalCoordinates(triangles3d, from3dTo2d);
+			calcTriangleAndFaceNormalCoordinates(triangles3d, worldAndProjection);
 	}
 }
 
 void Renderer::drawSquares(const vector<vec3>* vertices) {
-	const mat4 finalTransformation = mProjection * mCameraTransform * mAspectRatioTransform * mObjectTransform;
+	const mat4 finalTransformation = mProjection * mCameraTransform * mAspectRatioTransform * mWorldTransform * mObjectTransform;
 	vec2 squares[4];
 	float r, s;
 

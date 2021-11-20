@@ -201,7 +201,6 @@ void MeshModel::loadFile(string fileName)
 void MeshModel::setColor(const vec3& c) { mColor = c; }
 
 void MeshModel::calcVertexNormals(){
-
 	for (int i = 0; i < mVertexPositions.size(); i += 3){
 		const vec3 vi = mVertexPositions[i + 1] - mVertexPositions[i];
 		const vec3 vj = mVertexPositions[i + 2] - mVertexPositions[i];
@@ -243,7 +242,7 @@ void MeshModel::draw(Renderer* renderer)
 {
 	if (mUseVisualizeSlopes) renderer->setVisualizeSlopes();
 	else renderer->setColor(mColor);
-	renderer->setObjectMatrices(mWorldTransform * mModelTransform, mWorldTransform * mNormalTransform);
+	renderer->setObjectMatrices(mModelTransform, mNormalTransform, mWorldTransform);
 	renderer->drawTriangles(&mVertexPositions, &mVertexNormals, mDrawVertexNormals, mDrawFaceNormals);
 	if (mDrawBoundryBox) mBoundryBox.draw(renderer);
 	//mBoundryBox.draw(renderer);

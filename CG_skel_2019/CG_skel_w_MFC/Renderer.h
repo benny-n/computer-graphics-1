@@ -15,6 +15,7 @@ class Renderer
 	mat4 mProjection;
 	mat4 mObjectTransform;
 	mat4 mNormalTransform;
+	mat4 mWorldTransform;
 	mat4 mAspectRatioTransform;
 	vec3 mColors[4];
 
@@ -44,7 +45,7 @@ public:
 	void drawLine(int x1, int y1, int x2, int y2, bool isNonModelLine = false);
 	void setCameraTransform(const mat4& cTransform);
 	void setProjection(const mat4& projection);
-	void setObjectMatrices(const mat4& oTransform, const mat4& nTransform);
+	void setObjectMatrices(const mat4& oTransform, const mat4& nTransform, const mat4& wTransform);
 	void calcTriangleAndFaceNormalCoordinates(vec3 triangles3d[3], const mat4& from3dTo2d);
 	void drawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals,
 		bool drawVertexNormals, bool drawFaceNormals);

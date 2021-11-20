@@ -105,6 +105,5 @@ void Camera::perspective(const float fovy, const float aspect,
 }
 
 void Camera::draw(Renderer* renderer) {
-	renderer->setColor(vec3(1));
 	renderer->drawCamera(mEye);
 }
