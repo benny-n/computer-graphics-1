@@ -87,13 +87,12 @@ void Renderer::clearPixel(int x, int y) {
 }
 
 void Renderer::drawCamera(const vec4& eye){
-	mat4 project;
-	project[2][2] = 0;
-	const mat4 finalTransformation = project * mProjection * mCameraTransform;
+	const mat4 finalTransformation = mProjection * mCameraTransform;
 	vec4 transformedEye = (finalTransformation * eye) / eye.w;
-	vec3 finalEye = vec3(transformedEye.x, transformedEye.y, transformedEye.w);
-	drawLine(finalEye.x - 5, finalEye.y, finalEye.x + 5, finalEye.y, true);
-	drawLine(finalEye.x, finalEye.y - 5, finalEye.x, finalEye.y + 5, true);
+	float r = (mWidth / 2) * (transformedEye.x + 1);
+	float s = (mHeight / 2) * (transformedEye.y + 1);
+	drawLine(r - 5, s, r + 5, s, true);
+	drawLine(r, s - 5, r, s + 5, true);
 }
 
 static void choosePixlesForCanonicalLine(vector<int>& ys, int x1, int y1) { // Bresenham Algorithm
