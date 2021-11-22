@@ -162,7 +162,7 @@ void MeshModel::loadFile(string fileName)
 		else if (lineType == "vn"){
 			vertexNormals.push_back(vec3fFromStream(issLine));
 		}
-		else if (lineType == "f") // maybe TODO?
+		else if (lineType == "f")
 			faces.push_back(issLine);
 		else if (lineType == "#" || lineType == "")
 		{

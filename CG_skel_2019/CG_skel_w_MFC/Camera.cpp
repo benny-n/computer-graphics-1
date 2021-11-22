@@ -23,9 +23,6 @@ const vec4& Camera::getAt()
 }
 
 void Camera::transform(const mat4& m) {
-	//const mat4 transformation = Translate(eye) * m * Translate(-eye);
-	//cTransform = transformation * cTransform;
-	// TODO might need above code, try zooming when not looking at origin
 	mCameraTransform = m * mCameraTransform;
 }
 

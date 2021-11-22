@@ -198,9 +198,6 @@ void Scene::removeActiveCamera()
 }
 
 void Scene::draw() {
-	//TODO
-	// 1. Send the renderer the current camera transform and the projection
-	// 2. Tell all models to draw themselves
 	mRenderer->clearColorBuffer();
 
 	auto activeCamera = mCameras[mActiveCamera];
