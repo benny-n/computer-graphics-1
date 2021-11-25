@@ -49,7 +49,7 @@ void Camera::transform(const vec3& v) {
 	lookAt(mEye + vec4(v, 0), mAt + vec4(v, 0), mUp);
 }
 
-mat4 Camera::getTransform() { return mCameraTransform * mLookAt; }
+mat4 Camera::getTransform() { return mLookAt * mCameraTransform; }
 mat4 Camera::getProjection() { return mProjection; }
 
 void Camera::lookAt(const vec4& eye, const vec4& at, const vec4& up) {
