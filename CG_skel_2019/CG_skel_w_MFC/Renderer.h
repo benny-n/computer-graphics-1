@@ -43,6 +43,7 @@ public:
 	void clearPixel(int x, int y);
 	void drawCamera(const vec4& eye);
 	void drawLine(int x1, int y1, int x2, int y2, bool isNonModelLine = false);
+	void clipAndDrawLine(vec3 p1, vec3 p2, bool isNonModelLine = false);
 	void setCameraTransform(const mat4& cTransform);
 	void setProjection(const mat4& projection);
 	void setObjectMatrices(const mat4& oTransform, const mat4& nTransform, const mat4& wTransform);

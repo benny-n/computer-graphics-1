@@ -89,13 +89,138 @@ void Renderer::clearPixel(int x, int y) {
 void Renderer::drawCamera(const vec4& eye){
 	const mat4 finalTransformation = mProjection * mCameraTransform;
 	vec4 transformedEye = (finalTransformation * eye) / eye.w;
-	float r = (mWidth / 2) * (transformedEye.x + 1);
-	float s = (mHeight / 2) * (transformedEye.y + 1);
-	drawLine(r - 5, s, r + 5, s, true);
-	drawLine(r, s - 5, r, s + 5, true);
+	drawLine(transformedEye.x - 5, transformedEye.y, transformedEye.x + 5, transformedEye.y);
+	drawLine(transformedEye.x, transformedEye.y - 5, transformedEye.x, transformedEye.y + 5);
 }
 
-static void choosePixlesForCanonicalLine(vector<int>& ys, int x1, int y1) { // Bresenham Algorithm
+static const float epsilon = 0.0000000001;
+static inline bool isZeroish(float x) { return (x <= epsilon && x >= -epsilon); }
+
+static inline bool outsideClipVolume(vec3& p1, vec3& p2) {
+	vec4 pDelta = p2 - p1;
+	float a[6];
+	a[0] = -pDelta.y;
+	a[1] = -pDelta.x;
+	a[2] = pDelta.y;
+	a[3] = pDelta.x;
+	a[4] = -pDelta.z;
+	a[5] = pDelta.z;
+
+	float b[6];
+	b[0] = p1.y + 1;
+	b[1] = p1.x + 1;
+	b[2] = 1 - p1.y;
+	b[3] = 1 - p1.x;
+	b[4] = p1.z + 1;
+	b[5] = 1 - p1.z;
+
+	for (int i = 0; i < 6; i++)
+		if (isZeroish(a[i]) && b[i] < 0) return true;
+
+	return false;
+}
+
+static inline bool clipTop(vec3& p1, vec3& p2) {
+	if (p1.y > 1 && p2.y > 1) return false;
+	if (p1.y <= 1 && p2.y <= 1) return true;
+	vec3 normal(0, 1, 0);
+	vec3 p0(0, 1, 0);
+
+	float alpha = (dot(normal, p0 - p1) / dot(normal, p2 - p1));
+
+	vec3 pAlpha = (1 - alpha) * p1 + alpha * p2;
+
+	p1.y > p2.y ? p1 = pAlpha : p2 = pAlpha;
+
+	return true;
+}
+
+static inline bool clipBottom(vec3& p1, vec3& p2) {
+	if (p1.y < -1 && p2.y < -1) return false;
+	if (p1.y >= -1 && p2.y >= -1) return true;
+	vec3 normal(0, -1, 0);
+	vec3 p0(0, -1, 0);
+
+	float alpha = (dot(normal, p0 - p1) / dot(normal, p2 - p1));
+
+	vec3 pAlpha = (1 - alpha) * p1 + alpha * p2;
+
+	p1.y < p2.y ? p1 = pAlpha : p2 = pAlpha;
+
+	return true;
+}
+
+static inline bool clipRight(vec3& p1, vec3& p2) {
+	if (p1.x > 1 && p2.x > 1) return false;
+	if (p1.x <= 1 && p2.x <= 1) return true;
+	vec3 normal(1, 0, 0);
+	vec3 p0(1, 0, 0);
+
+	float alpha = (dot(normal, p0 - p1) / dot(normal, p2 - p1));
+
+	vec3 pAlpha = (1 - alpha) * p1 + alpha * p2;
+
+	p1.x > p2.x ? p1 = pAlpha : p2 = pAlpha;
+
+	return true;
+}
+
+static inline bool clipLeft(vec3& p1, vec3& p2) {
+	if (p1.x < -1 && p2.x < -1) return false;
+	if (p1.x >= -1 && p2.x >= -1) return true;
+	vec3 normal(-1, 0, 0);
+	vec3 p0(-1, 0, 0);
+
+	float alpha = (dot(normal, p0 - p1) / dot(normal, p2 - p1));
+
+	vec3 pAlpha = (1 - alpha) * p1 + alpha * p2;
+
+	p1.x < p2.x ? p1 = pAlpha : p2 = pAlpha;
+
+	return true;
+}
+
+static inline bool clipFar(vec3& p1, vec3& p2) {
+	if (p1.z > 1 && p2.z > 1) return false;
+	if (p1.z <= 1 && p2.z <= 1) return true;
+	vec3 normal(0, 0, 1);
+	vec3 p0(0, 0, 1);
+
+	float alpha = (dot(normal, p0 - p1) / dot(normal, p2 - p1));
+
+	vec3 pAlpha = (1 - alpha) * p1 + alpha * p2;
+
+	p1.z > p2.z ? p1 = pAlpha : p2 = pAlpha;
+
+	return true;
+}
+
+static inline bool clipNear(vec3& p1, vec3& p2) {
+	if (p1.z < -1 && p2.z < -1) return false;
+	if (p1.z >= -1 && p2.z >= -1) return true;
+	vec3 normal(0, 0, -1);
+	vec3 p0(0, 0, -1);
+
+	float alpha = (dot(normal, p0 - p1) / dot(normal, p2 - p1));
+
+	vec3 pAlpha = (1 - alpha) * p1 + alpha * p2;
+
+	p1.z < p2.z ? p1 = pAlpha : p2 = pAlpha;
+
+	return true;
+}
+
+static inline bool clippingPipeline(vec3& p1, vec3& p2) {
+	return
+		clipTop(p1, p2) &&
+		clipBottom(p1, p2) &&
+		clipRight(p1, p2) &&
+		clipLeft(p1, p2) &&
+		clipFar(p1, p2) &&
+		clipNear(p1, p2);
+}
+
+static inline void choosePixlesForCanonicalLine(vector<int>& ys, int x1, int y1) { // Bresenham Algorithm
 	int d = 2 * y1 - x1;
 	int de = 2 * y1;
 	int dne = de - 2 * x1;
@@ -122,67 +247,7 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2, bool isNonModelLine) {
 		if (y1 > y2) swap(y1, y2);
 	}
 	else m = (y2 - y1) / float(x2 - x1);
-	if (x1 > mWidth || x2 < 0 || (y1 < 0 && y2 < 0) || (y1 > mHeight && y2 > mHeight)) return;	
 
-	if (m==FLT_MAX) {
-		y1 = max(0, y1);
-		y2 = min(mHeight, y2);
-	}
-	else if (m == 0) {
-		x1 = max(0, x1);
-		x2 = min(mWidth, x2);
-	}
-	else {
-		float n = y1 - m * x1;
-		// clip parts of line that are not on sceen
-		vector<vec2> nominees;
-		// intersect y=0 at (-n/m, 0)
-		float x_a = -n / m;
-		if (0 <= x_a && x_a <= mWidth) nominees.push_back(vec2(x_a, 0));
-		// intersect x=0 at (0,n)
-		if (0 <= n && n <= mHeight) nominees.push_back(vec2(0, n));
-		// intersect y = mHeight at ((mHeight - n) / m, mHeight)
-		float x_c = (mHeight - n) / m;
-		if (0 <= x_c && x_c <= mWidth) nominees.push_back(vec2(x_c, mHeight));
-		// intersect x = mWidth at (mWidth, m * mWidth + n)
-		float y_d = m * mWidth + n;
-		if (0 <= y_d && y_d <= mHeight) nominees.push_back(vec2(mWidth, y_d));
-
-		switch (nominees.size()) {
-		case 0:
-			return;
-		case 1:
-			//cout << nominees[0] << endl;
-			x1 = x2 = nominees[0].x;
-			y1 = y2 = nominees[0].y;
-			break;
-		default:
-		
-			auto findClosestIntersect = [nominees](int& x, int& y) {
-				float dx, dy;
-				vector<float> distances = { FLT_MAX,FLT_MAX, FLT_MAX, FLT_MAX };
-				for (int i = 0; i < nominees.size(); i++)
-				{
-					dx = nominees[i].x - x;
-					dy = nominees[i].y - y;
-					distances[i] = dx * dx + dy * dy;
-				}
-				// find position of max element in nominees
-				int i = distance(distances.begin(), min_element(distances.begin(), distances.end()));
-				x = nominees[i].x;
-				y = nominees[i].y;
-			};
-		
-			if (!(0 <= x1 && x1 <= mWidth && 0 <= y1 && y1 <= mHeight)) {
-				findClosestIntersect(x1, y1);
-			}
-			if (!(0 <= x2 && x2 <= mWidth && 0 <= y2 && y2 <= mHeight)) {
-				findClosestIntersect(x2, y2);
-			}
-			break;
-		}
-	}
-	
 	if (m >= 0) {
 		if (m <= 1) { // Just need to move to origin
 			int numPixels = abs(x2 - x1);
@@ -190,7 +255,7 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2, bool isNonModelLine) {
 			choosePixlesForCanonicalLine(ys, x2 - x1, y2 - y1);
 			for (int x = 0; x < numPixels; x++)
 			{
-				colorPixel(x + x1, ys[x] + y1, (isNonModelLine? vec3(0.5) : mColors[0]));
+				colorPixel(x + x1, ys[x] + y1, (isNonModelLine ? vec3(0.5) : mColors[0]));
 			}
 		}
 		else { // move to origin and reflect by y=x
@@ -203,7 +268,7 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2, bool isNonModelLine) {
 			}
 		}
 	}
-	
+
 	else {
 		if (m >= -1) { // move to origin and reflect by x=0
 			int numPixels = abs(x2 - x1);
@@ -224,7 +289,17 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2, bool isNonModelLine) {
 			}
 		}
 	}
+}
 
+void Renderer::clipAndDrawLine(vec3 p1, vec3 p2, bool isNonModelLine) {
+	if (outsideClipVolume(p1, p2)) return;
+	if (!clippingPipeline(p1, p2)) return;
+	int x1 = (mWidth / 2.f) * (p1.x + 1);
+	int y1 = (mHeight / 2.f) * (p1.y + 1);
+	int x2 = (mWidth / 2.f) * (p2.x + 1);
+	int y2 = (mHeight / 2.f) * (p2.y + 1);
+
+	drawLine(x1, y1, x2, y2, isNonModelLine);
 }
 
 void Renderer::setCameraTransform(const mat4& cTransform) { mCameraTransform = cTransform; }
@@ -245,11 +320,7 @@ void Renderer::calcTriangleAndFaceNormalCoordinates(vec3 triangles3d[3], const m
 	normal = from3dTo2d * normal;
 	center /= center.w;
 	normal /= normal.w;
-	float r = (mWidth / 2) * (center.x + 1);
-	float s = (mHeight / 2) * (center.y + 1);
-	float rn = (mWidth / 2) * (normal.x + 1);
-	float sn = (mHeight / 2) * (normal.y + 1);
-	drawLine(r, s, rn, sn, true);
+	clipAndDrawLine(vec3(center.x, center.y, center.z), vec3(normal.x, normal.y, normal.z), true);
 }
 
 void Renderer::drawTriangles(
@@ -258,15 +329,14 @@ void Renderer::drawTriangles(
 	bool drawVertexNormals,
 	bool drawFaceNormals
 ) {
-	vec2 triangles[3];
+	vec3 triangles[3];
 	vec3 triangles3d[3];
 	const mat4 worldTransform = mAspectRatioTransform * mWorldTransform;
 	const mat4 normalTransform = mAspectRatioTransform * mWorldTransform * mNormalTransform;
 	const mat4 from3dTo2d = mProjection * mCameraTransform;
 	const mat4 worldAndProjection = from3dTo2d * worldTransform;
 
-	for (int i = 0; i < vertices->size(); i+=3)
-	{
+	for (int i = 0; i < vertices->size(); i+=3) {
 		for (int j = 0; j < 3; j++) {
 			if (drawVertexNormals) {
 				vec4 vertex((*vertices)[i + j]);
@@ -281,12 +351,9 @@ void Renderer::drawTriangles(
 				normal = from3dTo2d * normal;
 				vertex /= vertex.w;
 				normal /= normal.w;
-				float r = (mWidth / 2) * (vertex.x + 1);
-				float s = (mHeight / 2) * (vertex.y + 1);
-				float rn = (mWidth / 2) * (normal.x + 1);
-				float sn = (mHeight / 2) * (normal.y + 1);
-				drawLine(r, s, rn, sn, true);
-				triangles[j] = vec2(r, s);
+				vec3 normalizedVertex(vertex.x, vertex.y, vertex.z);
+				clipAndDrawLine(normalizedVertex, vec3(normal.x, normal.y, normal.z), true);
+				triangles[j] = normalizedVertex;
 			}
 			else {
 				vec4 vertex((*vertices)[i + j]);
@@ -294,14 +361,12 @@ void Renderer::drawTriangles(
 				triangles3d[j] = vec3(vertex.x, vertex.y, vertex.z);
 				vertex = worldAndProjection * vertex;
 				vertex /= vertex.w;
-				const float r = (mWidth / 2) * (vertex.x + 1);
-				const float s = (mHeight / 2) * (vertex.y + 1);
-				triangles[j] = vec2(r, s);
+				triangles[j] = vec3(vertex.x, vertex.y, vertex.z);
 			}
 		}
-		drawLine(triangles[0].x, triangles[0].y, triangles[1].x, triangles[1].y);
-		drawLine(triangles[1].x, triangles[1].y, triangles[2].x, triangles[2].y);
-		drawLine(triangles[2].x, triangles[2].y, triangles[0].x, triangles[0].y);
+		clipAndDrawLine(triangles[0], triangles[1]);
+		clipAndDrawLine(triangles[1], triangles[2]);
+		clipAndDrawLine(triangles[2], triangles[0]);
 
 		if (drawFaceNormals)
 			calcTriangleAndFaceNormalCoordinates(triangles3d, worldAndProjection);
@@ -310,7 +375,7 @@ void Renderer::drawTriangles(
 
 void Renderer::drawSquares(const vector<vec3>* vertices) {
 	const mat4 finalTransformation = mProjection * mCameraTransform * mAspectRatioTransform * mWorldTransform * mObjectTransform;
-	vec2 squares[4];
+	vec3 squares[4];
 	float r, s;
 
 	for (int i = 0; i < vertices->size(); i += 4)
@@ -320,14 +385,12 @@ void Renderer::drawSquares(const vector<vec3>* vertices) {
 			vec4 vertex((*vertices)[i + j]);
 			vertex = finalTransformation * vertex;
 			vertex /= vertex.w;
-			r = (mWidth / 2) * (vertex.x + 1);
-			s = (mHeight / 2) * (vertex.y + 1);
-			squares[j] = vec2(r, s);
+			squares[j] = vec3(vertex.x, vertex.y, vertex.z);
 		}
-		drawLine(squares[0].x, squares[0].y, squares[1].x, squares[1].y, true);
-		drawLine(squares[1].x, squares[1].y, squares[2].x, squares[2].y, true);
-		drawLine(squares[2].x, squares[2].y, squares[3].x, squares[3].y, true);
-		drawLine(squares[3].x, squares[3].y, squares[0].x, squares[0].y, true);
+		clipAndDrawLine(squares[0], squares[1], true);
+		clipAndDrawLine(squares[1], squares[2], true);
+		clipAndDrawLine(squares[2], squares[3], true);
+		clipAndDrawLine(squares[3], squares[0], true);
 	}
 }
 
