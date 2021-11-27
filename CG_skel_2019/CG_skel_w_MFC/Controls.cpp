@@ -373,7 +373,8 @@ void mainMenu(int id)
 		"c - switch showing cameras on/off\n"
 		"tab - switch control to next model/camera\n"
 		"space - switch control between model and camera\n"
-		"ctrl + w - switch control between model and model's world\n"
+		"ctrl + w - switch control between model and model's world\n\n"
+		"use up and down arrows to control sensitivity\n"
 		));
 		break;
 	}
