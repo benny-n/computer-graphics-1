@@ -294,10 +294,10 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2, bool isNonModelLine) {
 void Renderer::clipAndDrawLine(vec3 p1, vec3 p2, bool isNonModelLine) {
 	if (outsideClipVolume(p1, p2)) return;
 	if (!clippingPipeline(p1, p2)) return;
-	int x1 = (mWidth / 2.f) * (p1.x + 1);
-	int y1 = (mHeight / 2.f) * (p1.y + 1);
-	int x2 = (mWidth / 2.f) * (p2.x + 1);
-	int y2 = (mHeight / 2.f) * (p2.y + 1);
+	int x1 = (mWidth / 2) * (p1.x + 1);
+	int y1 = (mHeight / 2) * (p1.y + 1);
+	int x2 = (mWidth / 2) * (p2.x + 1);
+	int y2 = (mHeight / 2) * (p2.y + 1);
 
 	drawLine(x1, y1, x2, y2, isNonModelLine);
 }
