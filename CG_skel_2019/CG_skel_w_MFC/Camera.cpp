@@ -94,7 +94,8 @@ void Camera::frustum(const float left, const float right,
 
 void Camera::perspective(const float fovy, const float aspect,
 	const float zNear, const float zFar) {
-	float top = zNear * std::tan((fovy) / 2);
+	float radians = (fovy * M_PI) / 180;
+	float top = zNear * std::tan((radians));
 	float bottom = -top;
 	float right = top * aspect;
 	float left = -right;
