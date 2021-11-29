@@ -38,6 +38,9 @@
 #include <string>
 #include <algorithm>
 #include <wtypes.h>
+#include <set>
 
 #define BUFFER_OFFSET( offset )   ((GLvoid*) (offset))
+#define MIN3(x, y, z) ( min(min( (x) , (y) ) , (z) ) );
+#define MAX3(x, y, z) ( max(max( (x) , (y) ) , (z) ) );
 

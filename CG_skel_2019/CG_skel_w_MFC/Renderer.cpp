@@ -21,6 +21,7 @@ Renderer::Renderer(int width, int height) : mOutBuffer(nullptr), mWidth(width), 
 Renderer::~Renderer(void)
 {
 	free(mOutBuffer);
+	free(mZbuffer);
 }
 
 void Renderer::createBuffers(int width, int height)
@@ -33,6 +34,7 @@ void Renderer::createBuffers(int width, int height)
 		const HWND hdesktop = GetDesktopWindow();
 		GetWindowRect(hdesktop, &desktop);
 		mOutBuffer = (GLfloat*)malloc(sizeof(GLfloat) * (3 * desktop.right * desktop.bottom));
+		mZbuffer = (GLfloat*)malloc(sizeof(GLfloat) * (desktop.right));
 		swapBuffers();
 	}
 	glutReshapeWindow(width, height);
@@ -323,14 +325,75 @@ void Renderer::calcTriangleAndFaceNormalCoordinates(vec3 triangles3d[3], const m
 	clipAndDrawLine(vec3(center.x, center.y, center.z), vec3(normal.x, normal.y, normal.z), true);
 }
 
+inline static float depth(const Triangle& mTriangle, int x, int y) {
+	// compute p_i
+	vec2 p1(mTriangle.mVertices[0].x, mTriangle.mVertices[0].y);
+	vec2 p2(mTriangle.mVertices[1].x, mTriangle.mVertices[1].y);
+	vec2 p3(mTriangle.mVertices[2].x, mTriangle.mVertices[2].y);
+
+	float m1, m2, n1, n2, yi;
+	vec2 pi;
+
+	if (p1.x == p2.x) {
+		m2 = (y - p3.x) / (x - p3.x);
+		n2 = y - m2 * x;
+		pi = vec2(p1.x, m2 * p1.x + n2);
+	}
+	else if (x == p3.x) {
+		m1 = (p2.y - p1.y) / (p2.x - p1.x);
+		n1 = p1.y - m1 * p1.x;
+		pi = vec2(x, m1 * x + n1);
+	}
+	else {
+		m1 = (p2.y - p1.y) / (p2.x - p1.x);
+		n1 = p1.y - m1 * p1.x;
+		m2 = (y - p3.x) / (x - p3.x);
+		n2 = y - m2 * x;
+
+		yi = ((m1 * n2) - (m2 * n1)) / (m1 - m2);
+
+		pi = vec2((yi - n1) / m1, yi);
+	}
+
+	float ti = length(pi - p1) / length(p2 - p1);
+	float zi = (ti * mTriangle.mVertices[1].z) + ((1 - ti) * mTriangle.mVertices[0].z);
+	float t = length(vec2(x, y) - p3) / length(pi - p3);
+	float zp = (t * zi) + (1 - t) * mTriangle.mVertices[2].z;
+
+	return zp;
+}
+
+void Renderer::scanLineZBuffer() {
+	sort(mPolygons.begin(), mPolygons.end());
+	set<Poly, decltype(&polySetCompare)> A(&polySetCompare);
+
+	for (int y = mPolygons[0].mTriangle.mMinY; y < mPolygons.back().mTriangle.mMaxY; y++) {
+		for (int x = 0; x < mWidth; x++) mZbuffer[x] = FLT_MAX; // TODO: this should be zFar, need to save it's value in camera and renderer :(
+		for each (Poly& p in mPolygons) 
+			if (p.mTriangle.mMinY >= y) A.insert(p);
+		for each (Poly & p in mPolygons)
+			if (p.mTriangle.mMaxY > y) A.erase(A.find(p));
+		for each (auto& p in A) {
+			vec2 span = p.span(y);
+			for (int x = span.x; x < span.y; x++) {
+				float z = depth(p.mTriangle3d, x, y);
+				if (z < mZbuffer[x]) { // TODO - check in if that z is also bigger than zNear, need to save it's value in camera and renderer :(
+					colorPixel(x, y, mColors[0]); // TODO - calc color stuff :(
+					mZbuffer[x] = z;
+				}
+			}
+		}
+	}
+}
+
 void Renderer::drawTriangles(
 	const vector<vec3>* vertices, 
 	const vector<vec3>* normals, 
 	bool drawVertexNormals,
 	bool drawFaceNormals
 ) {
-	vec3 triangles[3];
-	vec3 triangles3d[3];
+	vec3 currTriangleVertices[3];
+	vec3 currTriangleVertices3d[3];
 	const mat4 worldTransform = mAspectRatioTransform * mWorldTransform;
 	const mat4 normalTransform = mAspectRatioTransform * mWorldTransform * mNormalTransform;
 	const mat4 from3dTo2d = mProjection * mCameraTransform;
@@ -342,7 +405,7 @@ void Renderer::drawTriangles(
 				vec4 vertex((*vertices)[i + j]);
 				vec4 normal(vec3((*normals)[i + j]), 0);
 				vertex = mObjectTransform * vertex;
-				triangles3d[j] = vec3(vertex.x, vertex.y, vertex.z);
+				currTriangleVertices3d[j] = vec3(vertex.x, vertex.y, vertex.z);
 				vertex = worldTransform * vertex;
 				normal = normalTransform * normal;
 				normal = normalize(normal);
@@ -353,23 +416,23 @@ void Renderer::drawTriangles(
 				normal /= normal.w;
 				vec3 normalizedVertex(vertex.x, vertex.y, vertex.z);
 				clipAndDrawLine(normalizedVertex, vec3(normal.x, normal.y, normal.z), true);
-				triangles[j] = normalizedVertex;
+				currTriangleVertices[j] = normalizedVertex;
 			}
 			else {
 				vec4 vertex((*vertices)[i + j]);
 				vertex = mObjectTransform * vertex;
-				triangles3d[j] = vec3(vertex.x, vertex.y, vertex.z);
+				currTriangleVertices3d[j] = vec3(vertex.x, vertex.y, vertex.z);
 				vertex = worldAndProjection * vertex;
 				vertex /= vertex.w;
-				triangles[j] = vec3(vertex.x, vertex.y, vertex.z);
+				currTriangleVertices[j] = vec3(vertex.x, vertex.y, vertex.z);
 			}
 		}
-		clipAndDrawLine(triangles[0], triangles[1]);
-		clipAndDrawLine(triangles[1], triangles[2]);
-		clipAndDrawLine(triangles[2], triangles[0]);
+		clipAndDrawLine(currTriangleVertices[0], currTriangleVertices[1]);
+		clipAndDrawLine(currTriangleVertices[1], currTriangleVertices[2]);
+		clipAndDrawLine(currTriangleVertices[2], currTriangleVertices[0]);
 
 		if (drawFaceNormals)
-			calcTriangleAndFaceNormalCoordinates(triangles3d, worldAndProjection);
+			calcTriangleAndFaceNormalCoordinates(currTriangleVertices3d, worldAndProjection);
 	}
 }
 
