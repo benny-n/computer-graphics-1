@@ -240,6 +240,7 @@ void MeshModel::draw(Renderer* renderer)
 	renderer->setObjectMatrices(mModelTransform, mNormalTransform, mWorldTransform);
 	renderer->drawTriangles(&mVertexPositions, &mVertexNormals, mDrawVertexNormals, mDrawFaceNormals);
 	if (mDrawBoundryBox) mBoundryBox.draw(renderer);
+	renderer->preparePolygons(&mVertexPositions);
 	//mBoundryBox.draw(renderer);
 	//cout << mModelTransform << endl;
 	//cout << mBoundryBox.center() << endl;

@@ -344,6 +344,11 @@ inline static float depth(const Triangle& mTriangle, int x, int y) {
 		n1 = p1.y - m1 * p1.x;
 		pi = vec2(x, m1 * x + n1);
 	}
+	else if (p1.y == p2.y) {
+		m2 = (y - p3.x) / (x - p3.x);
+		n2 = y - m2 * x;
+		pi = vec2((p1.y - n2) / m2, p1.y);
+	}
 	else {
 		m1 = (p2.y - p1.y) / (p2.x - p1.x);
 		n1 = p1.y - m1 * p1.x;
@@ -363,22 +368,54 @@ inline static float depth(const Triangle& mTriangle, int x, int y) {
 	return zp;
 }
 
+void Renderer::preparePolygons(const vector<vec3>* vertices) {
+	vec3 triangleVertices[3];
+	vec3 triangleVertices3d[3];
+	mat4 beforeProjection = mCameraTransform * mAspectRatioTransform * mWorldTransform * mObjectTransform;
+
+	for (int i = 0; i < vertices->size(); i += 3) {
+		for (int j = 0; j < 3; j++) {
+			vec4 vertex((*vertices)[i + j]);
+			vertex = beforeProjection * vertex;
+			int r = (mWidth / 2) * (vertex.x + 1);
+			int s = (mHeight / 2) * (vertex.y + 1);
+			triangleVertices3d[j] = vec3(r, s, vertex.z);
+			vertex = mProjection * vertex;
+			vertex /= vertex.w;
+			r = (mWidth / 2) * (vertex.x + 1);
+			s = (mHeight / 2) * (vertex.y + 1);
+			triangleVertices[j] = vec3(r, s, vertex.z);
+		}
+		mPolygons.push_back(Poly(Triangle(triangleVertices), Triangle(triangleVertices3d)));
+	}
+}
+
 void Renderer::scanLineZBuffer() {
 	sort(mPolygons.begin(), mPolygons.end());
-	set<Poly, decltype(&polySetCompare)> A(&polySetCompare);
+	set<Poly, PolySetComparator> A;
 
-	for (int y = mPolygons[0].mTriangle.mMinY; y < mPolygons.back().mTriangle.mMaxY; y++) {
+	int maxY = FLT_MIN;
+	for each (auto & p in mPolygons) {
+		if (p.mTriangle.mMaxY > maxY)
+			maxY = p.mTriangle.mMaxY;
+	}
+
+	for (int y = mPolygons[0].mTriangle.mMinY; y < maxY; y++) {
 		for (int x = 0; x < mWidth; x++) mZbuffer[x] = FLT_MAX; // TODO: this should be zFar, need to save it's value in camera and renderer :(
-		for each (Poly& p in mPolygons) 
-			if (p.mTriangle.mMinY >= y) A.insert(p);
-		for each (Poly & p in mPolygons)
-			if (p.mTriangle.mMaxY > y) A.erase(A.find(p));
+		for each (auto& p in mPolygons) 
+			if (p.mTriangle.mMinY <= y) A.insert(p);
+		for each (auto & p in mPolygons)
+			if (p.mTriangle.mMaxY < y) {
+				auto it = A.find(p);
+				if (it != A.end())
+					A.erase(it);
+			}
 		for each (auto& p in A) {
 			vec2 span = p.span(y);
 			for (int x = span.x; x < span.y; x++) {
 				float z = depth(p.mTriangle3d, x, y);
 				if (z < mZbuffer[x]) { // TODO - check in if that z is also bigger than zNear, need to save it's value in camera and renderer :(
-					colorPixel(x, y, mColors[0]); // TODO - calc color stuff :(
+					colorPixel(x, y, vec3(0.75, 0.75, 0.75)); // TODO - calc color stuff :(
 					mZbuffer[x] = z;
 				}
 			}
@@ -464,6 +501,11 @@ void Renderer::clearColorBuffer() {
 			clearPixel(x, y);
 		}
 	}
+}
+
+void Renderer::reset() {
+	clearColorBuffer();
+	mPolygons.clear();
 }
 
 

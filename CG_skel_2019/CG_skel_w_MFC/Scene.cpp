@@ -198,7 +198,7 @@ void Scene::removeActiveCamera()
 }
 
 void Scene::draw() {
-	mRenderer->clearColorBuffer();
+	mRenderer->reset();
 
 	auto activeCamera = mCameras[mActiveCamera];
 	mRenderer->setCameraTransform(activeCamera->getTransform());
@@ -212,6 +212,7 @@ void Scene::draw() {
 			camera->draw(mRenderer);
 		}
 	}
+	if (!mModels.empty()) mRenderer->scanLineZBuffer();
 	mRenderer->swapBuffers();
 }
 

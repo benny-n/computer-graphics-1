@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Polygon.h"
 
+Triangle::Triangle(const vec3 v[3]) : Triangle(v[0], v[1], v[2]) {}
+
 Triangle::Triangle(const vec3& a, const vec3& b, const vec3& c) {
 	mVertices[0] = a;
 	mVertices[1] = b;
@@ -25,8 +27,8 @@ vec2 Poly::span(int y) const {
 	auto intersect = [&xMin, &xMax](const vec2& p1, const vec2& p2, int y) {
 		if (p1.y == p2.y) {
 			if (p1.y == y) {
-				xMin = min(p1.x, p2.x);
-				xMax = max(p1.x, p2.x);
+				xMin = MIN3(xMin, p1.x, p2.x);
+				xMax = MAX3(xMax, p1.x, p2.x);
 			}
 		}
 		else {
@@ -48,9 +50,9 @@ vec2 Poly::span(int y) const {
 
 bool Poly::operator<(const Poly& p) { return mTriangle < p.mTriangle; }
 
-bool polySetCompare(const Poly& a, const Poly& b)
-{
-	return !(a.mTriangle3d.mVertices[0] == b.mTriangle3d.mVertices[0] &&
-		a.mTriangle3d.mVertices[1] == b.mTriangle3d.mVertices[1] &&
-		a.mTriangle3d.mVertices[2] == b.mTriangle3d.mVertices[2]);
+bool PolySetComparator::operator()(const Poly& a, const Poly& b) const {
+	return (a.mTriangle3d.mVertices[0] < b.mTriangle3d.mVertices[0]) 
+		|| (a.mTriangle3d.mVertices[0] == b.mTriangle3d.mVertices[0]) && (a.mTriangle3d.mVertices[1] < b.mTriangle3d.mVertices[1]) 
+		|| (a.mTriangle3d.mVertices[0] == b.mTriangle3d.mVertices[0]) && (a.mTriangle3d.mVertices[1] == b.mTriangle3d.mVertices[1]) 
+			&& (a.mTriangle3d.mVertices[2] < b.mTriangle3d.mVertices[2]);
 }

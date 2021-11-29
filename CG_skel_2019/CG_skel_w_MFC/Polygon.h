@@ -12,6 +12,7 @@ public:
 	int mMinY;
 	int mMaxY;
 
+	Triangle(const vec3 v[3]);
 	Triangle(const vec3& a, const vec3& b, const vec3& c);
 
 	bool operator< (const Triangle& t);
@@ -28,4 +29,6 @@ public:
 	bool operator< (const Poly& p);
 };
 
-bool polySetCompare(const Poly& a, const Poly& b);
+struct PolySetComparator {
+	bool operator()(const Poly& a, const Poly& b) const;
+};
