@@ -212,7 +212,10 @@ void Scene::draw() {
 			camera->draw(mRenderer);
 		}
 	}
-	if (!mModels.empty()) mRenderer->scanLineZBuffer();
+	//if (!mModels.empty()) mRenderer->scanLineZBuffer();
+	for each (auto model in mModels) {
+		model->draw(mRenderer);
+	}
 	mRenderer->swapBuffers();
 }
 

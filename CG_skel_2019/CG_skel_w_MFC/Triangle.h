@@ -14,21 +14,11 @@ public:
 
 	Triangle(const vec3 v[3]);
 	Triangle(const vec3& a, const vec3& b, const vec3& c);
+	vec2 span(int y) const;
 
 	bool operator< (const Triangle& t);
 };
 
-class Poly {
-public:
-	Triangle mTriangle;
-	Triangle mTriangle3d;
-
-	Poly(const Triangle& t, const Triangle& t3d);
-	vec2 span(int y) const;
-
-	bool operator< (const Poly& p);
-};
-
-struct PolySetComparator {
-	bool operator()(const Poly& a, const Poly& b) const;
+struct TriangleSetComparator {
+	bool operator()(const Triangle& a, const Triangle& b) const;
 };

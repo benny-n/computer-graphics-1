@@ -3,7 +3,7 @@
 #include "CG_skel_w_MFC.h"
 #include "vec.h"
 #include "mat.h"
-#include "Polygon.h"
+#include "Triangle.h"
 #include "GL/glew.h"
 
 using namespace std;
@@ -19,7 +19,7 @@ class Renderer
 	mat4 mWorldTransform;
 	mat4 mAspectRatioTransform;
 	vec3 mColors[4];
-	vector<Poly> mPolygons;
+	vector<Triangle> mPolygons;
 
 
 	void createBuffers(int width, int height);

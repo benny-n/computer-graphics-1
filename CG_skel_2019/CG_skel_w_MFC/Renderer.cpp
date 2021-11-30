@@ -325,17 +325,19 @@ void Renderer::calcTriangleAndFaceNormalCoordinates(vec3 triangles3d[3], const m
 	clipAndDrawLine(vec3(center.x, center.y, center.z), vec3(normal.x, normal.y, normal.z), true);
 }
 
-inline static float depth(const Triangle& mTriangle, int x, int y) {
+inline static float depth(const Triangle& triangle, int x, int y) {
 	// compute p_i
-	vec2 p1(mTriangle.mVertices[0].x, mTriangle.mVertices[0].y);
-	vec2 p2(mTriangle.mVertices[1].x, mTriangle.mVertices[1].y);
-	vec2 p3(mTriangle.mVertices[2].x, mTriangle.mVertices[2].y);
+	vec2 p1(triangle.mVertices[0].x, triangle.mVertices[0].y);
+	vec2 p2(triangle.mVertices[1].x, triangle.mVertices[1].y);
+	vec2 p3(triangle.mVertices[2].x, triangle.mVertices[2].y);
+
+	if ((p1.x == p2.x && p2.x == p3.x) || (p1.y == p2.y && p2.y == p3.y)) return FLT_MAX;
 
 	float m1, m2, n1, n2, yi;
 	vec2 pi;
 
 	if (p1.x == p2.x) {
-		m2 = (y - p3.x) / (x - p3.x);
+		m2 = (y - p3.y) / (x - p3.x);
 		n2 = y - m2 * x;
 		pi = vec2(p1.x, m2 * p1.x + n2);
 	}
@@ -345,14 +347,14 @@ inline static float depth(const Triangle& mTriangle, int x, int y) {
 		pi = vec2(x, m1 * x + n1);
 	}
 	else if (p1.y == p2.y) {
-		m2 = (y - p3.x) / (x - p3.x);
+		m2 = (y - p3.y) / (x - p3.x);
 		n2 = y - m2 * x;
 		pi = vec2((p1.y - n2) / m2, p1.y);
 	}
 	else {
 		m1 = (p2.y - p1.y) / (p2.x - p1.x);
 		n1 = p1.y - m1 * p1.x;
-		m2 = (y - p3.x) / (x - p3.x);
+		m2 = (y - p3.y) / (x - p3.x);
 		n2 = y - m2 * x;
 
 		yi = ((m1 * n2) - (m2 * n1)) / (m1 - m2);
@@ -361,60 +363,58 @@ inline static float depth(const Triangle& mTriangle, int x, int y) {
 	}
 
 	float ti = length(pi - p1) / length(p2 - p1);
-	float zi = (ti * mTriangle.mVertices[1].z) + ((1 - ti) * mTriangle.mVertices[0].z);
+	float zi = (ti * triangle.mVertices[1].z) + ((1 - ti) * triangle.mVertices[0].z);
 	float t = length(vec2(x, y) - p3) / length(pi - p3);
-	float zp = (t * zi) + (1 - t) * mTriangle.mVertices[2].z;
+	float zp = (t * zi) + (1 - t) * triangle.mVertices[2].z;
 
 	return zp;
 }
 
 void Renderer::preparePolygons(const vector<vec3>* vertices) {
 	vec3 triangleVertices[3];
-	vec3 triangleVertices3d[3];
-	mat4 beforeProjection = mCameraTransform * mAspectRatioTransform * mWorldTransform * mObjectTransform;
+	mat4 totalTransform = mProjection * mCameraTransform * mAspectRatioTransform * mWorldTransform * mObjectTransform;
 
 	for (int i = 0; i < vertices->size(); i += 3) {
 		for (int j = 0; j < 3; j++) {
 			vec4 vertex((*vertices)[i + j]);
-			vertex = beforeProjection * vertex;
+			vertex = totalTransform * vertex;
+			vertex /= vertex.w;
 			int r = (mWidth / 2) * (vertex.x + 1);
 			int s = (mHeight / 2) * (vertex.y + 1);
-			triangleVertices3d[j] = vec3(r, s, vertex.z);
-			vertex = mProjection * vertex;
-			vertex /= vertex.w;
-			r = (mWidth / 2) * (vertex.x + 1);
-			s = (mHeight / 2) * (vertex.y + 1);
 			triangleVertices[j] = vec3(r, s, vertex.z);
 		}
-		mPolygons.push_back(Poly(Triangle(triangleVertices), Triangle(triangleVertices3d)));
+		mPolygons.push_back(Triangle(triangleVertices));
 	}
 }
 
 void Renderer::scanLineZBuffer() {
 	sort(mPolygons.begin(), mPolygons.end());
-	set<Poly, PolySetComparator> A;
+	set<Triangle, TriangleSetComparator> A;
 
 	int maxY = FLT_MIN;
 	for each (auto & p in mPolygons) {
-		if (p.mTriangle.mMaxY > maxY)
-			maxY = p.mTriangle.mMaxY;
+		if (p.mMaxY > maxY)
+			maxY = p.mMaxY;
 	}
 
-	for (int y = mPolygons[0].mTriangle.mMinY; y < maxY; y++) {
-		for (int x = 0; x < mWidth; x++) mZbuffer[x] = FLT_MAX; // TODO: this should be zFar, need to save it's value in camera and renderer :(
+	for (int y = mPolygons[0].mMinY; y < maxY; y++) {
+		for (int x = 0; x < mWidth; x++) mZbuffer[x] = 1;
 		for each (auto& p in mPolygons) 
-			if (p.mTriangle.mMinY <= y) A.insert(p);
+			if (p.mMinY <= y) A.insert(p);
 		for each (auto & p in mPolygons)
-			if (p.mTriangle.mMaxY < y) {
+			if (p.mMaxY < y) {
 				auto it = A.find(p);
 				if (it != A.end())
 					A.erase(it);
 			}
 		for each (auto& p in A) {
 			vec2 span = p.span(y);
-			for (int x = span.x; x < span.y; x++) {
-				float z = depth(p.mTriangle3d, x, y);
-				if (z < mZbuffer[x]) { // TODO - check in if that z is also bigger than zNear, need to save it's value in camera and renderer :(
+			int xMin = ceil(max(0, span.x)); // round up and down to stay within triangle
+			int xMax = floor(min(mWidth, span.y));
+			for (int x = xMin; x < xMax; x++) {
+				float z = depth(p, x, y);
+				if (z < mZbuffer[x] && z >= -1) {
+					float z2 = depth(p, x, y);
 					colorPixel(x, y, vec3(0.75, 0.75, 0.75)); // TODO - calc color stuff :(
 					mZbuffer[x] = z;
 				}
