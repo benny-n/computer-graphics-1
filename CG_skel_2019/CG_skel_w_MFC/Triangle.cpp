@@ -44,6 +44,14 @@ vec2 Triangle::span(int y) const {
 	return vec2(xMin, xMax);
 }
 
+vec3 Triangle::center() const { return (mVertices[0] + mVertices[1] + mVertices[2]) / 3; }
+
+vec3 Triangle::getFaceNormal() const {
+	vec3 i = mVertices[1] - mVertices[0];
+	vec3 j = mVertices[2] - mVertices[0];
+	return vec3(normalize(cross(j, i))); // swap i, j because triangle gets projected vertices that are flipped by camera POV
+}
+
 bool Triangle::operator<(const Triangle& t) { return mMinY < t.mMinY; }
 
 bool TriangleSetComparator::operator()(const Triangle& a, const Triangle& b) const {

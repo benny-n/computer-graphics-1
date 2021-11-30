@@ -126,6 +126,21 @@ void Scene::transformActive(const vec3& v) {
 	else mModels[mActiveModel]->transform(translate(v), mat4(), mControlWorld);
 }
 
+inline static void getNewUp(vec4& newUp, const vec3& eye, const vec3& at) {
+	if (at == vec3()) { // use eye
+		if (eye.x == 0) newUp = vec3(1, 0, 0);
+		else if (eye.y == 0) newUp = vec3(0, 1, 0);
+		else if (eye.z == 0) newUp = vec3(0, 0, 1);
+		else newUp = vec3(0, 1, -eye.y / eye.z);
+	}
+	else {
+		if (at.x == 0) newUp = vec3(1, 0, 0);
+		else if (at.y == 0) newUp = vec3(0, 1, 0);
+		else if (at.z == 0) newUp = vec3(0, 0, 1);
+		else newUp = vec3(0, 1, -at.y / at.z);
+	}
+}
+
 void Scene::modifyActiveCamera(const vec4& v, bool isEye) {
 	const CameraPtr activeCamera = mCameras[mActiveCamera];
  	vec3 vector0, modifiedEye, modifiedAt;
@@ -133,17 +148,11 @@ void Scene::modifyActiveCamera(const vec4& v, bool isEye) {
 		const vec4 at = activeCamera->getAt();
 		modifiedAt = vec3(at.x, at.y, at.z);
 		modifiedEye = vec3(v.x, v.y, v.z);
-		/*while (modifiedAt == vector0 || modifiedEye == vector0) {
-			modifiedAt.x++;
-			modifiedEye.x++;
-		}*/
 		
 		vec4 newUp = cross(modifiedEye, modifiedAt);
-		while (newUp == vector0) {
-			modifiedAt.x++;
-			modifiedEye.x++;
-			newUp = cross(modifiedEye, modifiedAt);
-		}
+		if (newUp == vector0)
+			getNewUp(newUp, modifiedEye, modifiedAt);
+		newUp = normalize(newUp);
 		activeCamera->lookAt(v, at, newUp);
 	}
 	else { // is at
@@ -151,11 +160,9 @@ void Scene::modifyActiveCamera(const vec4& v, bool isEye) {
 		modifiedAt = vec3(v.x, v.y, v.z);
 		modifiedEye = vec3(eye.x, eye.y, eye.z);
 		vec4 newUp = cross(modifiedEye, modifiedAt);
-		while (newUp == vector0) {
-			modifiedAt.x++;
-			modifiedEye.x++;
-			newUp = cross(modifiedEye, modifiedAt);
-		}
+		if (newUp == vector0)
+			getNewUp(newUp, modifiedEye, modifiedAt);
+		newUp = normalize(newUp);
 		activeCamera->lookAt(eye, v, newUp);
 	}
 }
