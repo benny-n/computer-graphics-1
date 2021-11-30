@@ -1,15 +1,25 @@
 #include "stdafx.h"
 #include "Triangle.h"
 
-Triangle::Triangle(const vec3 v[3]) : Triangle(v[0], v[1], v[2]) {}
+Triangle::Triangle(const vec3 v[3], bool drawFaceNormal) : mDrawFaceNormal(drawFaceNormal), mDrawVertexNormal(false) {
+	mVertices[0] = v[0];
+	mVertices[1] = v[1];
+	mVertices[2] = v[2];
+}
 
-Triangle::Triangle(const vec3& a, const vec3& b, const vec3& c) {
-	mVertices[0] = a;
-	mVertices[1] = b;
-	mVertices[2] = c;
+Triangle::Triangle(const vec3 v[3], bool drawFaceNormal, const vec3 n[3]) : mDrawFaceNormal(drawFaceNormal), mDrawVertexNormal(true) {
+	mVertices[0] = v[0];
+	mVertices[1] = v[1];
+	mVertices[2] = v[2];
 
-	mMinY = MIN3(a.y, b.y, c.y);
-	mMaxY = MAX3(a.y, b.y, c.y);
+	mVertexNormals[0] = n[0];
+	mVertexNormals[1] = n[1];
+	mVertexNormals[2] = n[2];
+}
+
+void Triangle::setYMinAndYMax() {
+	mMinY = MIN3(mVertices[0].y, mVertices[1].y, mVertices[2].y);
+	mMaxY = MAX3(mVertices[0].y, mVertices[1].y, mVertices[2].y);
 }
 
 vec2 Triangle::span(int y) const {

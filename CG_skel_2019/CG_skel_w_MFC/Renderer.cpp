@@ -365,37 +365,75 @@ inline static float depth(const Triangle& triangle, int x, int y) {
 	float ti = length(pi - p1) / length(p2 - p1);
 	float zi = (ti * triangle.mVertices[1].z) + ((1 - ti) * triangle.mVertices[0].z);
 	float t = length(vec2(x, y) - p3) / length(pi - p3);
+	t = t > 1 ? 1 : (t < 0 ? 0 : t);
 	float zp = (t * zi) + (1 - t) * triangle.mVertices[2].z;
 
 	return zp;
 }
 
-void Renderer::preparePolygons(const vector<vec3>* vertices) {
+void Renderer::preparePolygons(
+	const vector<vec3>* vertices,
+	const vector<vec3>* normals,
+	bool drawVertexNormals,
+	bool drawFaceNormals
+) {
 	vec3 triangleVertices[3];
-	mat4 totalTransform = mProjection * mCameraTransform * mAspectRatioTransform * mWorldTransform * mObjectTransform;
+	if (drawVertexNormals) {
+		vec3 triangleNormals[3];
+		const mat4 modelTransform = mAspectRatioTransform * mWorldTransform * mObjectTransform;
+		const mat4 normalTransform = mAspectRatioTransform * mWorldTransform * mNormalTransform;
+		const mat4 from3dTo2d = mProjection * mCameraTransform;
+		//const mat4 worldAndProjection = from3dTo2d * worldTransform;
 
-	for (int i = 0; i < vertices->size(); i += 3) {
-		for (int j = 0; j < 3; j++) {
-			vec4 vertex((*vertices)[i + j]);
-			vertex = totalTransform * vertex;
-			vertex /= vertex.w;
-			int r = (mWidth / 2) * (vertex.x + 1);
-			int s = (mHeight / 2) * (vertex.y + 1);
-			triangleVertices[j] = vec3(r, s, vertex.z);
+		for (int i = 0; i < vertices->size(); i += 3) {
+			for (int j = 0; j < 3; j++) {
+				vec4 vertex((*vertices)[i + j]);
+				vec4 normal(vec3((*normals)[i + j]), 0);
+				vertex = modelTransform * vertex;
+				normal = normalTransform * normal;
+				normal = normalize(normal);
+				normal += vertex;
+				vertex = from3dTo2d * vertex;
+				normal = from3dTo2d * normal;
+				vertex /= vertex.w;
+				normal /= normal.w;
+				triangleVertices[j] = vec3(vertex.x, vertex.y, vertex.z);
+				triangleNormals[j] = vec3(normal.x, normal.y, normal.z);
+			}
+			mPolygons.push_back(Triangle(triangleVertices, drawFaceNormals, triangleNormals));
 		}
-		mPolygons.push_back(Triangle(triangleVertices));
+	}
+	else {
+
+		mat4 totalTransform = mProjection * mCameraTransform * mAspectRatioTransform * mWorldTransform * mObjectTransform;
+
+		for (int i = 0; i < vertices->size(); i += 3) {
+			for (int j = 0; j < 3; j++) {
+				vec4 vertex((*vertices)[i + j]);
+				vertex = totalTransform * vertex;
+				vertex /= vertex.w;
+				triangleVertices[j] = vec3(vertex.x, vertex.y, vertex.z);
+			}
+			mPolygons.push_back(Triangle(triangleVertices, drawFaceNormals));
+		}
 	}
 }
 
 void Renderer::scanLineZBuffer() {
-	sort(mPolygons.begin(), mPolygons.end());
-	set<Triangle, TriangleSetComparator> A;
-
 	int maxY = FLT_MIN;
-	for each (auto & p in mPolygons) {
+	for (int i = 0; i < mPolygons.size(); i++) {
+		Triangle& p = mPolygons[i];
+		for (int j = 0; j < 3; j++) {
+			p.mVertices[j].x = floor((mWidth / 2) * (p.mVertices[j].x + 1));
+			p.mVertices[j].y = floor((mHeight / 2) * (p.mVertices[j].y + 1));
+		}
+		p.setYMinAndYMax();
 		if (p.mMaxY > maxY)
 			maxY = p.mMaxY;
 	}
+
+	sort(mPolygons.begin(), mPolygons.end());
+	set<Triangle, TriangleSetComparator> A;
 
 	for (int y = mPolygons[0].mMinY; y < maxY; y++) {
 		for (int x = 0; x < mWidth; x++) mZbuffer[x] = 1;
@@ -409,12 +447,11 @@ void Renderer::scanLineZBuffer() {
 			}
 		for each (auto& p in A) {
 			vec2 span = p.span(y);
-			int xMin = ceil(max(0, span.x)); // round up and down to stay within triangle
-			int xMax = floor(min(mWidth, span.y));
+			int xMin = max(0, span.x); // round up and down to stay within triangle
+			int xMax = min(mWidth, span.y);
 			for (int x = xMin; x < xMax; x++) {
 				float z = depth(p, x, y);
-				if (z < mZbuffer[x] && z >= -1) {
-					float z2 = depth(p, x, y);
+				if (z < mZbuffer[x] && z >= -1) {		
 					colorPixel(x, y, vec3(0.75, 0.75, 0.75)); // TODO - calc color stuff :(
 					mZbuffer[x] = z;
 				}
@@ -423,53 +460,23 @@ void Renderer::scanLineZBuffer() {
 	}
 }
 
-void Renderer::drawTriangles(
-	const vector<vec3>* vertices, 
-	const vector<vec3>* normals, 
-	bool drawVertexNormals,
-	bool drawFaceNormals
-) {
-	vec3 currTriangleVertices[3];
-	vec3 currTriangleVertices3d[3];
-	const mat4 worldTransform = mAspectRatioTransform * mWorldTransform;
-	const mat4 normalTransform = mAspectRatioTransform * mWorldTransform * mNormalTransform;
-	const mat4 from3dTo2d = mProjection * mCameraTransform;
-	const mat4 worldAndProjection = from3dTo2d * worldTransform;
+void Renderer::drawTriangles() {
 
-	for (int i = 0; i < vertices->size(); i+=3) {
-		for (int j = 0; j < 3; j++) {
-			if (drawVertexNormals) {
-				vec4 vertex((*vertices)[i + j]);
-				vec4 normal(vec3((*normals)[i + j]), 0);
-				vertex = mObjectTransform * vertex;
-				currTriangleVertices3d[j] = vec3(vertex.x, vertex.y, vertex.z);
-				vertex = worldTransform * vertex;
-				normal = normalTransform * normal;
-				normal = normalize(normal);
-				normal += vertex;
-				vertex = from3dTo2d * vertex;
-				normal = from3dTo2d * normal;
-				vertex /= vertex.w;
-				normal /= normal.w;
-				vec3 normalizedVertex(vertex.x, vertex.y, vertex.z);
-				clipAndDrawLine(normalizedVertex, vec3(normal.x, normal.y, normal.z), true);
-				currTriangleVertices[j] = normalizedVertex;
-			}
-			else {
-				vec4 vertex((*vertices)[i + j]);
-				vertex = mObjectTransform * vertex;
-				currTriangleVertices3d[j] = vec3(vertex.x, vertex.y, vertex.z);
-				vertex = worldAndProjection * vertex;
-				vertex /= vertex.w;
-				currTriangleVertices[j] = vec3(vertex.x, vertex.y, vertex.z);
+	for each (auto& triangle in mPolygons){
+		if (triangle.mDrawVertexNormal) {
+			for (int i = 0; i < 3; i++) {
+				clipAndDrawLine(triangle.mVertices[i], triangle.mVertexNormals[i], true);
 			}
 		}
-		clipAndDrawLine(currTriangleVertices[0], currTriangleVertices[1]);
-		clipAndDrawLine(currTriangleVertices[1], currTriangleVertices[2]);
-		clipAndDrawLine(currTriangleVertices[2], currTriangleVertices[0]);
+		clipAndDrawLine(triangle.mVertices[0], triangle.mVertices[1]);
+		clipAndDrawLine(triangle.mVertices[1], triangle.mVertices[2]);
+		clipAndDrawLine(triangle.mVertices[2], triangle.mVertices[0]);
 
-		if (drawFaceNormals)
-			calcTriangleAndFaceNormalCoordinates(currTriangleVertices3d, worldAndProjection);
+		if (triangle.mDrawFaceNormal) {
+			vec3 center = triangle.center();
+			vec3 normal = center + 0.1 * triangle.getFaceNormal();
+			clipAndDrawLine(center, normal, true);
+		}
 	}
 }
 

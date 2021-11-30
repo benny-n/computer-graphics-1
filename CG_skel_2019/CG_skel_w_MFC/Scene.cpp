@@ -214,15 +214,14 @@ void Scene::draw() {
 	for each (auto model in mModels) {
 		model->draw(mRenderer);
 	}
+	mRenderer->drawTriangles();
 	if (mRenderCameras) {
 		for each (auto camera in mCameras) {
 			camera->draw(mRenderer);
 		}
 	}
-	//if (!mModels.empty()) mRenderer->scanLineZBuffer();
-	for each (auto model in mModels) {
-		model->draw(mRenderer);
-	}
+	if (!mModels.empty()) mRenderer->scanLineZBuffer();
+
 	mRenderer->swapBuffers();
 }
 

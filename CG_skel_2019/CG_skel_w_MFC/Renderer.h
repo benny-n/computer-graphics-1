@@ -50,10 +50,9 @@ public:
 	void setProjection(const mat4& projection);
 	void setObjectMatrices(const mat4& oTransform, const mat4& nTransform, const mat4& wTransform);
 	void calcTriangleAndFaceNormalCoordinates(vec3 triangles3d[3], const mat4& from3dTo2d);
-	void preparePolygons(const vector<vec3>* vertices);
+	void preparePolygons(const vector<vec3>* vertices, const vector<vec3>* normals, bool drawVertexNormals, bool drawFaceNormals);
 	void scanLineZBuffer();
-	void drawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals,
-		bool drawVertexNormals, bool drawFaceNormals);
+	void drawTriangles();
 	void drawSquares(const vector<vec3>* vertices);
 	void swapBuffers();
 	void clearColorBuffer();

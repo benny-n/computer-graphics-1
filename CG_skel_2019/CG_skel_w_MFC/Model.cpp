@@ -238,9 +238,8 @@ void MeshModel::draw(Renderer* renderer)
 	if (mUseVisualizeSlopes) renderer->setVisualizeSlopes();
 	else renderer->setColor(mColor);
 	renderer->setObjectMatrices(mModelTransform, mNormalTransform, mWorldTransform);
-	renderer->drawTriangles(&mVertexPositions, &mVertexNormals, mDrawVertexNormals, mDrawFaceNormals);
 	if (mDrawBoundryBox) mBoundryBox.draw(renderer);
-	renderer->preparePolygons(&mVertexPositions);
+	renderer->preparePolygons(&mVertexPositions, &mVertexNormals, mDrawVertexNormals, mDrawFaceNormals);
 	//mBoundryBox.draw(renderer);
 	//cout << mModelTransform << endl;
 	//cout << mBoundryBox.center() << endl;
