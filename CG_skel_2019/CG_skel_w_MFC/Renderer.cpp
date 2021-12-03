@@ -9,13 +9,11 @@
 Renderer::Renderer() : mOutBuffer(nullptr), mWidth(512), mHeight(512) {
 	initOpenGLRendering();
 	createBuffers(512,512);
-	setVisualizeSlopes();
 }
 
 Renderer::Renderer(int width, int height) : mOutBuffer(nullptr), mWidth(width), mHeight(height) {
 	initOpenGLRendering();
 	createBuffers(width,height);
-	setVisualizeSlopes();
 }
 
 Renderer::~Renderer(void)
@@ -55,19 +53,6 @@ void Renderer::setDemoBuffer()
 
 	}
 
-}
-
-void Renderer::setColor(const vec3& color)
-{
-	mColors[0] = mColors[1] = mColors[2] = mColors[3] = color;
-}
-
-void Renderer::setVisualizeSlopes()
-{
-	mColors[0] = vec3(1);
-	mColors[1] = vec3(1, 0, 0);
-	mColors[2] = vec3(0, 1, 0);
-	mColors[3] = vec3(0, 0, 1);
 }
 
 void Renderer::reshape(int width, int height){ 
@@ -238,7 +223,7 @@ static inline void choosePixlesForCanonicalLine(vector<int>& ys, int x1, int y1)
 	}
 }
 
-void Renderer::drawLine(int x1, int y1, int x2, int y2, bool isNonModelLine) {
+void Renderer::drawLine(int x1, int y1, int x2, int y2) {
 	if (x1 > x2) {
 		swap(x1, x2);
 		swap(y1, y2);
@@ -257,7 +242,7 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2, bool isNonModelLine) {
 			choosePixlesForCanonicalLine(ys, x2 - x1, y2 - y1);
 			for (int x = 0; x < numPixels; x++)
 			{
-				colorPixel(x + x1, ys[x] + y1, (isNonModelLine ? vec3(0.5) : mColors[0]));
+				colorPixel(x + x1, ys[x] + y1);
 			}
 		}
 		else { // move to origin and reflect by y=x
@@ -266,7 +251,7 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2, bool isNonModelLine) {
 			choosePixlesForCanonicalLine(ys, y2 - y1, x2 - x1); // first translate, then reflect (swap x and y)
 			for (int x = 0; x < numPixels; x++)
 			{
-				colorPixel(ys[x] + x1, x + y1, (isNonModelLine ? vec3(0.5) : mColors[1])); // first reflect back, then translate back
+				colorPixel(ys[x] + x1, x + y1); // first reflect back, then translate back
 			}
 		}
 	}
@@ -278,7 +263,7 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2, bool isNonModelLine) {
 			choosePixlesForCanonicalLine(ys, x2 - x1, y1 - y2); // first translate, then reflect (minus on y)
 			for (int x = 0; x < numPixels; x++)
 			{
-				colorPixel(x + x1, -(ys[x]) + y1, (isNonModelLine ? vec3(0.5) : mColors[2])); // first reflect back, then translate back
+				colorPixel(x + x1, -(ys[x]) + y1); // first reflect back, then translate back
 			}
 		}
 		else { // move to origin, reflect by x=0 and then reflect by y=x
@@ -287,13 +272,13 @@ void Renderer::drawLine(int x1, int y1, int x2, int y2, bool isNonModelLine) {
 			choosePixlesForCanonicalLine(ys, y1 - y2, x2 - x1); // first translate, then reflect (minus on y) and reflect again (swap x and y)
 			for (int x = 0; x < numPixels; x++)
 			{
-				colorPixel(ys[x] + x1, -x + y1, (isNonModelLine ? vec3(0.5) : mColors[3])); // first reflect back on y=x, then reflect back on x=0, then translate back
+				colorPixel(ys[x] + x1, -x + y1); // first reflect back on y=x, then reflect back on x=0, then translate back
 			}
 		}
 	}
 }
 
-void Renderer::clipAndDrawLine(vec3 p1, vec3 p2, bool isNonModelLine) {
+void Renderer::clipAndDrawLine(vec3 p1, vec3 p2) {
 	if (outsideClipVolume(p1, p2)) return;
 	if (!clippingPipeline(p1, p2)) return;
 	int x1 = (mWidth / 2) * (p1.x + 1);
@@ -301,7 +286,7 @@ void Renderer::clipAndDrawLine(vec3 p1, vec3 p2, bool isNonModelLine) {
 	int x2 = (mWidth / 2) * (p2.x + 1);
 	int y2 = (mHeight / 2) * (p2.y + 1);
 
-	drawLine(x1, y1, x2, y2, isNonModelLine);
+	drawLine(x1, y1, x2, y2);
 }
 
 void Renderer::setCameraTransform(const mat4& cTransform) { mCameraTransform = cTransform; }
@@ -322,50 +307,29 @@ void Renderer::calcTriangleAndFaceNormalCoordinates(vec3 triangles3d[3], const m
 	normal = from3dTo2d * normal;
 	center /= center.w;
 	normal /= normal.w;
-	clipAndDrawLine(vec3(center.x, center.y, center.z), vec3(normal.x, normal.y, normal.z), true);
+	clipAndDrawLine(vec3(center.x, center.y, center.z), vec3(normal.x, normal.y, normal.z));
 }
 
 inline static float depth(const Triangle& triangle, int x, int y) {
-	// compute p_i
 	vec2 p1(triangle.mVertices[0].x, triangle.mVertices[0].y);
 	vec2 p2(triangle.mVertices[1].x, triangle.mVertices[1].y);
 	vec2 p3(triangle.mVertices[2].x, triangle.mVertices[2].y);
 
-	if ((p1.x == p2.x && p2.x == p3.x) || (p1.y == p2.y && p2.y == p3.y)) return FLT_MAX;
+	float a = p2.y - p1.y;
+	float b = p1.x - p2.x;
+	float c = a * p1.x + b * p1.y;
 
-	float m1, m2, n1, n2, yi;
-	vec2 pi;
+	float a1 = y - p3.y;
+	float b1 = p3.x - x;
+	float c1 = a1 * p3.x + b1 * p3.y;
+	float det = a * b1 - a1 * b;
 
-	if (p1.x == p2.x) {
-		m2 = (y - p3.y) / (x - p3.x);
-		n2 = y - m2 * x;
-		pi = vec2(p1.x, m2 * p1.x + n2);
-	}
-	else if (x == p3.x) {
-		m1 = (p2.y - p1.y) / (p2.x - p1.x);
-		n1 = p1.y - m1 * p1.x;
-		pi = vec2(x, m1 * x + n1);
-	}
-	else if (p1.y == p2.y) {
-		m2 = (y - p3.y) / (x - p3.x);
-		n2 = y - m2 * x;
-		pi = vec2((p1.y - n2) / m2, p1.y);
-	}
-	else {
-		m1 = (p2.y - p1.y) / (p2.x - p1.x);
-		n1 = p1.y - m1 * p1.x;
-		m2 = (y - p3.y) / (x - p3.x);
-		n2 = y - m2 * x;
-
-		yi = ((m1 * n2) - (m2 * n1)) / (m1 - m2);
-
-		pi = vec2((yi - n1) / m1, yi);
-	}
+	vec2 pi = vec2((b1 * c - b * c1) / det, (a * c1 - a1 * c) / det);
 
 	float ti = length(pi - p1) / length(p2 - p1);
 	float zi = (ti * triangle.mVertices[1].z) + ((1 - ti) * triangle.mVertices[0].z);
 	float t = length(vec2(x, y) - p3) / length(pi - p3);
-	t = t > 1 ? 1 : (t < 0 ? 0 : t);
+	t = t > 1 ? 1 : t;
 	float zp = (t * zi) + (1 - t) * triangle.mVertices[2].z;
 
 	return zp;
@@ -373,22 +337,24 @@ inline static float depth(const Triangle& triangle, int x, int y) {
 
 void Renderer::preparePolygons(
 	const vector<vec3>* vertices,
-	const vector<vec3>* normals,
+	const vector<vec3>* normals, 
+	const vector<Material>* materials,
 	bool drawVertexNormals,
 	bool drawFaceNormals
 ) {
 	vec3 triangleVertices[3];
+	Material triangleMaterials[3];
 	if (drawVertexNormals) {
 		vec3 triangleNormals[3];
 		const mat4 modelTransform = mAspectRatioTransform * mWorldTransform * mObjectTransform;
 		const mat4 normalTransform = mAspectRatioTransform * mWorldTransform * mNormalTransform;
 		const mat4 from3dTo2d = mProjection * mCameraTransform;
-		//const mat4 worldAndProjection = from3dTo2d * worldTransform;
 
 		for (int i = 0; i < vertices->size(); i += 3) {
 			for (int j = 0; j < 3; j++) {
 				vec4 vertex((*vertices)[i + j]);
 				vec4 normal(vec3((*normals)[i + j]), 0);
+				triangleMaterials[j] = (*materials)[i + j];
 				vertex = modelTransform * vertex;
 				normal = normalTransform * normal;
 				normal = normalize(normal);
@@ -400,7 +366,7 @@ void Renderer::preparePolygons(
 				triangleVertices[j] = vec3(vertex.x, vertex.y, vertex.z);
 				triangleNormals[j] = vec3(normal.x, normal.y, normal.z);
 			}
-			mPolygons.push_back(Triangle(triangleVertices, drawFaceNormals, triangleNormals));
+			mPolygons.push_back(Triangle(triangleVertices, triangleNormals, triangleMaterials, drawFaceNormals));
 		}
 	}
 	else {
@@ -410,11 +376,12 @@ void Renderer::preparePolygons(
 		for (int i = 0; i < vertices->size(); i += 3) {
 			for (int j = 0; j < 3; j++) {
 				vec4 vertex((*vertices)[i + j]);
+				triangleMaterials[j] = (*materials)[i + j];
 				vertex = totalTransform * vertex;
 				vertex /= vertex.w;
 				triangleVertices[j] = vec3(vertex.x, vertex.y, vertex.z);
 			}
-			mPolygons.push_back(Triangle(triangleVertices, drawFaceNormals));
+			mPolygons.push_back(Triangle(triangleVertices, triangleMaterials, drawFaceNormals));
 		}
 	}
 }
@@ -447,12 +414,12 @@ void Renderer::scanLineZBuffer() {
 			}
 		for each (auto& p in A) {
 			vec2 span = p.span(y);
-			int xMin = max(0, span.x); // round up and down to stay within triangle
-			int xMax = min(mWidth, span.y);
+			int xMin = ceil(max(0, span.x));
+			int xMax = ceil(min(mWidth, span.y)); // WTF but works
 			for (int x = xMin; x < xMax; x++) {
 				float z = depth(p, x, y);
-				if (z < mZbuffer[x] && z >= -1) {		
-					colorPixel(x, y, vec3(0.75, 0.75, 0.75)); // TODO - calc color stuff :(
+				if (z < mZbuffer[x] && z >= -1) {
+					colorPixel(x, y, p.mVertexMaterials[0].color); // TODO - calc color stuff :(
 					mZbuffer[x] = z;
 				}
 			}
@@ -465,7 +432,7 @@ void Renderer::drawTriangles() {
 	for each (auto& triangle in mPolygons){
 		if (triangle.mDrawVertexNormal) {
 			for (int i = 0; i < 3; i++) {
-				clipAndDrawLine(triangle.mVertices[i], triangle.mVertexNormals[i], true);
+				clipAndDrawLine(triangle.mVertices[i], triangle.mVertexNormals[i]);
 			}
 		}
 		clipAndDrawLine(triangle.mVertices[0], triangle.mVertices[1]);
@@ -475,7 +442,7 @@ void Renderer::drawTriangles() {
 		if (triangle.mDrawFaceNormal) {
 			vec3 center = triangle.center();
 			vec3 normal = center + 0.1 * triangle.getFaceNormal();
-			clipAndDrawLine(center, normal, true);
+			clipAndDrawLine(center, normal);
 		}
 	}
 }
@@ -494,10 +461,10 @@ void Renderer::drawSquares(const vector<vec3>* vertices) {
 			vertex /= vertex.w;
 			squares[j] = vec3(vertex.x, vertex.y, vertex.z);
 		}
-		clipAndDrawLine(squares[0], squares[1], true);
-		clipAndDrawLine(squares[1], squares[2], true);
-		clipAndDrawLine(squares[2], squares[3], true);
-		clipAndDrawLine(squares[3], squares[0], true);
+		clipAndDrawLine(squares[0], squares[1]);
+		clipAndDrawLine(squares[1], squares[2]);
+		clipAndDrawLine(squares[2], squares[3]);
+		clipAndDrawLine(squares[3], squares[0]);
 	}
 }
 

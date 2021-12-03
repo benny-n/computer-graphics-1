@@ -137,6 +137,7 @@ void mouse(int button, int state, int x, int y)
 	//set down flags
 	switch (button) {
 	case GLUT_LEFT_BUTTON:
+		//cout << x << " , " << y << endl;
 		gLbDown = (state == GLUT_UP) ? 0 : 1;
 		break;
 	case GLUT_RIGHT_BUTTON:
@@ -224,9 +225,6 @@ void changeColorMenu(int id) {
 		break;
 	case YELLOW:
 		gScene->changeColor(vec3(1, 1, 0));
-		break;
-	case VISUALIZE_SLOPES:
-		gScene->visualizeSlopes();
 		break;
 	case CUSTOM_COLOR:
 		inputMessage();
@@ -414,7 +412,6 @@ void initMenu()
 	glutAddMenuEntry("Green", GREEN);
 	glutAddMenuEntry("Blue", BLUE);
 	glutAddMenuEntry("Yellow", YELLOW);
-	glutAddMenuEntry("Visualize Slopes", VISUALIZE_SLOPES);
 	glutAddMenuEntry("Choose custom color", CUSTOM_COLOR);
 
 	//create active model options menu

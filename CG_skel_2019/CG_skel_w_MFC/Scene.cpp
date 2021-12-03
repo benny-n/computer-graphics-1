@@ -82,13 +82,7 @@ void Scene::toggleControlCamera()
 
 void Scene::changeColor(const vec3& color)
 {
-	mModels[mActiveModel]->mColor = color;
-	mModels[mActiveModel]->mUseVisualizeSlopes = false;
-}
-
-void Scene::visualizeSlopes()
-{
-	mModels[mActiveModel]->mUseVisualizeSlopes = true;
+	mModels[mActiveModel]->setColor(color);
 }
 
 //SCALING

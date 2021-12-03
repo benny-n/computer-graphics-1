@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "vec.h"
 #include "mat.h"
+#include "Material.h"
 #include <string>
 
 using namespace std;
@@ -27,12 +28,11 @@ public:
 	bool mDrawBoundryBox;
 	bool mDrawVertexNormals;
 	bool mDrawFaceNormals;
-	bool mUseVisualizeSlopes;
 	BoundryBox mBoundryBox;
-	vec3 mColor;
 
-	Model() : mDrawBoundryBox(false), mDrawVertexNormals(false), mDrawFaceNormals(false), mUseVisualizeSlopes(false), mColor(1) {}
+	Model() : mDrawBoundryBox(false), mDrawVertexNormals(false), mDrawFaceNormals(false) {}
 	const string& getName();
+	void virtual setColor(const vec3& color) = 0;
 	void virtual transform(const mat4& m , const mat4& g, bool transformWorld) = 0;
 	void virtual draw(Renderer*) = 0;
 };
@@ -44,6 +44,7 @@ protected :
 	vector<vec3> mVertexPositions;
 	vector<vec3> mVertexNormals;
 	vector<vec3> mFaceNormals;
+	vector<Material> mVertexMaterials;
 	mat4 mModelTransform;
 	mat4 mWorldTransform;
 	mat4 mNormalTransform;
@@ -52,7 +53,7 @@ public:
 	MeshModel(string fileName);
 	~MeshModel(void);
 	virtual void loadFile(string fileName);
-	void setColor(const vec3& c);
+	void setColor(const vec3& c) override;
 	void calcVertexNormals();
 	void transform(const mat4& m, const mat4& g, bool transformWorld) override;
 	void draw(Renderer* renderer) override;

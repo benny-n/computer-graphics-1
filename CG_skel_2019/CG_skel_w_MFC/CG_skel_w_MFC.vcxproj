@@ -101,6 +101,7 @@
     <ClCompile Include="CG_skel_w_MFC.cpp" />
     <ClCompile Include="Controls.cpp" />
     <ClCompile Include="InitShader.cpp" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -115,7 +116,9 @@
     <ClInclude Include="CG_skel_w_MFC.h" />
     <ClInclude Include="Controls.h" />
     <ClInclude Include="InitShader.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="mat.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Resource.h" />

@@ -184,13 +184,14 @@ void MeshModel::loadFile(string fileName)
 
 	mVertexPositions = vector<vec3>(faces.size() * 3);
 	mVertexNormals = vector<vec3>(faces.size() * 3);
+	mVertexMaterials = vector<Material>(faces.size() * 3);
 	// iterate through all stored faces and create triangles
 	int k=0;
-	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it)
-	{
+	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it) {
 		for (int i = 0; i < 3; i++)
 		{
 			mVertexPositions[k] = vertices[(*it).v[i] - 1];
+			mVertexMaterials[k] = Material();
 			if (!vertexNormals.empty())
 				mVertexNormals[k] = vertexNormals[(*it).vn[i] - 1];
 			k++;
@@ -199,7 +200,10 @@ void MeshModel::loadFile(string fileName)
 	if (vertexNormals.empty()) calcVertexNormals();
 }
 
-void MeshModel::setColor(const vec3& c) { mColor = c; }
+void MeshModel::setColor(const vec3& c) {
+	for (int i = 0; i < mVertexMaterials.size(); i++)
+		mVertexMaterials[i].color = c;
+}
 
 void MeshModel::calcVertexNormals(){
 	map<vec3, vector<int>> vertexIndeces;
@@ -233,16 +237,10 @@ void MeshModel::transform(const mat4& m, const mat4& g, bool transformWorld) {
 	}
 }
 
-void MeshModel::draw(Renderer* renderer)
-{
-	if (mUseVisualizeSlopes) renderer->setVisualizeSlopes();
-	else renderer->setColor(mColor);
+void MeshModel::draw(Renderer* renderer) {
 	renderer->setObjectMatrices(mModelTransform, mNormalTransform, mWorldTransform);
 	if (mDrawBoundryBox) mBoundryBox.draw(renderer);
-	renderer->preparePolygons(&mVertexPositions, &mVertexNormals, mDrawVertexNormals, mDrawFaceNormals);
-	//mBoundryBox.draw(renderer);
-	//cout << mModelTransform << endl;
-	//cout << mBoundryBox.center() << endl;
+	renderer->preparePolygons(&mVertexPositions, &mVertexNormals, &mVertexMaterials, mDrawVertexNormals, mDrawFaceNormals);
 }
 
 // Prim
@@ -253,6 +251,7 @@ CubeMeshModel::CubeMeshModel() {
 	mName = "cube";
 	mVertexPositions = vector<vec3>(36);
 	mVertexNormals = vector<vec3>(36);
+	mVertexMaterials = vector<Material>(36);
 
 	// First Face (bottom)
 		// First Triangle
@@ -326,6 +325,7 @@ PyramidMeshModel::PyramidMeshModel() {
 	mName = "pyramid";
 	mVertexPositions = vector<vec3>(18);
 	mVertexNormals = vector<vec3>(18);
+	mVertexMaterials = vector<Material>(18);
 
 	// Base
 		// First Triangle

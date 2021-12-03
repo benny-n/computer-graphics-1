@@ -4,14 +4,9 @@
 #include <string>
 #include "Model.h"
 #include "Camera.h"
+#include "Light.h"
 #include "Renderer.h"
 using namespace std;
-
-class Light {
-
-};
-
-typedef shared_ptr<Light> LightPtr;
 
 class Scene {
 	vector<ModelPtr> mModels;
@@ -38,7 +33,6 @@ public:
 	void togglePlotFaceNormals();
 	void toggleControlCamera();
 	void changeColor(const vec3& color);
-	void visualizeSlopes();
 	void transformActive(const mat4& m); // for scaling
 	void transformActive(const float degrees, const RotationAxis& axis); // for rotating
 	void transformActive(const vec3& v); // for translating

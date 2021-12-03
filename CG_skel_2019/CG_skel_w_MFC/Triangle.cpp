@@ -1,13 +1,17 @@
 #include "stdafx.h"
 #include "Triangle.h"
 
-Triangle::Triangle(const vec3 v[3], bool drawFaceNormal) : mDrawFaceNormal(drawFaceNormal), mDrawVertexNormal(false) {
+Triangle::Triangle(const vec3 v[3], const Material m[3], bool drawFaceNormal) : mDrawFaceNormal(drawFaceNormal), mDrawVertexNormal(false) {
 	mVertices[0] = v[0];
 	mVertices[1] = v[1];
 	mVertices[2] = v[2];
+
+	mVertexMaterials[0] = m[0];
+	mVertexMaterials[1] = m[1];
+	mVertexMaterials[2] = m[2];
 }
 
-Triangle::Triangle(const vec3 v[3], bool drawFaceNormal, const vec3 n[3]) : mDrawFaceNormal(drawFaceNormal), mDrawVertexNormal(true) {
+Triangle::Triangle(const vec3 v[3], const vec3 n[3], const Material m[3], bool drawFaceNormal) : mDrawFaceNormal(drawFaceNormal), mDrawVertexNormal(true) {
 	mVertices[0] = v[0];
 	mVertices[1] = v[1];
 	mVertices[2] = v[2];
@@ -15,6 +19,10 @@ Triangle::Triangle(const vec3 v[3], bool drawFaceNormal, const vec3 n[3]) : mDra
 	mVertexNormals[0] = n[0];
 	mVertexNormals[1] = n[1];
 	mVertexNormals[2] = n[2];
+
+	mVertexMaterials[0] = m[0];
+	mVertexMaterials[1] = m[1];
+	mVertexMaterials[2] = m[2];
 }
 
 void Triangle::setYMinAndYMax() {

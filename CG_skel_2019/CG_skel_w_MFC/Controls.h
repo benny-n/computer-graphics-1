@@ -37,8 +37,7 @@
 #define GREEN 3
 #define BLUE 4
 #define YELLOW 5
-#define VISUALIZE_SLOPES 6
-#define CUSTOM_COLOR 7
+#define CUSTOM_COLOR 6
 
 // active camera options menu
 #define FOCUS 1
