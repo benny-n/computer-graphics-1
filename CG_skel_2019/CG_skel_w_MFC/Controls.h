@@ -31,6 +31,10 @@
 #define MOVE_MODEL_TO 4
 #define REMOVE_ACTIVE_MODEL 5
 
+// change material menu
+#define UNIFORM_MATERIAL 1
+#define NON_UNIFORM_MATERIAL 2
+
 // change color menu
 #define WHITE 1
 #define RED 2

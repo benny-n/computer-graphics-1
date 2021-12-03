@@ -239,8 +239,26 @@ void changeColorMenu(int id) {
 	glutPostRedisplay();
 }
 
-void activeModelOptionsMenu(int id) {
+void changeMaterialMenu(int id) {
+	switch (id)
+	{
+	case UNIFORM_MATERIAL: {
+		inputMessage();
+		cout << "Please enter material property values between 0 and 1" << endl;
+		float ka = getFloatFromUser("ambient", true);
+		float kd = getFloatFromUser("diffuse", true);
+		float ks = getFloatFromUser("specular", true);
+		gScene->changeMaterial(vec3(ka, kd, ks));
+		break;
+	}
+	case NON_UNIFORM_MATERIAL:
+		gScene->changeMaterial();
+		break;
+	}
+	glutPostRedisplay();
+}
 
+void activeModelOptionsMenu(int id) {
 	switch (id)
 	{
 	case PLOT_BOUNDRY_BOX:
@@ -405,6 +423,11 @@ void initMenu()
 		counter++;
 	}
 
+	//create change material menu
+	int menuChangeMaterial = glutCreateMenu(changeMaterialMenu);
+	glutAddMenuEntry("Uniform Material", UNIFORM_MATERIAL);
+	glutAddMenuEntry("Non-Uniform Material", NON_UNIFORM_MATERIAL);
+
 	//create change color menu
 	int menuChangeColor = glutCreateMenu(changeColorMenu);
 	glutAddMenuEntry("White", WHITE);
@@ -420,6 +443,7 @@ void initMenu()
 	glutAddMenuEntry("Plot Vertex Normals", PLOT_VERTEX_NORMALS);
 	glutAddMenuEntry("Plot Face Normals", PLOT_FACE_NORMALS);
 	glutAddMenuEntry("Move To", MOVE_MODEL_TO);
+	glutAddSubMenu("Change Material", menuChangeMaterial);
 	glutAddSubMenu("Change Color", menuChangeColor);
 	glutAddMenuEntry("Remove Active Model", REMOVE_ACTIVE_MODEL);
 

@@ -80,6 +80,14 @@ void Scene::toggleControlCamera()
 	printControlMsg();
 }
 
+void Scene::changeMaterial() {
+	mModels[mActiveModel]->setMaterialProperties();
+}
+
+void Scene::changeMaterial(const vec3& materialProperties) {
+	mModels[mActiveModel]->setMaterialProperties(materialProperties);
+}
+
 void Scene::changeColor(const vec3& color)
 {
 	mModels[mActiveModel]->setColor(color);
@@ -214,7 +222,7 @@ void Scene::draw() {
 			camera->draw(mRenderer);
 		}
 	}
-	//if (!mModels.empty()) mRenderer->scanLineZBuffer();
+	if (!mModels.empty()) mRenderer->scanLineZBuffer();
 
 	mRenderer->swapBuffers();
 }

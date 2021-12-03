@@ -32,6 +32,8 @@ public:
 
 	Model() : mDrawBoundryBox(false), mDrawVertexNormals(false), mDrawFaceNormals(false) {}
 	const string& getName();
+	void virtual setMaterialProperties() = 0;
+	void virtual setMaterialProperties(const vec3& materialProperties) = 0;
 	void virtual setColor(const vec3& color) = 0;
 	void virtual transform(const mat4& m , const mat4& g, bool transformWorld) = 0;
 	void virtual draw(Renderer*) = 0;
@@ -53,6 +55,8 @@ public:
 	MeshModel(string fileName);
 	~MeshModel(void);
 	virtual void loadFile(string fileName);
+	void setMaterialProperties() override;
+	void setMaterialProperties(const vec3& materialProperties) override;
 	void setColor(const vec3& c) override;
 	void calcVertexNormals();
 	void transform(const mat4& m, const mat4& g, bool transformWorld) override;

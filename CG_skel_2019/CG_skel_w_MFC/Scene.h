@@ -32,6 +32,8 @@ public:
 	void togglePlotVertexNormals();
 	void togglePlotFaceNormals();
 	void toggleControlCamera();
+	void changeMaterial();
+	void changeMaterial(const vec3& materialProperties);
 	void changeColor(const vec3& color);
 	void transformActive(const mat4& m); // for scaling
 	void transformActive(const float degrees, const RotationAxis& axis); // for rotating

@@ -200,6 +200,22 @@ void MeshModel::loadFile(string fileName)
 	if (vertexNormals.empty()) calcVertexNormals();
 }
 
+void MeshModel::setMaterialProperties() {
+	for (int i = 0; i < mVertexMaterials.size(); i++) {
+		mVertexMaterials[i].ka = rand() / RAND_MAX;
+		mVertexMaterials[i].kd = rand() / RAND_MAX;
+		mVertexMaterials[i].ks = rand() / RAND_MAX;
+	}
+}
+
+void MeshModel::setMaterialProperties(const vec3& materialProperties) {
+	for (int i = 0; i < mVertexMaterials.size(); i++) {
+		mVertexMaterials[i].ka = materialProperties.x;
+		mVertexMaterials[i].kd = materialProperties.y;
+		mVertexMaterials[i].ks = materialProperties.z;
+	}		
+}
+
 void MeshModel::setColor(const vec3& c) {
 	for (int i = 0; i < mVertexMaterials.size(); i++)
 		mVertexMaterials[i].color = c;
