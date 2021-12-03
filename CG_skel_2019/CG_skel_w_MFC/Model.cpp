@@ -225,15 +225,13 @@ void MeshModel::calcVertexNormals(){
 }
 
 void MeshModel::transform(const mat4& m, const mat4& g, bool transformWorld) {
-	mat4 transformation = translate(mBoundryBox.center()) * m * translate(-mBoundryBox.center());
-	mat4 normalTransformation = translate(mBoundryBox.center()) * g * translate(-mBoundryBox.center());
-	mBoundryBox.transform(transformation);
+	mBoundryBox.transform(m);
 	if (transformWorld) {
-		mWorldTransform = transformation * mWorldTransform;
+		mWorldTransform = m * mWorldTransform;
 	}
 	else {
-		mModelTransform = transformation * mModelTransform;
-		mNormalTransform = normalTransformation * mNormalTransform;
+		mModelTransform = m * mModelTransform;
+		mNormalTransform = g * mNormalTransform;
 	}
 }
 
