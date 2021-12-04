@@ -95,29 +95,34 @@ void keyboard(unsigned char key, int x, int y)
 		gScene->toggleRenderCameras();
 		break;
 	case 'j':
-		gScene->transformActive(scale(SCALE_UP, 1, 1));
+		if (gScene->getControlledElement() == SceneElement::Model)
+			gScene->transformActive(scale(SCALE_UP, 1, 1));
 		break;
 	case 10: // ctrl + j
-		gScene->transformActive(scale(SCALE_DOWN, 1, 1));
+		if (gScene->getControlledElement() == SceneElement::Model)
+			gScene->transformActive(scale(SCALE_DOWN, 1, 1));
 		break;
 	case 'k':
-		gScene->transformActive(scale(1, SCALE_UP, 1));
+		if (gScene->getControlledElement() == SceneElement::Model)
+			gScene->transformActive(scale(1, SCALE_UP, 1));
 		break;
 	case 11: // ctrl + k
-		gScene->transformActive(scale(1, SCALE_DOWN, 1));
+		if (gScene->getControlledElement() == SceneElement::Model)
+			gScene->transformActive(scale(1, SCALE_DOWN, 1));
 		break;
 	case 'l':
-		gScene->transformActive(scale(1, 1, SCALE_UP));
+		if (gScene->getControlledElement() == SceneElement::Model)
+			gScene->transformActive(scale(1, 1, SCALE_UP));
 		break;
 	case 12: // ctrl + l
-		gScene->transformActive(scale(1, 1, SCALE_DOWN));
+		if (gScene->getControlledElement() == SceneElement::Model)
+			gScene->transformActive(scale(1, 1, SCALE_DOWN));
 		break;
 	case '\t': // tab
 		gScene->iterateActive();
 		break;
 	case ' ': // space bar
-		if (gScene->getModels().empty()) break;
-		gScene->toggleControlCamera();
+		gScene->iterateControlledElement();
 		break;
 	case 23: // ctrl + w
 		gScene->toggleControlWorld();
@@ -208,23 +213,43 @@ void selectModelMenu(int id) {
 	gScene->mActiveModel = id;
 }
 
-void changeColorMenu(int id) {
+void changeMaterialMenu(int id) {
+	switch (id)
+	{
+	case UNIFORM_MATERIAL: {
+		inputMessage();
+		cout << "Please enter material property values" << endl;
+		float ka = getFloatFromUser("ambient", true);
+		float kd = getFloatFromUser("diffuse", true);
+		float ks = getFloatFromUser("specular", true);
+		float alpha = getFloatFromUser("shininess", false);
+		gScene->changeActiveModelMaterial(vec4(ka, kd, ks, alpha));
+		break;
+	}
+	case NON_UNIFORM_MATERIAL:
+		gScene->changeActiveModelMaterial();
+		break;
+	}
+	glutPostRedisplay();
+}
+
+void changeModelColorMenu(int id) {
 	switch (id)
 	{
 	case WHITE:
-		gScene->changeColor(vec3(1));
+		gScene->changeActiveModelColor(vec3(1));
 		break;
 	case RED:
-		gScene->changeColor(vec3(1, 0, 0));
+		gScene->changeActiveModelColor(vec3(1, 0, 0));
 		break;
 	case GREEN:
-		gScene->changeColor(vec3(0, 1, 0));
+		gScene->changeActiveModelColor(vec3(0, 1, 0));
 		break;
 	case BLUE:
-		gScene->changeColor(vec3(0, 0, 1));
+		gScene->changeActiveModelColor(vec3(0, 0, 1));
 		break;
 	case YELLOW:
-		gScene->changeColor(vec3(1, 1, 0));
+		gScene->changeActiveModelColor(vec3(1, 1, 0));
 		break;
 	case CUSTOM_COLOR:
 		inputMessage();
@@ -233,26 +258,7 @@ void changeColorMenu(int id) {
 		float g = getFloatFromUser("g", true);
 		float b = getFloatFromUser("b", true);
 		//cout << "Custom color: (" << r << ", " << g << ", " << b << ")" << endl;
-		gScene->changeColor(vec3(r, g, b));
-		break;
-	}
-	glutPostRedisplay();
-}
-
-void changeMaterialMenu(int id) {
-	switch (id)
-	{
-	case UNIFORM_MATERIAL: {
-		inputMessage();
-		cout << "Please enter material property values between 0 and 1" << endl;
-		float ka = getFloatFromUser("ambient", true);
-		float kd = getFloatFromUser("diffuse", true);
-		float ks = getFloatFromUser("specular", true);
-		gScene->changeMaterial(vec3(ka, kd, ks));
-		break;
-	}
-	case NON_UNIFORM_MATERIAL:
-		gScene->changeMaterial();
+		gScene->changeActiveModelColor(vec3(r, g, b));
 		break;
 	}
 	glutPostRedisplay();
@@ -361,8 +367,96 @@ void activeCameraOptionsMenu(int id) {
 	glutPostRedisplay();
 }
 
-void mainMenu(int id)
-{
+void addLightMenu(int id) {
+	float x, y, z;
+	switch (id) {
+	case POINT:
+		inputMessage();
+		cout << "Please enter coordinates for the light's location" << endl;
+		x = getFloatFromUser("x");
+		y = getFloatFromUser("y");
+		z = getFloatFromUser("z");
+		gScene->addPointLight(vec3(x, y, z));
+		break;
+	case PARALLEL:
+		inputMessage();
+		cout << "Please enter values for the light's direction" << endl;
+		x = getFloatFromUser("x");
+		y = getFloatFromUser("y");
+		z = getFloatFromUser("z");
+		gScene->addParallelLight(vec3(x, y, z));
+		break;
+	}
+	glutPostRedisplay();
+	initMenu();
+}
+
+void selectLightMenu(int id) {
+	gScene->mActiveLight = id;
+	gScene->printControlMsg();
+}
+
+void changeLightColorMenu(int id) {
+	switch (id) {
+	case WHITE:
+		gScene->changeActiveLightColor(vec3(1));
+		break;
+	case RED:
+		gScene->changeActiveLightColor(vec3(1, 0, 0));
+		break;
+	case GREEN:
+		gScene->changeActiveLightColor(vec3(0, 1, 0));
+		break;
+	case BLUE:
+		gScene->changeActiveLightColor(vec3(0, 0, 1));
+		break;
+	case YELLOW:
+		gScene->changeActiveLightColor(vec3(1, 1, 0));
+		break;
+	case CUSTOM_COLOR:
+		inputMessage();
+		cout << "Please enter rgb values between 0 and 1" << endl;
+		float r = getFloatFromUser("r", true);
+		float g = getFloatFromUser("g", true);
+		float b = getFloatFromUser("b", true);
+		//cout << "Custom color: (" << r << ", " << g << ", " << b << ")" << endl;
+		gScene->changeActiveLightColor(vec3(r, g, b));
+		break;
+	}
+	glutPostRedisplay();
+}
+
+void activeLightOptionsMenu(int id) {
+	float x, y, z;
+	switch (id) {
+	case MOVE_LIGHT_TO: {
+		inputMessage();
+		cout << "Please enter coordinates for the light's new location" << endl;
+		x = getFloatFromUser("x");
+		y = getFloatFromUser("y");
+		z = getFloatFromUser("z");
+		gScene->modifyActiveLight(vec3(x, y, z), true);
+		break;
+	}
+	case CHANGE_DIRECTION_TO:
+		inputMessage();
+		cout << "Please enter values for light's new direction" << endl;
+		x = getFloatFromUser("x");
+		y = getFloatFromUser("y");
+		z = getFloatFromUser("z");
+		gScene->modifyActiveLight(vec3(x, y, z), false);
+		break;
+	case REMOVE_ACTIVE_LIGHT:
+		if (gScene->mActiveLight == 0) AfxMessageBox(_T("You can't remove the ambient light!"));
+		else {
+			gScene->removeActiveLight();
+			initMenu();
+		}
+		break;
+	}
+}
+
+void mainMenu(int id) {
 	switch (id)
 	{
 	case ADD_CAMERA:
@@ -428,8 +522,8 @@ void initMenu()
 	glutAddMenuEntry("Uniform Material", UNIFORM_MATERIAL);
 	glutAddMenuEntry("Non-Uniform Material", NON_UNIFORM_MATERIAL);
 
-	//create change color menu
-	int menuChangeColor = glutCreateMenu(changeColorMenu);
+	//create change model color menu
+	int menuChangeModelColor = glutCreateMenu(changeModelColorMenu);
 	glutAddMenuEntry("White", WHITE);
 	glutAddMenuEntry("Red", RED);
 	glutAddMenuEntry("Green", GREEN);
@@ -444,7 +538,7 @@ void initMenu()
 	glutAddMenuEntry("Plot Face Normals", PLOT_FACE_NORMALS);
 	glutAddMenuEntry("Move To", MOVE_MODEL_TO);
 	glutAddSubMenu("Change Material", menuChangeMaterial);
-	glutAddSubMenu("Change Color", menuChangeColor);
+	glutAddSubMenu("Change Color", menuChangeModelColor);
 	glutAddMenuEntry("Remove Active Model", REMOVE_ACTIVE_MODEL);
 
 	//create select camera menu
@@ -465,6 +559,38 @@ void initMenu()
 	glutAddMenuEntry("Move To", MOVE_CAMERA_TO);
 	glutAddMenuEntry("Remove Active Camera", REMOVE_ACTIVE_CAMERA);
 
+	//create add light menu
+	int menuAddLight = glutCreateMenu(addLightMenu);
+	glutAddMenuEntry("Point", POINT);
+	glutAddMenuEntry("Parallel", PARALLEL);
+
+	//create select light menu
+	int menuSelectLight = glutCreateMenu(selectLightMenu);
+	counter = 0;
+	for each (auto light in gScene->getLights()) {
+		string index = counter == 0 ? "" : to_string(counter);
+		glutAddMenuEntry((light->getTypeString() + " light " + index).c_str(), counter);
+		counter++;
+	}
+
+	//create change light color menu
+	int menuChangeLightColor = glutCreateMenu(changeLightColorMenu);
+	glutAddMenuEntry("White", WHITE);
+	glutAddMenuEntry("Red", RED);
+	glutAddMenuEntry("Green", GREEN);
+	glutAddMenuEntry("Blue", BLUE);
+	glutAddMenuEntry("Yellow", YELLOW);
+	glutAddMenuEntry("Choose custom color", CUSTOM_COLOR);
+
+	//create active light options menu
+	int menuActiveLightOptions = glutCreateMenu(activeLightOptionsMenu);
+	if (gScene->getLights()[gScene->mActiveLight]->getType() == LightType::Point)
+		glutAddMenuEntry("Move To", MOVE_LIGHT_TO);
+	else if (gScene->getLights()[gScene->mActiveLight]->getType() == LightType::Parallel)
+		glutAddMenuEntry("Change Direction", CHANGE_DIRECTION_TO);
+	glutAddSubMenu("Change Color", menuChangeLightColor);
+	glutAddMenuEntry("Remove Active Light", REMOVE_ACTIVE_LIGHT);
+
 	//finally, create the main menu and start adding submenus to it
 	glutCreateMenu(mainMenu);
 	glutAddSubMenu("Add Model", menuAddModel);
@@ -478,6 +604,9 @@ void initMenu()
 	glutAddMenuEntry("Add Camera", ADD_CAMERA);
 	glutAddSubMenu("Select Camera", menuSelectCamera);
 	glutAddSubMenu("Active Camera Options", menuActiveCameraOptions);
+	glutAddSubMenu("Add Light", menuAddLight);
+	glutAddSubMenu("Select Light", menuSelectLight);
+	glutAddSubMenu("Active Light Options", menuActiveLightOptions);
 
 	//glutAddMenuEntry("Demo", MAIN_DEMO);
 	glutAddMenuEntry("Help", HELP);

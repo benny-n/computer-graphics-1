@@ -52,8 +52,16 @@
 #define MOVE_CAMERA_TO 6
 #define REMOVE_ACTIVE_CAMERA 7
 
-// define for sensetivity
+// add light menu
+#define POINT 1
+#define PARALLEL 2
 
+// active light options menu
+#define MOVE_LIGHT_TO 1
+#define CHANGE_DIRECTION_TO 2
+#define REMOVE_ACTIVE_LIGHT 3
+
+// define for sensetivity
 #define SCALE_UP (1 + 0.2 * gSensetivity)
 #define SCALE_DOWN (1.0 / SCALE_UP)
 #define ROTATE (12 * gSensetivity)
@@ -70,9 +78,13 @@ void motion(int x, int y);
 void fileMenu(int id);
 void addPrimMenu(int id);
 void selectModelMenu(int id);
-void changeColorMenu(int id);
+void changeMaterialMenu(int id);
+void changeModelColorMenu(int id);
 void activeModelOptionsMenu(int id);
 void selectCameraMenu(int id);
 void activeCameraOptionsMenu(int id);
+void selectLightMenu(int id);
+void changeLightColorMenu(int id);
+void activeLightOptionsMenu(int id);
 void mainMenu(int id);
 void initMenu();
