@@ -200,25 +200,31 @@ void MeshModel::loadFile(string fileName)
 
 void MeshModel::setMaterialProperties() {
 	for (int i = 0; i < mVertexMaterials.size(); i++) {
-		mVertexMaterials[i].ka = rand() / RAND_MAX;
-		mVertexMaterials[i].kd = rand() / RAND_MAX;
-		mVertexMaterials[i].ks = rand() / RAND_MAX;
+		mVertexMaterials[i].ka.r = rand() / RAND_MAX;
+		mVertexMaterials[i].ka.g = rand() / RAND_MAX;
+		mVertexMaterials[i].ka.b = rand() / RAND_MAX;
+		mVertexMaterials[i].kd.r = rand() / RAND_MAX;
+		mVertexMaterials[i].kd.g = rand() / RAND_MAX;
+		mVertexMaterials[i].kd.b = rand() / RAND_MAX;
+		mVertexMaterials[i].ks.r = rand() / RAND_MAX;
+		mVertexMaterials[i].ks.g = rand() / RAND_MAX;
+		mVertexMaterials[i].ks.b = rand() / RAND_MAX;
 		mVertexMaterials[i].alpha = rand() / RAND_MAX;
 	}
 }
 
-void MeshModel::setMaterialProperties(const vec4& materialProperties) {
+void MeshModel::setMaterialProperties(const Color& color) {
 	for (int i = 0; i < mVertexMaterials.size(); i++) {
-		mVertexMaterials[i].ka = materialProperties.x;
-		mVertexMaterials[i].kd = materialProperties.y;
-		mVertexMaterials[i].ks = materialProperties.z;
-		mVertexMaterials[i].alpha = materialProperties.w;
-	}		
+		mVertexMaterials[i].ka = color;
+		mVertexMaterials[i].kd = color;
+		mVertexMaterials[i].ks = color;
+	}
 }
 
-void MeshModel::setColor(const vec3& c) {
-	for (int i = 0; i < mVertexMaterials.size(); i++)
-		mVertexMaterials[i].color = c;
+void MeshModel::setMaterialProperties(const Material& material) {
+	for (int i = 0; i < mVertexMaterials.size(); i++) {
+		mVertexMaterials[i] = material;
+	}		
 }
 
 void MeshModel::calcVertexNormals(){

@@ -40,9 +40,10 @@ public:
 	void togglePlotVertexNormals();
 	void togglePlotFaceNormals();
 	void changeActiveModelMaterial();
-	void changeActiveModelMaterial(const vec4& materialProperties);
-	void changeActiveModelColor(const vec3& color);
-	void changeActiveLightColor(const vec3& color);
+	void changeActiveModelMaterial(const Color& color);
+	void changeActiveModelMaterial(const Material& material);
+	void changeActiveLightColor(const Color& color);
+	void changeActiveLightColor(const Color& c1, const Color& c2, const Color& c3);
 	void transformActive(const mat4& m); // for scaling
 	void transformActive(const float degrees, const RotationAxis& axis); // for rotating
 	void transformActive(const vec3& v); // for translating

@@ -34,6 +34,7 @@
 #include "Scene.h"
 #include "Renderer.h"
 #include "InitShader.h"
+#include "InputDialog.h"
 #include "Controls.h"
 #include <string>
 #include <algorithm>

@@ -101,6 +101,7 @@
     <ClCompile Include="CG_skel_w_MFC.cpp" />
     <ClCompile Include="Controls.cpp" />
     <ClCompile Include="InitShader.cpp" />
+    <ClCompile Include="InputDialog.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Renderer.cpp" />
@@ -114,8 +115,10 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CG_skel_w_MFC.h" />
+    <ClInclude Include="Color.h" />
     <ClInclude Include="Controls.h" />
     <ClInclude Include="InitShader.h" />
+    <ClInclude Include="InputDialog.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="mat.h" />
     <ClInclude Include="Material.h" />

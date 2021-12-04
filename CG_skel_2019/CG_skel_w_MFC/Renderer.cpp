@@ -61,16 +61,16 @@ void Renderer::reshape(int width, int height){
 	else  mAspectRatioTransform = scale(mHeight / (float)mWidth, 1, 1);
 }
 
-void Renderer::colorPixel(int x, int y, const vec3& color) {
+void Renderer::colorPixel(int x, int y, const Color& color) {
 	if (x >= mWidth || x < 0) return; //clip
 	if (y >= mHeight || y < 0) return; //clip
-	mOutBuffer[INDEX(mWidth, x, y, 0)] = color.x;
-	mOutBuffer[INDEX(mWidth, x, y, 1)] = color.y;
-	mOutBuffer[INDEX(mWidth, x, y, 2)] = color.z;
+	mOutBuffer[INDEX(mWidth, x, y, 0)] = color.r;
+	mOutBuffer[INDEX(mWidth, x, y, 1)] = color.g;
+	mOutBuffer[INDEX(mWidth, x, y, 2)] = color.b;
 }
 
 void Renderer::clearPixel(int x, int y) {
-	colorPixel(x, y, vec3());
+	colorPixel(x, y, Color{ 0,0,0 });
 }
 
 void Renderer::drawCamera(const vec4& eye){
@@ -419,7 +419,7 @@ void Renderer::scanLineZBuffer() {
 			for (int x = xMin; x < xMax; x++) {
 				float z = depth(p, x, y);
 				if (z < mZbuffer[x] && z >= -1) {
-					colorPixel(x, y, p.mVertexMaterials[0].color); // TODO - calc color stuff :(
+					colorPixel(x, y, Color()); // TODO - calc color stuff :(
 					mZbuffer[x] = z;
 				}
 			}
