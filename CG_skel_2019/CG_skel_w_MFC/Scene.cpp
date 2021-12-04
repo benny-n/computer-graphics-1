@@ -94,13 +94,19 @@ void Scene::changeActiveModelMaterial() {
 	mModels[mActiveModel]->setMaterialProperties();
 }
 
-void Scene::changeActiveModelMaterial(const vec4& materialProperties) {
-	mModels[mActiveModel]->setMaterialProperties(materialProperties);
+void Scene::changeActiveModelMaterial(const Color& color) {
+	mModels[mActiveModel]->setMaterialProperties(color);
 }
 
-void Scene::changeActiveModelColor(const vec3& color) { mModels[mActiveModel]->setColor(color); }
+void Scene::changeActiveModelMaterial(const Material& material) {
+	mModels[mActiveModel]->setMaterialProperties(material);
+}
 
-void Scene::changeActiveLightColor(const vec3& color) { mLights[mActiveLight]->setColor(color); }
+void Scene::changeActiveLightColor(const Color& color) { mLights[mActiveLight]->setColor(color); }
+
+void Scene::changeActiveLightColor(const Color& c1, const Color& c2, const Color& c3) { 
+	mLights[mActiveLight]->setColor(c1, c2, c3); 
+}
 
 //SCALING
 void Scene::transformActive(const mat4& m){ 
@@ -109,6 +115,7 @@ void Scene::transformActive(const mat4& m){
 		mCameras[mActiveCamera]->transform(m);
 		break;
 	case SceneElement::Light:
+		mLights[mActiveLight]->modifyIntensities(vec3(m[0][0], m[1][1], m[2][2]));
 		break;
 	case SceneElement::Model:
 		mat4 g = scale(1 / m[0][0], 1 / m[1][1], 1 / m[2][2]);
@@ -123,9 +130,23 @@ void Scene::transformActive(const float degrees, const RotationAxis& axis) {
 	case SceneElement::Camera:
 		mCameras[mActiveCamera]->transform(degrees, axis);
 		break;
-	case SceneElement::Light:
+	case SceneElement::Light: {
+		mat4 rotation;
+		switch (axis) {
+		case RotationAxis::X:
+			rotation = rotateX(degrees);
+			break;
+		case RotationAxis::Y:
+			rotation = rotateY(degrees);
+			break;
+		case RotationAxis::Z:
+			rotation = rotateZ(degrees);
+			break;
+		}
+		mLights[mActiveLight]->rotate(rotation);
 		break;
-	case SceneElement::Model:
+	}
+	case SceneElement::Model: {
 		mat4 rotation;
 		switch (axis) {
 		case RotationAxis::X:
@@ -141,6 +162,7 @@ void Scene::transformActive(const float degrees, const RotationAxis& axis) {
 		mModels[mActiveModel]->transform(rotation, rotation, mControlWorld);
 		break;
 	}
+	}
 }
 
 //TRANSLATE
@@ -150,6 +172,7 @@ void Scene::transformActive(const vec3& v) {
 		mCameras[mActiveCamera]->transform(v);
 		break;
 	case SceneElement::Light:
+		mLights[mActiveLight]->translate(v);
 		break;
 	case SceneElement::Model:
 		mModels[mActiveModel]->transform(translate(v), mat4(), mControlWorld);

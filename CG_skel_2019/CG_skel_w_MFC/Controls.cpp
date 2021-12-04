@@ -95,27 +95,27 @@ void keyboard(unsigned char key, int x, int y)
 		gScene->toggleRenderCameras();
 		break;
 	case 'j':
-		if (gScene->getControlledElement() == SceneElement::Model)
+		if (gScene->getControlledElement() != SceneElement::Camera)
 			gScene->transformActive(scale(SCALE_UP, 1, 1));
 		break;
 	case 10: // ctrl + j
-		if (gScene->getControlledElement() == SceneElement::Model)
+		if (gScene->getControlledElement() != SceneElement::Camera)
 			gScene->transformActive(scale(SCALE_DOWN, 1, 1));
 		break;
 	case 'k':
-		if (gScene->getControlledElement() == SceneElement::Model)
+		if (gScene->getControlledElement() != SceneElement::Camera)
 			gScene->transformActive(scale(1, SCALE_UP, 1));
 		break;
 	case 11: // ctrl + k
-		if (gScene->getControlledElement() == SceneElement::Model)
+		if (gScene->getControlledElement() != SceneElement::Camera)
 			gScene->transformActive(scale(1, SCALE_DOWN, 1));
 		break;
 	case 'l':
-		if (gScene->getControlledElement() == SceneElement::Model)
+		if (gScene->getControlledElement() != SceneElement::Camera)
 			gScene->transformActive(scale(1, 1, SCALE_UP));
 		break;
 	case 12: // ctrl + l
-		if (gScene->getControlledElement() == SceneElement::Model)
+		if (gScene->getControlledElement() != SceneElement::Camera)
 			gScene->transformActive(scale(1, 1, SCALE_DOWN));
 		break;
 	case '\t': // tab
@@ -217,14 +217,11 @@ void changeMaterialMenu(int id) {
 	switch (id)
 	{
 	case UNIFORM_MATERIAL: {
-		inputMessage();
-		cout << "Please enter material property values" << endl;
-		float ka = getFloatFromUser("ambient", true);
-		float kd = getFloatFromUser("diffuse", true);
-		float ks = getFloatFromUser("specular", true);
-		float alpha = getFloatFromUser("shininess", false);
-		gScene->changeActiveModelMaterial(vec4(ka, kd, ks, alpha));
-		break;
+		CMaterialDialog dlg;
+		if (dlg.DoModal() == IDOK) {
+			gScene->changeActiveModelMaterial(Material{dlg.getKa(), dlg.getKd(), dlg.getKs(), dlg.getAlpha()});
+			break;
+		}
 	}
 	case NON_UNIFORM_MATERIAL:
 		gScene->changeActiveModelMaterial();
@@ -234,31 +231,27 @@ void changeMaterialMenu(int id) {
 }
 
 void changeModelColorMenu(int id) {
-	switch (id)
-	{
+	switch (id) {
 	case WHITE:
-		gScene->changeActiveModelColor(vec3(1));
+		gScene->changeActiveModelMaterial(Color());
 		break;
 	case RED:
-		gScene->changeActiveModelColor(vec3(1, 0, 0));
+		gScene->changeActiveModelMaterial(Color{ 1, 0, 0 });
 		break;
 	case GREEN:
-		gScene->changeActiveModelColor(vec3(0, 1, 0));
+		gScene->changeActiveModelMaterial(Color{ 0, 1, 0 });
 		break;
 	case BLUE:
-		gScene->changeActiveModelColor(vec3(0, 0, 1));
+		gScene->changeActiveModelMaterial(Color{ 0, 0, 1 });
 		break;
 	case YELLOW:
-		gScene->changeActiveModelColor(vec3(1, 1, 0));
+		gScene->changeActiveModelMaterial(Color{ 1, 1, 0 });
 		break;
 	case CUSTOM_COLOR:
-		inputMessage();
-		cout << "Please enter rgb values between 0 and 1" << endl;
-		float r = getFloatFromUser("r", true);
-		float g = getFloatFromUser("g", true);
-		float b = getFloatFromUser("b", true);
-		//cout << "Custom color: (" << r << ", " << g << ", " << b << ")" << endl;
-		gScene->changeActiveModelColor(vec3(r, g, b));
+		CRGBDialog dlg("Please enter rgb values for the model's new color");
+		if (dlg.DoModal() == IDOK) {
+			gScene->changeActiveModelMaterial(dlg.getRGB());
+		}
 		break;
 	}
 	glutPostRedisplay();
@@ -277,14 +270,12 @@ void activeModelOptionsMenu(int id) {
 		gScene->togglePlotFaceNormals();
 		break;
 	case MOVE_MODEL_TO: {
-		inputMessage();
-		cout << "Please enter coordinates for the model's new location" << endl;
-		float x = getFloatFromUser("x");
-		float y = getFloatFromUser("y");
-		float z = getFloatFromUser("z");
-		//cout << "New coordinates: (" << x << ", " << y << ", " << z << ")" << endl;
-		const vec4 modelCenter = gScene->getModels()[gScene->mActiveModel]->mBoundryBox.center();
-		gScene->transformActive(translate(x - modelCenter.x, y - modelCenter.y, z - modelCenter.z));
+		CXyzDialog dlg("Please enter coordinates for the model's new location");
+		if (dlg.DoModal() == IDOK) {
+			vec3 v = dlg.getXYZ();
+			const vec4 modelCenter = gScene->getModels()[gScene->mActiveModel]->mBoundryBox.center();
+			gScene->transformActive(translate(v.x - modelCenter.x, v.y - modelCenter.y, v.z - modelCenter.z));
+		}
 		break;
 	}
 	case REMOVE_ACTIVE_MODEL:
@@ -309,53 +300,41 @@ void activeCameraOptionsMenu(int id) {
 		gScene->modifyActiveCamera(activeModelCenter, false);
 		break;
 	}
-	case ORTHO:
-		inputMessage();
-		cout << "Please enter your desired parameters" << endl;
-		left = getFloatFromUser("left");
-		right = getFloatFromUser("right");
-		bottom = getFloatFromUser("bottom");
-		top = getFloatFromUser("top");
-		zNear = getFloatFromUser("zNear");
-		zFar = getFloatFromUser("zFar");
-		gScene->getCameras()[gScene->mActiveCamera]->ortho(left, right, bottom, top, zNear, zFar);
+	case ORTHO: {
+		CBoxDialog dlg("Please enter your desired parameters");
+		if (dlg.DoModal() == IDOK) {
+			gScene->getCameras()[gScene->mActiveCamera]->ortho(dlg.getLeft(), dlg.getRight(), dlg.getBottom(), dlg.getTop(), dlg.getZNear(), dlg.getZFar());
+		}
 		break;
-	case FRUSTUM:
-		inputMessage();
-		cout << "Please enter your desired parameters" << endl;
-		left = getFloatFromUser("left");
-		right = getFloatFromUser("right");
-		bottom = getFloatFromUser("bottom");
-		top = getFloatFromUser("top");
-		zNear = getFloatFromUser("zNear");
-		zFar = getFloatFromUser("zFar");
-		gScene->getCameras()[gScene->mActiveCamera]->frustum(left, right, bottom, top, zNear, zFar);
+	}
+	case FRUSTUM: {
+		CBoxDialog dlg("Please enter your desired parameters");
+		if (dlg.DoModal() == IDOK) {
+			gScene->getCameras()[gScene->mActiveCamera]->frustum(dlg.getLeft(), dlg.getRight(), dlg.getBottom(), dlg.getTop(), dlg.getZNear(), dlg.getZFar());
+		}
 		break;
-	case PERSPECTIVE:
-		inputMessage();
-		cout << "Please enter your desired parameters" << endl;
-		fovy = getFloatFromUser("fovy");
-		aspect = getFloatFromUser("aspect ratio");
-		zNear = getFloatFromUser("zNear");
-		zFar = getFloatFromUser("zFar");
-		gScene->getCameras()[gScene->mActiveCamera]->perspective(fovy, aspect, zNear, zFar);
+	}
+	case PERSPECTIVE: {
+		CFovyDialog dlg("Please enter your desired parameters");
+		if (dlg.DoModal() == IDOK) {
+			gScene->getCameras()[gScene->mActiveCamera]->perspective(dlg.getFovy(), dlg.getAspectRatio(), dlg.getZNear(), dlg.getZFar());
+		}
 		break;
-	case LOOK_AT:
-		inputMessage();
-		cout << "Please enter coordinates for the camera's new target" << endl;
-		x = getFloatFromUser("x");
-		y = getFloatFromUser("y");
-		z = getFloatFromUser("z");
-		gScene->modifyActiveCamera(vec4(x, y, z, 1), false);
+	}
+	case LOOK_AT: {
+		CXyzDialog dlg("Please enter coordinates for the camera's new target");
+		if (dlg.DoModal() == IDOK) {
+			gScene->modifyActiveCamera(vec4(dlg.getXYZ(), 1), false);
+		}
 		break;
-	case MOVE_CAMERA_TO:
-		inputMessage();
-		cout << "Please enter coordinates for the camera's new location" << endl;
-		x = getFloatFromUser("x");
-		y = getFloatFromUser("y");
-		z = getFloatFromUser("z");
-		gScene->modifyActiveCamera(vec4(x, y, z, 1), true);
+	}
+	case MOVE_CAMERA_TO: {
+		CXyzDialog dlg("Please enter coordinates for the camera's new location");
+		if (dlg.DoModal() == IDOK) {
+			gScene->modifyActiveCamera(vec4(dlg.getXYZ(), 1), true);
+		}
 		break;
+	}
 	case REMOVE_ACTIVE_CAMERA:
 		if (gScene->getCameras().size() == 1) AfxMessageBox(_T("You can't remove your only camera!"));
 		else {
@@ -368,24 +347,21 @@ void activeCameraOptionsMenu(int id) {
 }
 
 void addLightMenu(int id) {
-	float x, y, z;
 	switch (id) {
-	case POINT:
-		inputMessage();
-		cout << "Please enter coordinates for the light's location" << endl;
-		x = getFloatFromUser("x");
-		y = getFloatFromUser("y");
-		z = getFloatFromUser("z");
-		gScene->addPointLight(vec3(x, y, z));
+	case POINT: {
+		CXyzDialog dlg("Please enter coordinates for the light's location");
+		if (dlg.DoModal() == IDOK) {
+			gScene->addPointLight(dlg.getXYZ());
+		}
 		break;
-	case PARALLEL:
-		inputMessage();
-		cout << "Please enter values for the light's direction" << endl;
-		x = getFloatFromUser("x");
-		y = getFloatFromUser("y");
-		z = getFloatFromUser("z");
-		gScene->addParallelLight(vec3(x, y, z));
+	}
+	case PARALLEL: {
+		CXyzDialog dlg("Please enter values for the light's direction");
+		if (dlg.DoModal() == IDOK) {
+			gScene->addParallelLight(dlg.getXYZ());
+		}
 		break;
+	}
 	}
 	glutPostRedisplay();
 	initMenu();
@@ -399,28 +375,25 @@ void selectLightMenu(int id) {
 void changeLightColorMenu(int id) {
 	switch (id) {
 	case WHITE:
-		gScene->changeActiveLightColor(vec3(1));
+		gScene->changeActiveLightColor(Color());
 		break;
 	case RED:
-		gScene->changeActiveLightColor(vec3(1, 0, 0));
+		gScene->changeActiveLightColor(Color{ 1, 0, 0 });
 		break;
 	case GREEN:
-		gScene->changeActiveLightColor(vec3(0, 1, 0));
+		gScene->changeActiveLightColor(Color{ 0, 1, 0 });
 		break;
 	case BLUE:
-		gScene->changeActiveLightColor(vec3(0, 0, 1));
+		gScene->changeActiveLightColor(Color{ 0, 0, 1 });
 		break;
 	case YELLOW:
-		gScene->changeActiveLightColor(vec3(1, 1, 0));
+		gScene->changeActiveLightColor(Color{ 1, 1, 0 });
 		break;
 	case CUSTOM_COLOR:
-		inputMessage();
-		cout << "Please enter rgb values between 0 and 1" << endl;
-		float r = getFloatFromUser("r", true);
-		float g = getFloatFromUser("g", true);
-		float b = getFloatFromUser("b", true);
-		//cout << "Custom color: (" << r << ", " << g << ", " << b << ")" << endl;
-		gScene->changeActiveLightColor(vec3(r, g, b));
+		CLightDialog dlg("Please enter rgb values for the light's new intensities");
+		if (dlg.DoModal() == IDOK) {
+			gScene->changeActiveLightColor(dlg.getLa(), dlg.getLd(), dlg.getLs());
+		}
 		break;
 	}
 	glutPostRedisplay();
@@ -430,22 +403,19 @@ void activeLightOptionsMenu(int id) {
 	float x, y, z;
 	switch (id) {
 	case MOVE_LIGHT_TO: {
-		inputMessage();
-		cout << "Please enter coordinates for the light's new location" << endl;
-		x = getFloatFromUser("x");
-		y = getFloatFromUser("y");
-		z = getFloatFromUser("z");
-		gScene->modifyActiveLight(vec3(x, y, z), true);
+		CXyzDialog dlg("Please enter coordinates for the light's new location");
+		if (dlg.DoModal() == IDOK) {
+			gScene->modifyActiveLight(dlg.getXYZ(), true);
+		}
+		break;
+	} 
+	case CHANGE_DIRECTION_TO: {
+		CXyzDialog dlg("Please enter values for light's new direction");
+		if (dlg.DoModal() == IDOK) {
+			gScene->modifyActiveLight(dlg.getXYZ(), false);
+		}
 		break;
 	}
-	case CHANGE_DIRECTION_TO:
-		inputMessage();
-		cout << "Please enter values for light's new direction" << endl;
-		x = getFloatFromUser("x");
-		y = getFloatFromUser("y");
-		z = getFloatFromUser("z");
-		gScene->modifyActiveLight(vec3(x, y, z), false);
-		break;
 	case REMOVE_ACTIVE_LIGHT:
 		if (gScene->mActiveLight == 0) AfxMessageBox(_T("You can't remove the ambient light!"));
 		else {
@@ -467,8 +437,7 @@ void mainMenu(int id) {
 	//case MAIN_DEMO:
 	//	gScene->drawDemo();
 	//	break;
-	case HELP:
-		AfxMessageBox(_T(
+	case HELP:AfxMessageBox(_T(
 		"User input and messages will appear on the console window\n\n"
 		"Keyboard Controls:\n"
 		"a, d - moving model/camera in parralel to X axis\n"

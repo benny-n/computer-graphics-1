@@ -39,7 +39,7 @@ public:
 	~Renderer(void);
 	void setDemoBuffer();
 	void reshape(int width, int height);
-	void colorPixel(int x, int y, const vec3& color = vec3(0.5));
+	void colorPixel(int x, int y, const Color& color = Color{ 0.5, 0.5, 0.5 });
 	void clearPixel(int x, int y);
 	void drawCamera(const vec4& eye);
 	void drawLine(int x1, int y1, int x2, int y2);
