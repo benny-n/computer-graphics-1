@@ -14,17 +14,17 @@ void Light::setColor(const Color& c1, const Color& c2, const Color& c3) {
 }
 
 void Light::modifyIntensities(const vec3& v) {
-	mLa.r *= v.x;
-	mLa.g *= v.x;
-	mLa.b *= v.x;
+	mLa.r *= v[0];
+	mLa.g *= v[0];
+	mLa.b *= v[0];
 
-	mLd.r *= v.y;
-	mLd.g *= v.y;
-	mLd.b *= v.y;
+	mLd.r *= v[1];
+	mLd.g *= v[1];
+	mLd.b *= v[1];
 
-	mLs.r *= v.z;
-	mLs.g *= v.z;
-	mLs.b *= v.z;
+	mLs.r *= v[2];
+	mLs.g *= v[2];
+	mLs.b *= v[2];
 }
 
 LightType AmbientLight::getType() { return LightType::Ambient; }
@@ -38,7 +38,7 @@ string PointLight::getTypeString() { return "point"; }
 
 vec3 PointLight::getPosition()
 {
-	return vec3(mPosition.x, mPosition.y, mPosition.z);
+	return vec3FromVec4(mPosition);
 }
 
 
@@ -56,7 +56,7 @@ string ParallelLight::getTypeString() { return "parallel"; }
 
 vec3 ParallelLight::getDirection()
 {
-	return vec3(mDirection.x, mDirection.y, mDirection.z);
+	return vec3FromVec4(mDirection);
 }
 
 

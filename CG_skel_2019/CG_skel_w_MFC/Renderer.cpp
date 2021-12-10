@@ -313,7 +313,7 @@ void Renderer::calcTriangleAndFaceNormalCoordinates(vec3 triangles3d[3], const m
 	normal = from3dTo2d * normal;
 	center /= center.w;
 	normal /= normal.w;
-	clipAndDrawLine(vec3(center.x, center.y, center.z), vec3(normal.x, normal.y, normal.z));
+	clipAndDrawLine(vec3FromVec4(center), vec3FromVec4(normal));
 }
 
 void Renderer::drawTriangles(const vector<Poly>& polygons) {
@@ -326,7 +326,7 @@ void Renderer::drawTriangles(const vector<Poly>& polygons) {
 				normal += vec4(poly.mTriangle.mVertices[i], 0);
 				normal = from3dTo2d * normal;
 				normal = normal / normal.w;
-				clipAndDrawLine(poly.mProjectedTriangle.mVertices[i], vec3(normal.x, normal.y, normal.z));
+				clipAndDrawLine(poly.mProjectedTriangle.mVertices[i], vec3FromVec4(normal));
 			}
 		}
 		//clipAndDrawLine(poly.mProjectedTriangle.mVertices[0], poly.mProjectedTriangle.mVertices[1]);
@@ -353,7 +353,7 @@ void Renderer::drawSquares(const vector<vec3>* vertices) {
 			vec4 vertex((*vertices)[i + j]);
 			vertex = finalTransformation * vertex;
 			vertex /= vertex.w;
-			squares[j] = vec3(vertex.x, vertex.y, vertex.z);
+			squares[j] = vec3FromVec4(vertex);
 		}
 		clipAndDrawLine(squares[0], squares[1]);
 		clipAndDrawLine(squares[1], squares[2]);

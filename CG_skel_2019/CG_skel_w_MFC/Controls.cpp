@@ -438,6 +438,7 @@ void pickRasterizerMenu(int id) {
 		gScene->setPhongRasterizer();
 		break;
 	}
+	glutPostRedisplay();
 }
 
 void mainMenu(int id) {

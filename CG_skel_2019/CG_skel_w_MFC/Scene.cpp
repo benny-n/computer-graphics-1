@@ -209,8 +209,8 @@ void Scene::modifyActiveCamera(const vec4& v, bool isEye) {
  	vec3 vector0, modifiedEye, modifiedAt;
 	if (isEye) {
 		const vec4 at = activeCamera->getAt();
-		modifiedAt = vec3(at.x, at.y, at.z);
-		modifiedEye = vec3(v.x, v.y, v.z);
+		modifiedAt = vec3FromVec4(at);
+		modifiedEye = vec3FromVec4(v);
 		
 		vec4 newUp = cross(modifiedEye, modifiedAt);
 		if (newUp == vector0)
@@ -220,8 +220,8 @@ void Scene::modifyActiveCamera(const vec4& v, bool isEye) {
 	}
 	else { // is at
 		const vec4 eye = activeCamera->getEye();
-		modifiedAt = vec3(v.x, v.y, v.z);
-		modifiedEye = vec3(eye.x, eye.y, eye.z);
+		modifiedAt = vec3FromVec4(v);
+		modifiedEye = vec3FromVec4(eye);
 		vec4 newUp = cross(modifiedEye, modifiedAt);
 		if (newUp == vector0)
 			getNewUp(newUp, modifiedEye, modifiedAt);
@@ -347,13 +347,13 @@ void Scene::preparePolygons() {
 				vertex = modelTransform * vertex;
 				normal = normalTransform * normal;
 				normal = normalize(normal);
-				triangleVertices[j] = vec3(vertex.x, vertex.y, vertex.z);
-				triangleNormals[j] = vec3(normal.x, normal.y, normal.z);
+				triangleVertices[j] = vec3FromVec4(vertex);
+				triangleNormals[j] = vec3FromVec4(normal);
 				vertex = from3dTo2d * vertex;
 				vertex /= vertex.w;
 				int r = ((mRenderer->mWidth / 2) * (vertex.x + 1));
 				int s = ((mRenderer->mHeight / 2) * (vertex.y + 1));
-				projectedTriangleVertices[j] = vec3(vertex.x, vertex.y, vertex.z);
+				projectedTriangleVertices[j] = vec3FromVec4(vertex);
 				screenTriangleVertices[j] = vec2(r, s);
 			}
 			Poly polygon(Poly(Triangle(triangleVertices, triangleNormals),
