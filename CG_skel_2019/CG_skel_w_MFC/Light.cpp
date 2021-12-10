@@ -36,6 +36,11 @@ LightType PointLight::getType() { return LightType::Point; }
 
 string PointLight::getTypeString() { return "point"; }
 
+vec3 PointLight::getPosition()
+{
+	return vec3(mPosition.x, mPosition.y, mPosition.z);
+}
+
 
 void PointLight::setPosition(const vec3& p) { mPosition = p; }
 
@@ -49,9 +54,14 @@ LightType ParallelLight::getType() { return LightType::Parallel; }
 
 string ParallelLight::getTypeString() { return "parallel"; }
 
+vec3 ParallelLight::getDirection()
+{
+	return vec3(mDirection.x, mDirection.y, mDirection.z);
+}
 
-void ParallelLight::setNormal(const vec3& n) { mNormal = n; }
+
+void ParallelLight::setDirection(const vec3& d) { mDirection = d; }
 
 void ParallelLight::rotate(const mat4& m) {
-	mNormal = m * mNormal;
+	mDirection = m * mDirection;
 }

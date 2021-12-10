@@ -39,17 +39,19 @@ public:
 	PointLight(const vec3& p) : mPosition(p) {}
 	LightType getType() override;
 	string getTypeString() override;
+	vec3 getPosition();
 	void setPosition(const vec3& p);
 	void translate(const vec3& v) override;
 };
 
 class ParallelLight : public Light {
-	vec4 mNormal;
+	vec4 mDirection;
 public:
-	ParallelLight(const vec3& n) : mNormal(n) {}
+	ParallelLight(const vec3& d) : mDirection(d) {}
 	LightType getType() override;
 	string getTypeString() override;
-	void setNormal(const vec3& n);
+	vec3 getDirection();
+	void setDirection(const vec3& d);
 	void rotate(const mat4& m) override;
 };
 

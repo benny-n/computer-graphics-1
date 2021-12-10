@@ -1,5 +1,4 @@
 #pragma once
-#include "Renderer.h"
 #include "vec.h"
 #include "mat.h"
 #include "Material.h"
@@ -20,7 +19,6 @@ protected:
 		void initVertexPositions();
 		void transform(const mat4& m);
 		vec4 center();
-		void draw(Renderer* renderer);
 	};
 	string mName;
 
@@ -36,7 +34,12 @@ public:
 	virtual void setMaterialProperties(const Color& color) = 0;
 	virtual void setMaterialProperties(const Material& material) = 0;
 	virtual void transform(const mat4& m , const mat4& g, bool transformWorld) = 0;
-	virtual void draw(Renderer*) = 0;
+	virtual const vector<vec3>& getVertices() = 0;
+	virtual const vector<vec3>& getVertexNormals() = 0;
+	virtual const vector<Material>& getMaterials() = 0;
+	virtual const mat4& getModelTransform() = 0;
+	virtual const mat4& getWorldTransform() = 0;
+	virtual const mat4& getNormalTransform() = 0;
 };
 
 
@@ -60,7 +63,12 @@ public:
 	void setMaterialProperties(const Material& material) override;
 	void calcVertexNormals();
 	void transform(const mat4& m, const mat4& g, bool transformWorld) override;
-	void draw(Renderer* renderer) override;
+	const vector<vec3>& getVertices();
+	const vector<vec3>& getVertexNormals();
+	const vector<Material>& getMaterials();
+	const mat4& getModelTransform();
+	const mat4& getWorldTransform();
+	const mat4& getNormalTransform();
 };
 
 class PrimMeshModel : public MeshModel {

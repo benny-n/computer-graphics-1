@@ -18,6 +18,10 @@ struct Color {
 		return Color{ s * r, s * g, s * b };
 	}
 
+	Color operator / (const float s) const {
+		return Color{ r / s, g / s, b / s };
+	}
+
 	Color operator * (const Color& c) const {
 		return Color{ r * c.r, g * c.g, b * c.b };
 	}

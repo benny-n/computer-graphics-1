@@ -5,6 +5,7 @@
 #include "Model.h"
 #include "Camera.h"
 #include "Light.h"
+#include "Rasterizer.h"
 #include "Renderer.h"
 using namespace std;
 
@@ -16,7 +17,9 @@ class Scene {
 	vector<ModelPtr> mModels;
 	vector<LightPtr> mLights;
 	vector<CameraPtr> mCameras;
-	Renderer *mRenderer;
+	vector<Poly> mPolygons;
+	RasterizerPtr mRasterizer;
+	Renderer* mRenderer;
 	SceneElement mControlledElement;
 	bool mRenderCameras;
 	bool mControlWorld;
@@ -27,7 +30,11 @@ public:
 	const vector<ModelPtr>& getModels();
 	const vector<CameraPtr>& getCameras();
 	const vector<LightPtr>& getLights();
+	const vector<Poly>& getPolygons();
 	const SceneElement& getControlledElement();
+	void setFlatRasterizer();
+	void setGouraudRasterizer();
+	void setPhongRasterizer();
 	void loadOBJModel(string fileName);
 	void addCubeModel();
 	void addPyramidModel();
@@ -55,9 +62,12 @@ public:
 	void removeActiveModel();
 	void removeActiveCamera();
 	void removeActiveLight();
+	void preparePolygons();
+	void putColor(int x, int y, const Poly& polygon);
+	void scanLineZBuffer();
 	void draw();
 	void drawDemo();
-	
+
 	int mActiveModel;
 	int mActiveLight;
 	int mActiveCamera;

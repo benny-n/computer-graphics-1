@@ -61,6 +61,11 @@
 #define CHANGE_DIRECTION_TO 2
 #define REMOVE_ACTIVE_LIGHT 3
 
+// pick rasterizer menu
+#define FLAT 1
+#define GOURAUD 2
+#define PHONG 3
+
 // define for sensetivity
 #define SCALE_UP (1 + 0.2 * gSensetivity)
 #define SCALE_DOWN (1.0 / SCALE_UP)
@@ -86,5 +91,6 @@ void activeCameraOptionsMenu(int id);
 void selectLightMenu(int id);
 void changeLightColorMenu(int id);
 void activeLightOptionsMenu(int id);
+void pickRasterizerMenu(int id);
 void mainMenu(int id);
 void initMenu();

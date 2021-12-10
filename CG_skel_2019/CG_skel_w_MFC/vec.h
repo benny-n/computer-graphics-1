@@ -445,3 +445,6 @@ vec3 cross(const vec4& a, const vec4& b )
 }
 
 //----------------------------------------------------------------------------
+
+inline
+vec3 vec3FromVec4(const vec4& v) { return vec3(v.x, v.y, v.z); }

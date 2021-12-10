@@ -54,10 +54,6 @@ vec4 Model::BoundryBox::center() {
 	return (mMinVec + mMaxVec) / 2.0;
 }
 
-void Model::BoundryBox::draw(Renderer* renderer) {
-	renderer->drawSquares(&mVertexPositions);
-}
-
 // Model
 const string& Model::getName() {
 	return mName;
@@ -257,11 +253,17 @@ void MeshModel::transform(const mat4& m, const mat4& g, bool transformWorld) {
 	}
 }
 
-void MeshModel::draw(Renderer* renderer) {
-	renderer->setObjectMatrices(mModelTransform, mNormalTransform, mWorldTransform);
-	if (mDrawBoundryBox) mBoundryBox.draw(renderer);
-	renderer->preparePolygons(&mVertexPositions, &mVertexNormals, &mVertexMaterials, mDrawVertexNormals, mDrawFaceNormals);
-}
+const vector<vec3>& MeshModel::getVertices() { return mVertexPositions; }
+
+const vector<vec3>& MeshModel::getVertexNormals() { return mVertexNormals; }
+
+const vector<Material>& MeshModel::getMaterials() { return mVertexMaterials; }
+
+const mat4& MeshModel::getModelTransform() { return mModelTransform; }
+
+const mat4& MeshModel::getWorldTransform() { return mWorldTransform; }
+
+const mat4& MeshModel::getNormalTransform() { return mNormalTransform; }
 
 // Prim
 PrimMeshModel::~PrimMeshModel(){}
@@ -383,5 +385,3 @@ PyramidMeshModel::PyramidMeshModel() {
 	mBoundryBox.initVertexPositions();
 	calcVertexNormals();
 }
-
-

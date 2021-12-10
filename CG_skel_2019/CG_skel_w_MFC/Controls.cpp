@@ -426,6 +426,20 @@ void activeLightOptionsMenu(int id) {
 	}
 }
 
+void pickRasterizerMenu(int id) {
+	switch (id) {
+	case FLAT: 
+		gScene->setFlatRasterizer();
+		break;
+	case GOURAUD: 
+		gScene->setGouraudRasterizer();
+		break;
+	case PHONG:
+		gScene->setPhongRasterizer();
+		break;
+	}
+}
+
 void mainMenu(int id) {
 	switch (id)
 	{
@@ -560,6 +574,12 @@ void initMenu()
 	glutAddSubMenu("Change Color", menuChangeLightColor);
 	glutAddMenuEntry("Remove Active Light", REMOVE_ACTIVE_LIGHT);
 
+	//create pick rasterizer menu
+	int menuPickRasterizer = glutCreateMenu(pickRasterizerMenu);
+	glutAddMenuEntry("Flat", FLAT);
+	glutAddMenuEntry("Gouraud", GOURAUD);
+	glutAddMenuEntry("Phong", PHONG);
+
 	//finally, create the main menu and start adding submenus to it
 	glutCreateMenu(mainMenu);
 	glutAddSubMenu("Add Model", menuAddModel);
@@ -576,6 +596,7 @@ void initMenu()
 	glutAddSubMenu("Add Light", menuAddLight);
 	glutAddSubMenu("Select Light", menuSelectLight);
 	glutAddSubMenu("Active Light Options", menuActiveLightOptions);
+	glutAddSubMenu("Pick Rasterizer", menuPickRasterizer);
 
 	//glutAddMenuEntry("Demo", MAIN_DEMO);
 	glutAddMenuEntry("Help", HELP);
