@@ -441,6 +441,18 @@ void pickRasterizerMenu(int id) {
 	glutPostRedisplay();
 }
 
+void specialEffectsMenu(int id) {
+	switch (id) {
+	case BLUR:
+		gScene->toggleBlur();
+		break;
+	case BLOOM:
+		gScene->toggleBloom();
+		break;
+	}
+	glutPostRedisplay();
+}
+
 void mainMenu(int id) {
 	switch (id)
 	{
@@ -581,6 +593,11 @@ void initMenu()
 	glutAddMenuEntry("Gouraud", GOURAUD);
 	glutAddMenuEntry("Phong", PHONG);
 
+	//create special effects menu
+	int menuSpecialEffects = glutCreateMenu(specialEffectsMenu);
+	glutAddMenuEntry("Blur", BLUR);
+	glutAddMenuEntry("Bloom", BLOOM);
+
 	//finally, create the main menu and start adding submenus to it
 	glutCreateMenu(mainMenu);
 	glutAddSubMenu("Add Model", menuAddModel);
@@ -598,6 +615,7 @@ void initMenu()
 	glutAddSubMenu("Select Light", menuSelectLight);
 	glutAddSubMenu("Active Light Options", menuActiveLightOptions);
 	glutAddSubMenu("Pick Rasterizer", menuPickRasterizer);
+	glutAddSubMenu("Special Effects", menuSpecialEffects);
 
 	//glutAddMenuEntry("Demo", MAIN_DEMO);
 	glutAddMenuEntry("Help", HELP);

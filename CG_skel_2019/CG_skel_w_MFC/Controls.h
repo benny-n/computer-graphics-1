@@ -66,6 +66,10 @@
 #define GOURAUD 2
 #define PHONG 3
 
+// special effects menu
+#define BLUR 1
+#define BLOOM 2
+
 // define for sensetivity
 #define SCALE_UP (1 + 0.2 * gSensetivity)
 #define SCALE_DOWN (1.0 / SCALE_UP)
@@ -92,5 +96,6 @@ void selectLightMenu(int id);
 void changeLightColorMenu(int id);
 void activeLightOptionsMenu(int id);
 void pickRasterizerMenu(int id);
+void specialEffectsMenu(int id);
 void mainMenu(int id);
 void initMenu();

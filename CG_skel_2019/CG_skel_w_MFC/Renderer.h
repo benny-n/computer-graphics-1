@@ -55,6 +55,8 @@ public:
 	void calcTriangleAndFaceNormalCoordinates(vec3 triangles3d[3], const mat4& from3dTo2d);
 	void drawTriangles(const vector<Poly>& polygons);
 	void drawSquares(const vector<vec3>* vertices);
+	void blur();
+	void bloom();
 	void swapBuffers();
 	void clearColorBuffer();
 	void clearDepthBuffer();

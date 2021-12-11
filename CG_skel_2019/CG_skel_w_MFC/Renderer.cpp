@@ -362,6 +362,66 @@ void Renderer::drawSquares(const vector<vec3>* vertices) {
 	}
 }
 
+void Renderer::blur() {
+	float gaussian[5] = { 1.0 / 16, 1.0 / 4, 3.0 / 8, 1.0 / 4 , 1.0 / 16 };
+	int x_tag, y_tag;
+	float* modifiedBuffer = new float[mWidth * mHeight * 3];
+	for (int y = 0; y < mHeight; y++) {
+		for (int x = 0; x < mWidth; x++) {
+			Color pixel{ 0, 0, 0 };
+			for (int i = 0; i < 4; i++) {
+				x_tag = x - 2 + i;
+				if (x_tag < 0 || x_tag >= mWidth) continue;
+				pixel.r += mOutBuffer[INDEX(mWidth, x_tag, y, 0)] * gaussian[i];
+				pixel.g += mOutBuffer[INDEX(mWidth, x_tag, y, 1)] * gaussian[i];
+				pixel.b += mOutBuffer[INDEX(mWidth, x_tag, y, 2)] * gaussian[i];
+
+			}
+			modifiedBuffer[INDEX(mWidth, x, y, 0)] = pixel.r;
+			modifiedBuffer[INDEX(mWidth, x, y, 1)] = pixel.g;
+			modifiedBuffer[INDEX(mWidth, x, y, 2)] = pixel.b;
+		}
+	}	
+	for (int x = 0; x < mWidth; x++) {
+		for (int y = 0; y < mHeight; y++) {
+			Color pixel{ 0, 0, 0 };
+			for (int i = 0; i < 4; i++) {
+				y_tag = y - 2 + i;
+				if (y_tag < 0 || y_tag >= mHeight) continue;
+				pixel.r += modifiedBuffer[INDEX(mWidth, x, y_tag, 0)] * gaussian[i];
+				pixel.g += modifiedBuffer[INDEX(mWidth, x, y_tag, 1)] * gaussian[i];
+				pixel.b += modifiedBuffer[INDEX(mWidth, x, y_tag, 2)] * gaussian[i];
+
+			}
+			mOutBuffer[INDEX(mWidth, x, y, 0)] = pixel.r;
+			mOutBuffer[INDEX(mWidth, x, y, 1)] = pixel.g;
+			mOutBuffer[INDEX(mWidth, x, y, 2)] = pixel.b;
+		}
+	}
+	delete[] modifiedBuffer;
+}
+
+void Renderer::bloom() {
+	float* modifiedBuffer = new float[mWidth * mHeight * 3];
+	memcpy((void*)modifiedBuffer, (void*)mOutBuffer, mWidth * mHeight * 3);
+	for (int x = 0; x < mWidth; x++) {
+		for (int y = 0; y < mHeight; y++) {
+			if (mOutBuffer[INDEX(mWidth, x, y, 0)] + mOutBuffer[INDEX(mWidth, x, y, 1)] + mOutBuffer[INDEX(mWidth, x, y, 2)] < 0.7) {
+				//TODO: figure out how to determine whether a pixel is too bright
+				clearPixel(x, y);
+			}
+		}
+	}
+	blur();
+	for (int x = 0; x < mWidth; x++) {
+		for (int y = 0; y < mHeight; y++) {
+			//TODO: figure out how to calculate intensity
+			// if modifiedBuffer has more intense light in this pixel
+			// replace mOutBuffer with modified buffer
+		}
+	}
+}
+
 
 void Renderer::clearColorBuffer() {
 	for (int x = 0; x < mWidth; x++) {

@@ -23,6 +23,8 @@ class Scene {
 	SceneElement mControlledElement;
 	bool mRenderCameras;
 	bool mControlWorld;
+	bool mBlur;
+	bool mBloom;
 
 public:
 	Scene();
@@ -46,6 +48,8 @@ public:
 	void togglePlotBoundryBox();
 	void togglePlotVertexNormals();
 	void togglePlotFaceNormals();
+	void toggleBlur();
+	void toggleBloom();
 	void changeActiveModelMaterial();
 	void changeActiveModelMaterial(const Color& color);
 	void changeActiveModelMaterial(const Material& material);

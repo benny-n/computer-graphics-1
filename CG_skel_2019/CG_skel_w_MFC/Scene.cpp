@@ -5,8 +5,8 @@ using namespace std;
 // Scene
 Scene::Scene() : Scene(&Renderer()){}
 
-Scene::Scene(Renderer* renderer) : mRenderer(renderer), mRenderCameras(false), mControlledElement(SceneElement::Camera), mControlWorld(false),
-								   mActiveModel(0), mActiveLight(0), mActiveCamera(0) {
+Scene::Scene(Renderer* renderer) : mRenderer(renderer), mRenderCameras(false), mControlledElement(SceneElement::Camera), mControlWorld(false), 
+									mBlur(false), mBloom(false), mActiveModel(0), mActiveLight(0), mActiveCamera(0) {
 	auto defaultCamera = make_shared<Camera>();
 	mCameras.push_back(defaultCamera);
 	auto ambientLight = make_shared<AmbientLight>();
@@ -97,6 +97,14 @@ void Scene::togglePlotVertexNormals(){
 
 void Scene::togglePlotFaceNormals(){
 	mModels[mActiveModel]->mDrawFaceNormals = !mModels[mActiveModel]->mDrawFaceNormals;
+}
+
+void Scene::toggleBlur(){
+	mBlur = !mBlur;
+}
+
+void Scene::toggleBloom(){
+	mBloom = !mBloom;
 }
 
 void Scene::changeActiveModelMaterial() {
@@ -452,7 +460,8 @@ void Scene::draw() {
 		}
 	}
 	if (!mModels.empty()) scanLineZBuffer();
-
+	if (mBloom) mRenderer->bloom();
+	if (mBlur) mRenderer->blur();
 	mRenderer->swapBuffers();
 }
 
