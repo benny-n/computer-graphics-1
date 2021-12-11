@@ -409,14 +409,14 @@ void Scene::scanLineZBuffer() {
 
 	for (int y = mPolygons[0].mMinY; y < maxY; y++) {
 		for (int x = 0; x < mRenderer->mWidth; x++) mRenderer->mZbuffer[x] = 1;
-		for each (auto & p in mPolygons)
+		for each (auto & p in mPolygons) {
 			if (p.mMinY <= y) A.insert(p);
-		for each (auto & p in mPolygons)
 			if (p.mMaxY < y) {
 				auto it = A.find(p);
 				if (it != A.end())
 					A.erase(it);
 			}
+		}
 		for each (auto & p in A) {
 			vec2 span = p.span(y);
 			int xMin = ceil(max(0, span.x));
