@@ -27,7 +27,7 @@ Color Rasterizer::calcColorForPoint(const Poly& polygon, const vec3& eye, const 
 		r = normalize(2 * n * (dot(n, l)) - l);
 		auto Ia = polygon.mMaterial.ka * light->mLa;
 		auto Id = polygon.mMaterial.kd * max(0, dot(l, n)) * light->mLd;
-		auto Is = polygon.mMaterial.ks * pow(max(0, dot(r, v)), polygon.mMaterial.alpha) * light->mLs;
+		auto Is = dot(n, l) < 0? Color{ 0,0,0 } : polygon.mMaterial.ks * pow(max(0, dot(r, v)), polygon.mMaterial.alpha) * light->mLs;
 		color = color + Ia + Id + Is;
 	}
 
