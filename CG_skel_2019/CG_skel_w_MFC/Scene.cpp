@@ -6,7 +6,7 @@ using namespace std;
 Scene::Scene() : Scene(&Renderer()){}
 
 Scene::Scene(Renderer* renderer) : mRenderer(renderer), mRenderCameras(false), mControlledElement(SceneElement::Camera), mControlWorld(false), 
-									mBlur(false), mBloom(false), mActiveModel(0), mActiveLight(0), mActiveCamera(0) {
+									mBlurIntensity(BlurIntensity::None), mBloom(false), mActiveModel(0), mActiveLight(0), mActiveCamera(0) {
 	auto defaultCamera = make_shared<Camera>();
 	mCameras.push_back(defaultCamera);
 	auto ambientLight = make_shared<AmbientLight>();
@@ -99,8 +99,8 @@ void Scene::togglePlotFaceNormals(){
 	mModels[mActiveModel]->mDrawFaceNormals = !mModels[mActiveModel]->mDrawFaceNormals;
 }
 
-void Scene::toggleBlur(){
-	mBlur = !mBlur;
+void Scene::setBlur(const BlurIntensity& intensity){
+	mBlurIntensity = intensity;
 }
 
 void Scene::toggleBloom(){
@@ -461,7 +461,8 @@ void Scene::draw() {
 	}
 	if (!mModels.empty()) scanLineZBuffer();
 	if (mBloom) mRenderer->bloom();
-	if (mBlur) mRenderer->blur();
+	for (int i = 0; i < (int)mBlurIntensity; i++) 
+		mRenderer->blur();
 	mRenderer->swapBuffers();
 }
 

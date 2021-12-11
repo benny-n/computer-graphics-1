@@ -66,9 +66,15 @@
 #define GOURAUD 2
 #define PHONG 3
 
+// blur intensity menu
+#define NONE 1
+#define WEAK 2
+#define MEDIUM 3
+#define STRONG 4
+
 // special effects menu
-#define BLUR 1
-#define BLOOM 2
+#define BLOOM 1
+
 
 // define for sensetivity
 #define SCALE_UP (1 + 0.2 * gSensetivity)
@@ -96,6 +102,7 @@ void selectLightMenu(int id);
 void changeLightColorMenu(int id);
 void activeLightOptionsMenu(int id);
 void pickRasterizerMenu(int id);
+void blurIntensityMenu(int id);
 void specialEffectsMenu(int id);
 void mainMenu(int id);
 void initMenu();

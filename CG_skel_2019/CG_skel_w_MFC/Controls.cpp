@@ -441,11 +441,26 @@ void pickRasterizerMenu(int id) {
 	glutPostRedisplay();
 }
 
+void blurIntensityMenu(int id) {
+	switch (id) {
+	case NONE:
+		gScene->setBlur(BlurIntensity::None);
+		break;
+	case WEAK:
+		gScene->setBlur(BlurIntensity::Weak);
+		break;
+	case MEDIUM:
+		gScene->setBlur(BlurIntensity::Medium);
+		break;
+	case STRONG:
+		gScene->setBlur(BlurIntensity::Strong);
+		break;
+	}
+	glutPostRedisplay();
+}
+
 void specialEffectsMenu(int id) {
 	switch (id) {
-	case BLUR:
-		gScene->toggleBlur();
-		break;
 	case BLOOM:
 		gScene->toggleBloom();
 		break;
@@ -593,9 +608,16 @@ void initMenu()
 	glutAddMenuEntry("Gouraud", GOURAUD);
 	glutAddMenuEntry("Phong", PHONG);
 
+	//create blur intensity menu
+	int menuBlurIntensity = glutCreateMenu(blurIntensityMenu);
+	glutAddMenuEntry("None", NONE);
+	glutAddMenuEntry("Weak", WEAK);
+	glutAddMenuEntry("Medium", MEDIUM);
+	glutAddMenuEntry("Strong", STRONG);
+
 	//create special effects menu
 	int menuSpecialEffects = glutCreateMenu(specialEffectsMenu);
-	glutAddMenuEntry("Blur", BLUR);
+	glutAddSubMenu("Blur", menuBlurIntensity);
 	glutAddMenuEntry("Bloom", BLOOM);
 
 	//finally, create the main menu and start adding submenus to it

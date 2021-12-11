@@ -9,6 +9,11 @@
 #include "GL/glew.h"
 
 using namespace std;
+
+enum class BlurIntensity {
+	None = 0, Weak = 1, Medium = 3, Strong = 5
+};
+
 class Renderer
 {
 	float *mOutBuffer; // 3*width*height

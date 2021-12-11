@@ -23,7 +23,7 @@ class Scene {
 	SceneElement mControlledElement;
 	bool mRenderCameras;
 	bool mControlWorld;
-	bool mBlur;
+	BlurIntensity mBlurIntensity;
 	bool mBloom;
 
 public:
@@ -48,7 +48,7 @@ public:
 	void togglePlotBoundryBox();
 	void togglePlotVertexNormals();
 	void togglePlotFaceNormals();
-	void toggleBlur();
+	void setBlur(const BlurIntensity& intensity);
 	void toggleBloom();
 	void changeActiveModelMaterial();
 	void changeActiveModelMaterial(const Color& color);

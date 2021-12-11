@@ -363,14 +363,15 @@ void Renderer::drawSquares(const vector<vec3>* vertices) {
 }
 
 void Renderer::blur() {
-	float gaussian[5] = { 1.0 / 16, 1.0 / 4, 3.0 / 8, 1.0 / 4 , 1.0 / 16 };
+	vector<float> gaussian = vector<float>{ 1.0 / 256, 1.0 / 32, 7.0 / 64, 7.0 / 32, 35.0 / 128, 7.0 / 32, 7.0 / 64, 1.0 / 32, 1.0 / 256 };
+		
 	int x_tag, y_tag;
 	float* modifiedBuffer = new float[mWidth * mHeight * 3];
 	for (int y = 0; y < mHeight; y++) {
 		for (int x = 0; x < mWidth; x++) {
 			Color pixel{ 0, 0, 0 };
-			for (int i = 0; i < 4; i++) {
-				x_tag = x - 2 + i;
+			for (int i = 0; i < gaussian.size(); i++) {
+				x_tag = x - ((gaussian.size() - 1) / 2.0) + i;
 				if (x_tag < 0 || x_tag >= mWidth) continue;
 				pixel.r += mOutBuffer[INDEX(mWidth, x_tag, y, 0)] * gaussian[i];
 				pixel.g += mOutBuffer[INDEX(mWidth, x_tag, y, 1)] * gaussian[i];
@@ -385,8 +386,8 @@ void Renderer::blur() {
 	for (int x = 0; x < mWidth; x++) {
 		for (int y = 0; y < mHeight; y++) {
 			Color pixel{ 0, 0, 0 };
-			for (int i = 0; i < 4; i++) {
-				y_tag = y - 2 + i;
+			for (int i = 0; i < gaussian.size(); i++) {
+				y_tag = y - ((gaussian.size() - 1) / 2.0) + i;
 				if (y_tag < 0 || y_tag >= mHeight) continue;
 				pixel.r += modifiedBuffer[INDEX(mWidth, x, y_tag, 0)] * gaussian[i];
 				pixel.g += modifiedBuffer[INDEX(mWidth, x, y_tag, 1)] * gaussian[i];
@@ -403,21 +404,25 @@ void Renderer::blur() {
 
 void Renderer::bloom() {
 	float* modifiedBuffer = new float[mWidth * mHeight * 3];
-	memcpy((void*)modifiedBuffer, (void*)mOutBuffer, mWidth * mHeight * 3);
+	memcpy((void*)modifiedBuffer, (void*)mOutBuffer, mWidth * mHeight * 3 * sizeof(float));
 	for (int x = 0; x < mWidth; x++) {
 		for (int y = 0; y < mHeight; y++) {
-			if (mOutBuffer[INDEX(mWidth, x, y, 0)] + mOutBuffer[INDEX(mWidth, x, y, 1)] + mOutBuffer[INDEX(mWidth, x, y, 2)] < 0.7) {
-				//TODO: figure out how to determine whether a pixel is too bright
-				clearPixel(x, y);
-			}
+			vec3 pixelColor(mOutBuffer[INDEX(mWidth, x, y, 0)], mOutBuffer[INDEX(mWidth, x, y, 1)], mOutBuffer[INDEX(mWidth, x, y, 2)]);
+			if (dot(pixelColor, vec3(0.2989, 0.5870, 0.1140)) <= 0.5 )  clearPixel(x, y);
 		}
 	}
 	blur();
 	for (int x = 0; x < mWidth; x++) {
 		for (int y = 0; y < mHeight; y++) {
-			//TODO: figure out how to calculate intensity
-			// if modifiedBuffer has more intense light in this pixel
-			// replace mOutBuffer with modified buffer
+			Color pixelColor{ mOutBuffer[INDEX(mWidth, x, y, 0)], mOutBuffer[INDEX(mWidth, x, y, 1)], mOutBuffer[INDEX(mWidth, x, y, 2)] };
+			Color bloomColor{ modifiedBuffer[INDEX(mWidth, x, y, 0)], modifiedBuffer[INDEX(mWidth, x, y, 1)], modifiedBuffer[INDEX(mWidth, x, y, 2)] };
+			Color resultColor = pixelColor + bloomColor;
+			resultColor = Color{ (float)pow(1 - exp(-resultColor.r), 1 / 2.2), 
+								 (float)pow(1 - exp(-resultColor.g), 1 / 2.2),
+								 (float)pow(1 - exp(-resultColor.b), 1 / 2.2) };
+			mOutBuffer[INDEX(mWidth, x, y, 0)] = resultColor.r;
+			mOutBuffer[INDEX(mWidth, x, y, 1)] = resultColor.g;
+			mOutBuffer[INDEX(mWidth, x, y, 2)] = resultColor.b;
 		}
 	}
 }
