@@ -424,6 +424,7 @@ void activeLightOptionsMenu(int id) {
 		}
 		break;
 	}
+	glutPostRedisplay();
 }
 
 void pickRasterizerMenu(int id) {
