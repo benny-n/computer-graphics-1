@@ -41,6 +41,8 @@ public:
 	bool mDrawVertexNormal;
 	int mMinY;
 	int mMaxY;
+	int mMinX;
+	int mMaxX;
 
 	bool operator< (const Poly& p);
 	vec2 span(int y) const;

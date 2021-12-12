@@ -406,26 +406,18 @@ void Scene::putColor(int x, int y, const Poly& polygon) {
 }
 
 void Scene::scanLineZBuffer() {
-	int maxY = FLT_MIN;
+	int maxY = INT_MIN, minY = INT_MAX, maxX = INT_MIN, minX = INT_MAX;
 	for each (auto & p in mPolygons) {
-		if (p.mMaxY > maxY)
-			maxY = p.mMaxY;
+		if (p.mMaxY > maxY) maxY = p.mMaxY;
+		if (p.mMinY < minY) minY = p.mMinY;
+		if (p.mMaxX > maxX) maxX = p.mMaxX;
+		if (p.mMinX < minX) minX = p.mMinX;
 	}
 
-	sort(mPolygons.begin(), mPolygons.end());
-	set<Poly, PolySetComparator> A;
-
-	for (int y = mPolygons[0].mMinY; y < maxY; y++) {
-		for (int x = 0; x < mRenderer->mWidth; x++) mRenderer->mZbuffer[x] = 1;
+	for (int y = minY; y < maxY; y++) {
+		for (int x = minX; x < maxX; x++) mRenderer->mZbuffer[x] = 1;
 		for each (auto & p in mPolygons) {
-			if (p.mMinY <= y) A.insert(p);
-			if (p.mMaxY < y) {
-				auto it = A.find(p);
-				if (it != A.end())
-					A.erase(it);
-			}
-		}
-		for each (auto & p in A) {
+			if (p.mMinY > y || p.mMaxY < y) continue;
 			vec2 span = p.span(y);
 			int xMin = ceil(max(0, span.x));
 			int xMax = ceil(min(mRenderer->mWidth, span.y)); // WTF but works

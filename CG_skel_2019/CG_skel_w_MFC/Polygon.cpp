@@ -44,6 +44,8 @@ Poly::Poly(const Triangle& t, const ProjectedTriangle& pt, const ScreenTriangle&
 
 	mMinY = MIN3(mScreenTriangle.mVertices[0].y, mScreenTriangle.mVertices[1].y, mScreenTriangle.mVertices[2].y);
 	mMaxY = MAX3(mScreenTriangle.mVertices[0].y, mScreenTriangle.mVertices[1].y, mScreenTriangle.mVertices[2].y);
+	mMinX = MIN3(mScreenTriangle.mVertices[0].x, mScreenTriangle.mVertices[1].x, mScreenTriangle.mVertices[2].x);
+	mMaxX = MAX3(mScreenTriangle.mVertices[0].x, mScreenTriangle.mVertices[1].x, mScreenTriangle.mVertices[2].x);
 }
 
 bool Poly::operator<(const Poly& p) { return mMinY < p.mMinY; }
