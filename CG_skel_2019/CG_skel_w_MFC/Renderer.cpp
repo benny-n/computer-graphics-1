@@ -425,6 +425,7 @@ void Renderer::bloom() {
 			mOutBuffer[INDEX(mWidth, x, y, 2)] = resultColor.b;
 		}
 	}
+	delete[] modifiedBuffer;
 }
 
 
