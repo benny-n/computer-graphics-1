@@ -196,16 +196,16 @@ void MeshModel::loadFile(string fileName)
 
 void MeshModel::setMaterialProperties() {
 	for (int i = 0; i < mVertexMaterials.size(); i++) {
-		mVertexMaterials[i].ka.r = rand() / RAND_MAX;
-		mVertexMaterials[i].ka.g = rand() / RAND_MAX;
-		mVertexMaterials[i].ka.b = rand() / RAND_MAX;
-		mVertexMaterials[i].kd.r = rand() / RAND_MAX;
-		mVertexMaterials[i].kd.g = rand() / RAND_MAX;
-		mVertexMaterials[i].kd.b = rand() / RAND_MAX;
-		mVertexMaterials[i].ks.r = rand() / RAND_MAX;
-		mVertexMaterials[i].ks.g = rand() / RAND_MAX;
-		mVertexMaterials[i].ks.b = rand() / RAND_MAX;
-		mVertexMaterials[i].alpha = rand() / RAND_MAX;
+		mVertexMaterials[i].ka.r = (float)rand() / RAND_MAX;
+		mVertexMaterials[i].ka.g = (float)rand() / RAND_MAX;
+		mVertexMaterials[i].ka.b = (float)rand() / RAND_MAX;
+		mVertexMaterials[i].kd.r = (float)rand() / RAND_MAX;
+		mVertexMaterials[i].kd.g = (float)rand() / RAND_MAX;
+		mVertexMaterials[i].kd.b = (float)rand() / RAND_MAX;
+		mVertexMaterials[i].ks.r = (float)rand() / RAND_MAX;
+		mVertexMaterials[i].ks.g = (float)rand() / RAND_MAX;
+		mVertexMaterials[i].ks.b = (float)rand() / RAND_MAX;
+		mVertexMaterials[i].alpha = (float)rand() / RAND_MAX;
 	}
 }
 
