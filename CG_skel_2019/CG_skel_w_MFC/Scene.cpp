@@ -394,7 +394,6 @@ inline static float depth(const Poly& poly, int x, int y) {
 	float ti = length(pi - p1) / length(p2 - p1);
 	float zi = (ti * poly.mProjectedTriangle.mVertices[1].z) + ((1 - ti) * poly.mProjectedTriangle.mVertices[0].z);
 	float t = length(vec2(x, y) - p3) / length(pi - p3);
-	if (t > 1) return 1;
 	t = t > 1 ? 1 : t;
 	float zp = (t * zi) + (1 - t) * poly.mProjectedTriangle.mVertices[2].z;
 
@@ -420,8 +419,8 @@ void Scene::scanLineZBuffer() {
 		for each (auto & p in mPolygons) {
 			if (p.mMinY > y || p.mMaxY < y) continue;
 			vec2 span = p.span(y);
-			int xMin = ceil(max(0, span[0] - 1));
-			int xMax = ceil(min(mRenderer->mWidth, span[1] + 1)); 
+			int xMin = ceil(max(0, span.x));
+			int xMax = ceil(min(mRenderer->mWidth, span.y)); // WTF but works
 			for (int x = xMin; x < xMax; x++) {
 				float z = depth(p, x, y);
 				if (z < mRenderer->mZbuffer[x] && z >= -1) {
