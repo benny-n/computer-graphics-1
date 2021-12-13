@@ -30,6 +30,14 @@ struct Color {
 		return Color{ s * c.r, s * c.g, s * c.b };
 	}
 
+	friend bool operator== (const Color& c1, const Color& c2) {
+		return c1.r == c2.r && c1.g == c2.g && c1.b == c2.b;
+	}
+
+	friend bool operator!= (const Color& c1, const Color& c2) {
+		return !(c1 == c2);
+	}
+
 
 	friend std::ostream& operator << (std::ostream& os, const Color& c) {
 		return os << "( " << c.r << ", " << c.g << ", " << c.b << " )";

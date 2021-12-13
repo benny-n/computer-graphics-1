@@ -408,18 +408,23 @@ void Renderer::bloom() {
 	for (int x = 0; x < mWidth; x++) {
 		for (int y = 0; y < mHeight; y++) {
 			vec3 pixelColor(mOutBuffer[INDEX(mWidth, x, y, 0)], mOutBuffer[INDEX(mWidth, x, y, 1)], mOutBuffer[INDEX(mWidth, x, y, 2)]);
-			if (dot(pixelColor, vec3(0.2989, 0.5870, 0.1140)) <= 0.5 )  clearPixel(x, y);
+			if (dot(pixelColor, vec3(0.2989, 0.5870, 0.1140)) <= 0.7 )  clearPixel(x, y);
 		}
 	}
 	blur();
 	for (int x = 0; x < mWidth; x++) {
 		for (int y = 0; y < mHeight; y++) {
-			Color pixelColor{ mOutBuffer[INDEX(mWidth, x, y, 0)], mOutBuffer[INDEX(mWidth, x, y, 1)], mOutBuffer[INDEX(mWidth, x, y, 2)] };
-			Color bloomColor{ modifiedBuffer[INDEX(mWidth, x, y, 0)], modifiedBuffer[INDEX(mWidth, x, y, 1)], modifiedBuffer[INDEX(mWidth, x, y, 2)] };
-			Color resultColor = pixelColor + bloomColor;
-			resultColor = Color{ (float)pow(1 - exp(-resultColor.r), 1 / 2.2), 
-								 (float)pow(1 - exp(-resultColor.g), 1 / 2.2),
-								 (float)pow(1 - exp(-resultColor.b), 1 / 2.2) };
+			Color bloomColor{ mOutBuffer[INDEX(mWidth, x, y, 0)], mOutBuffer[INDEX(mWidth, x, y, 1)], mOutBuffer[INDEX(mWidth, x, y, 2)] };
+			Color pixelColor{ modifiedBuffer[INDEX(mWidth, x, y, 0)], modifiedBuffer[INDEX(mWidth, x, y, 1)], modifiedBuffer[INDEX(mWidth, x, y, 2)] };
+			Color resultColor;
+			if (bloomColor != Color{ 0,0,0 }) {
+				resultColor = pixelColor + bloomColor;
+				resultColor = Color{ (float)pow(1 - exp(-resultColor.r), 1 / 2.2), 
+									 (float)pow(1 - exp(-resultColor.g), 1 / 2.2),
+									 (float)pow(1 - exp(-resultColor.b), 1 / 2.2) };
+			}
+			else resultColor = pixelColor;
+
 			mOutBuffer[INDEX(mWidth, x, y, 0)] = resultColor.r;
 			mOutBuffer[INDEX(mWidth, x, y, 1)] = resultColor.g;
 			mOutBuffer[INDEX(mWidth, x, y, 2)] = resultColor.b;
