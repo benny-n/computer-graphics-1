@@ -8,7 +8,7 @@ struct Color {
 	float b;
 
 	Color() : r(1), g(1), b(1) {}
-	Color(float r, float g, float b) : r(CLAMP(r)), g(CLAMP(g)), b(CLAMP(b)) {}
+	Color(float r, float g, float b) : r(r), g(g), b(b) {}
 
 	Color operator + (const Color& c) const {
 		return Color{ r + c.r, g + c.g, b + c.b };

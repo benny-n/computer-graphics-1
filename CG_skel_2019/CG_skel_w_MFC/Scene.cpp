@@ -167,10 +167,10 @@ void Scene::transformActive(const float degrees, const RotationAxis& axis) {
 		mat4 rotation;
 		switch (axis) {
 		case RotationAxis::X:
-			rotation = rotateX(degrees);
+			rotation = rotateX(-degrees);
 			break;
 		case RotationAxis::Y:
-			rotation = rotateY(degrees);
+			rotation = rotateY(-degrees);
 			break;
 		case RotationAxis::Z:
 			rotation = rotateZ(degrees);

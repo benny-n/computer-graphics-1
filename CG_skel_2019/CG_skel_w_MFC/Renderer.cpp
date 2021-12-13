@@ -408,9 +408,13 @@ void Renderer::bloom() {
 	for (int x = 0; x < mWidth; x++) {
 		for (int y = 0; y < mHeight; y++) {
 			vec3 pixelColor(mOutBuffer[INDEX(mWidth, x, y, 0)], mOutBuffer[INDEX(mWidth, x, y, 1)], mOutBuffer[INDEX(mWidth, x, y, 2)]);
-			if (dot(pixelColor, vec3(0.2989, 0.5870, 0.1140)) <= 0.7 )  clearPixel(x, y);
+			if (dot(pixelColor, vec3(0.2126, 0.7152, 0.0722)) <= 1 )  clearPixel(x, y);
 		}
 	}
+	blur();
+	blur();
+	blur();
+	blur();
 	blur();
 	for (int x = 0; x < mWidth; x++) {
 		for (int y = 0; y < mHeight; y++) {
@@ -501,6 +505,8 @@ void Renderer::createOpenGLBuffer()
 
 void Renderer::swapBuffers()
 {
+	for (int i = 0; i < 3 * mWidth * mHeight; i++)
+		CLAMP(mOutBuffer[i]);
 
 	int a = glGetError();
 	glActiveTexture(GL_TEXTURE0);
