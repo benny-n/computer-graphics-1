@@ -31,7 +31,7 @@ Color Rasterizer::calcColorForPoint(const Poly& polygon, const vec3& eye, const 
 		color = color + Ia + Id + Is;
 	}
 
-	return color;
+	return color + polygon.mMaterial.emission;
 }
 
 void FlatRasterizer::preprocess(Poly& polygon, const vec3& eye) {

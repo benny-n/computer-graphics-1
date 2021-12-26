@@ -219,9 +219,9 @@ void changeMaterialMenu(int id) {
 	case UNIFORM_MATERIAL: {
 		CMaterialDialog dlg;
 		if (dlg.DoModal() == IDOK) {
-			gScene->changeActiveModelMaterial(Material{dlg.getKa(), dlg.getKd(), dlg.getKs(), dlg.getAlpha()});
-			break;
+			gScene->changeActiveModelMaterial(Material{dlg.getKa(), dlg.getKd(), dlg.getKs(), dlg.getEmission(), dlg.getAlpha()});
 		}
+		break;
 	}
 	case NON_UNIFORM_MATERIAL:
 		gScene->changeActiveModelMaterial();

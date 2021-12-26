@@ -31,17 +31,20 @@
 #define IDC_KSR_EDIT 221
 #define IDC_KSG_EDIT 222
 #define IDC_KSB_EDIT 223
-#define IDC_ALPHA_EDIT 224
+#define IDC_EMISSIONR_EDIT 224
+#define IDC_EMISSIONG_EDIT 225
+#define IDC_EMISSIONB_EDIT 226
+#define IDC_ALPHA_EDIT 227
 
-#define IDC_LAR_EDIT 225
-#define IDC_LAG_EDIT 226
-#define IDC_LAB_EDIT 227
-#define IDC_LDR_EDIT 228
-#define IDC_LDG_EDIT 229
-#define IDC_LDB_EDIT 230
-#define IDC_LSR_EDIT 231
-#define IDC_LSG_EDIT 232
-#define IDC_LSB_EDIT 233
+#define IDC_LAR_EDIT 228
+#define IDC_LAG_EDIT 229
+#define IDC_LAB_EDIT 230
+#define IDC_LDR_EDIT 231
+#define IDC_LDG_EDIT 232
+#define IDC_LDB_EDIT 233
+#define IDC_LSR_EDIT 234
+#define IDC_LSG_EDIT 235
+#define IDC_LSB_EDIT 236
 
 
 #define CMD_EDIT_TITLE "Command"
@@ -72,10 +75,14 @@
 #define KSR_EDIT_TITLE "R ="
 #define KSG_EDIT_TITLE "G ="
 #define KSB_EDIT_TITLE "B ="
+#define EMISSIONR_EDIT_TITLE "R ="
+#define EMISSIONG_EDIT_TITLE "G ="
+#define EMISSIONB_EDIT_TITLE "B ="
 #define ALPHA_EDIT_TITLE "Shininess ="
 #define AMBIENT_REFLECTION_EDIT_TITLE "Ambient Light Reflection:"
 #define DIFFUSE_REFLECTION_EDIT_TITLE "Diffuse Light Reflection:"
 #define SPECULAR_REFLECTION_EDIT_TITLE "Specular Light Reflection:"
+#define EMISSION_EDIT_TITLE "Emissive Light:"
 
 #define LAR_EDIT_TITLE "R ="
 #define LAG_EDIT_TITLE "G ="
@@ -461,13 +468,14 @@ void CFovyDialog::OnPaint() {
 // -------------------------
 
 CMaterialDialog::CMaterialDialog(CString title) : CInputDialog(title), mKaR(0.5), mKaG(0.5), mKaB(0.5), 
-                         mKdR(0.5), mKdG(0.5), mKdB(0.5), mKsR(0.5), mKsG(0.5), mKsB(0.5), mAlpha(0.5) {}
+                         mKdR(0.5), mKdG(0.5), mKdB(0.5), mKsR(0.5), mKsG(0.5), mKsB(0.5), mEmissionR(0), mEmissionG(0), mEmissionB(0), mAlpha(0.5) {}
 
 CMaterialDialog::~CMaterialDialog() {}
 
 Color CMaterialDialog::getKa() { return Color{ mKaR, mKaG, mKaB }; }
 Color CMaterialDialog::getKd() { return Color{ mKdR, mKdG, mKdB }; }
 Color CMaterialDialog::getKs() { return Color{ mKsR, mKsG, mKsB }; }
+Color CMaterialDialog::getEmission() { return Color{ mEmissionR, mEmissionG, mEmissionB }; }
 float CMaterialDialog::getAlpha() { return mAlpha; }
 
 void CMaterialDialog::DoDataExchange(CDataExchange* pDX) {
@@ -481,6 +489,9 @@ void CMaterialDialog::DoDataExchange(CDataExchange* pDX) {
     DDX_Text(pDX, IDC_KSR_EDIT, mKsR);
     DDX_Text(pDX, IDC_KSG_EDIT, mKsG);
     DDX_Text(pDX, IDC_KSB_EDIT, mKsB);
+    DDX_Text(pDX, IDC_EMISSIONR_EDIT, mEmissionR);
+    DDX_Text(pDX, IDC_EMISSIONG_EDIT, mEmissionG);
+    DDX_Text(pDX, IDC_EMISSIONB_EDIT, mEmissionB);
     DDX_Text(pDX, IDC_ALPHA_EDIT, mAlpha);
 }
 
@@ -521,9 +532,19 @@ int CMaterialDialog::OnCreate(LPCREATESTRUCT lpcs) {
     mKsBEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
         CRect(510, 234, 550, 254), this, IDC_KSB_EDIT);
 
+    // Emission
+    mEmissionREdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+        CRect(150, 316, 190, 336), this, IDC_EMISSIONR_EDIT);
+
+    mEmissionGEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+        CRect(330, 316, 370, 336), this, IDC_EMISSIONG_EDIT);
+
+    mEmissionBEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+        CRect(510, 316, 550, 336), this, IDC_EMISSIONB_EDIT);
+
     // Alpha
     mAlphaEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
-        CRect(330, 348, 370, 370), this, IDC_ALPHA_EDIT);
+        CRect(330, 430, 370, 462), this, IDC_ALPHA_EDIT);
     
 
     return 0;
@@ -572,8 +593,21 @@ void CMaterialDialog::OnPaint() {
     CRect ksB_rect(470, 236, 590, 259);
     dc.DrawText(CString(KSB_EDIT_TITLE), -1, &ksB_rect, DT_SINGLELINE);
 
+    // Emmision
+    CRect emission_rect(30, 276, 300, 301);
+    dc.DrawText(CString(EMISSION_EDIT_TITLE), -1, &emission_rect, DT_SINGLELINE);
+
+    CRect emissionR_rect(70, 318, 190, 341);
+    dc.DrawText(CString(EMISSIONR_EDIT_TITLE), -1, &emissionR_rect, DT_SINGLELINE);
+
+    CRect emissionG_rect(270, 318, 390, 341);
+    dc.DrawText(CString(EMISSIONG_EDIT_TITLE), -1, &emissionG_rect, DT_SINGLELINE);
+
+    CRect emissionB_rect(470, 318, 590, 341);
+    dc.DrawText(CString(EMISSIONB_EDIT_TITLE), -1, &emissionB_rect, DT_SINGLELINE);
+
     // alpha
-    CRect alpha_rect(200, 350, 335, 375);
+    CRect alpha_rect(200, 432, 335, 457);
     dc.DrawText(CString(ALPHA_EDIT_TITLE), -1, &alpha_rect, DT_SINGLELINE);
 
     mKaREdit.SetFocus();

@@ -205,6 +205,9 @@ void MeshModel::setMaterialProperties() {
 		mVertexMaterials[i].ks.r = (float)rand() / RAND_MAX;
 		mVertexMaterials[i].ks.g = (float)rand() / RAND_MAX;
 		mVertexMaterials[i].ks.b = (float)rand() / RAND_MAX;
+		mVertexMaterials[i].emission.r = (float)rand() / RAND_MAX;
+		mVertexMaterials[i].emission.g = (float)rand() / RAND_MAX;
+		mVertexMaterials[i].emission.b = (float)rand() / RAND_MAX;
 		mVertexMaterials[i].alpha = (float)rand() / RAND_MAX;
 	}
 }
@@ -214,6 +217,7 @@ void MeshModel::setMaterialProperties(const Color& color) {
 		mVertexMaterials[i].ka = color;
 		mVertexMaterials[i].kd = color;
 		mVertexMaterials[i].ks = color;
+		mVertexMaterials[i].emission = color;
 	}
 }
 

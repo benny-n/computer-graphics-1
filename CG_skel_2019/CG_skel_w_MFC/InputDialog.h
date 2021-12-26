@@ -222,6 +222,7 @@ public:
     Color getKa();
     Color getKd();
     Color getKs();
+    Color getEmission();
     float getAlpha();
 
 
@@ -235,6 +236,9 @@ protected:
     float mKsR;
     float mKsG;
     float mKsB;
+    float mEmissionR;
+    float mEmissionG;
+    float mEmissionB;
     float mAlpha;
 
     CEdit mKaREdit;
@@ -246,6 +250,9 @@ protected:
     CEdit mKsREdit;
     CEdit mKsGEdit;
     CEdit mKsBEdit;
+    CEdit mEmissionREdit;
+    CEdit mEmissionGEdit;
+    CEdit mEmissionBEdit;
     CEdit mAlphaEdit;
 
     virtual void DoDataExchange(CDataExchange* pDX);
