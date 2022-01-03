@@ -136,7 +136,8 @@ void Scene::transformActive(const mat4& m){
 		break;
 	case SceneElement::Model:
 		mat4 g = scale(1 / m[0][0], 1 / m[1][1], 1 / m[2][2]);
-		mModels[mActiveModel]->transform(m, g, mControlWorld);
+		mat4 transformation = translate(mModels[mActiveModel]->mBoundryBox.center()) * m * translate(-mModels[mActiveModel]->mBoundryBox.center());
+		mModels[mActiveModel]->transform(transformation, g, mControlWorld);
 		break;
 	}
 }
