@@ -446,7 +446,7 @@ void Scene::draw() {
 	for each (auto model in mModels) {
 		if (model->mDrawBoundryBox)
 			mRenderer->drawSquares(&(model->mBoundryBox.mVertexPositions));
-		model->draw(mRenderer->final());
+		model->draw(mRenderer->from3dTo2d());
 	}
 	glFlush();
 	glutSwapBuffers();

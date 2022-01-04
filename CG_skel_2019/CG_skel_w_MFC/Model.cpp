@@ -346,7 +346,7 @@ CubeMeshModel::CubeMeshModel() {
 	calcVertexNormals();
 }
 
-void CubeMeshModel::draw(const mat4& m4) {
+void CubeMeshModel::draw(const mat4& from3dTo2d) {
 	GLuint program = InitShader("flat_vshader.glsl", "flat_fshader.glsl");
 	GLfloat points[108];
 	for (size_t i = 0; i < 36; i++) {
@@ -367,16 +367,15 @@ void CubeMeshModel::draw(const mat4& m4) {
 	glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	GLuint modelviewLoc = glGetUniformLocation(program, "modelview");
-	mat4 m4new = m4 * mWorldTransform * mModelTransform;
-	GLfloat m4f[16];
+	mat4 finalTransform = from3dTo2d * mWorldTransform * mModelTransform;
+	GLfloat modelView[16];
 	for (size_t i = 0; i < 4; i++) {
 		for (size_t j = 0; j < 4; j++) {
-			m4f[i * 4 + j] = m4new[i][j];
+			modelView[i * 4 + j] = finalTransform[i][j];
 		}
 	}
-	glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, m4f);
+	glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, modelView);
 	glDrawArrays(GL_TRIANGLES, 0, 108);
-
 }
 
 // Pyramid

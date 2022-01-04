@@ -28,6 +28,8 @@ const mat4& Renderer::getNormalTransform() { return getWorldTransform() * mNorma
 const mat4& Renderer::getCameraTransform() { return mCameraTransform; }
 const mat4& Renderer::getProjection() { return mProjection; }
 
+const mat4& Renderer::from3dTo2d() { return mProjection * mCameraTransform * mAspectRatioTransform; }
+
 void Renderer::createBuffers(int width, int height)
 {
 	mWidth=width;
