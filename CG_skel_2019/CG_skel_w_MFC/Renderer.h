@@ -47,7 +47,7 @@ public:
 	const mat4& getNormalTransform();
 	const mat4& getCameraTransform();
 	const mat4& getProjection();
-	const mat4& from3dTo2d();
+	const mat4 from3dTo2d();
 	void setDemoBuffer();
 	void reshape(int width, int height);
 	void colorPixel(int x, int y, const Color& color = Color{ 0.5, 0.5, 0.5 });
