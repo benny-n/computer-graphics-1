@@ -376,6 +376,63 @@ void Scene::preparePolygons() {
 	}
 }
 
+inline static float depth(const Poly& poly, int x, int y) {
+	const vec2& p1 = poly.mScreenTriangle.mVertices[0];
+	const vec2& p2 = poly.mScreenTriangle.mVertices[1];
+	const vec2& p3 = poly.mScreenTriangle.mVertices[2];
+
+	float a = p2.y - p1.y;
+	float b = p1.x - p2.x;
+	float c = a * p1.x + b * p1.y;
+
+	float a1 = y - p3.y;
+	float b1 = p3.x - x;
+	float c1 = a1 * p3.x + b1 * p3.y;
+	float det = a * b1 - a1 * b;
+
+	vec2 pi = vec2((b1 * c - b * c1) / det, (a * c1 - a1 * c) / det);
+
+	float ti = length(pi - p1) / length(p2 - p1);
+	float zi = (ti * poly.mProjectedTriangle.mVertices[1].z) + ((1 - ti) * poly.mProjectedTriangle.mVertices[0].z);
+	float t = length(vec2(x, y) - p3) / length(pi - p3);
+	t = t > 1 ? 1 : t;
+	float zp = (t * zi) + (1 - t) * poly.mProjectedTriangle.mVertices[2].z;
+
+	return zp;
+}
+
+void Scene::putColor(int x, int y, const Poly& polygon) {
+	Color color = mRasterizer->process(x, y, polygon, vec3FromVec4(mCameras[mActiveCamera]->getEye()));
+	mRenderer->colorPixel(x, y, color);
+}
+
+void Scene::scanLineZBuffer() {
+	int maxY = INT_MIN, minY = INT_MAX, maxX = INT_MIN, minX = INT_MAX;
+	for each (auto & p in mPolygons) {
+		if (p.mMaxY > maxY) maxY = p.mMaxY;
+		if (p.mMinY < minY) minY = p.mMinY;
+		if (p.mMaxX > maxX) maxX = p.mMaxX;
+		if (p.mMinX < minX) minX = p.mMinX;
+	}
+
+	for (int y = minY; y < maxY; y++) {
+		for (int x = minX; x < maxX; x++) mRenderer->mZbuffer[x] = 1;
+		for each (auto & p in mPolygons) {
+			if (p.mMinY > y || p.mMaxY < y) continue;
+			vec2 span = p.span(y);
+			int xMin = ceil(max(0, span.x));
+			int xMax = ceil(min(mRenderer->mWidth, span.y)); // WTF but works
+			for (int x = xMin; x < xMax; x++) {
+				float z = depth(p, x, y);
+				if (z < mRenderer->mZbuffer[x] && z >= -1) {
+					putColor(x, y, p);
+					mRenderer->mZbuffer[x] = z;
+				}
+			}
+		}
+	}
+}
+
 void Scene::draw() {
 	mRenderer->clearColorBuffer();
 	mPolygons.clear();
@@ -395,6 +452,7 @@ void Scene::draw() {
 			camera->draw(mRenderer);
 		}
 	}
+	if (!mModels.empty()) scanLineZBuffer();
 	if (mBloom) mRenderer->bloom();
 	for (int i = 0; i < (int)mBlurIntensity; i++) 
 		mRenderer->blur();
