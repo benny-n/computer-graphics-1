@@ -10,17 +10,23 @@ class Model {
 protected:
 	virtual ~Model() {}
 	class BoundryBox {
+		vector<GLfloat> mVertices;
+		GLuint mBuffer;
+
 	public:
 		vector<vec3> mVertexPositions;
 		vec4 mMinVec;
 		vec4 mMaxVec;
 
-		BoundryBox() : mVertexPositions(24), mMinVec(vec3(FLT_MAX)), mMaxVec(vec3(FLT_MIN)) {}
+		BoundryBox() : mVertices(72), mVertexPositions(24), mMinVec(vec3(FLT_MAX)), mMaxVec(vec3(FLT_MIN)) {}
 		void initVertexPositions();
 		void transform(const mat4& m);
 		vec4 center();
+		void draw(GLfloat transformation[]);
 	};
 	string mName;
+	vector<GLfloat> mVertices;
+	GLuint mBuffer;
 
 public:
 	bool mDrawBoundryBox;
@@ -34,7 +40,7 @@ public:
 	virtual void setMaterialProperties(const Color& color) = 0;
 	virtual void setMaterialProperties(const Material& material) = 0;
 	virtual void transform(const mat4& m , const mat4& g, bool transformWorld) = 0;
-	virtual void draw(const mat4& from3dTo2d) {};
+	virtual void draw(GLuint program, const mat4& from3dTo2d) = 0;
 	virtual const vector<vec3>& getVertices() = 0;
 	virtual const vector<vec3>& getVertexNormals() = 0;
 	virtual const vector<Material>& getMaterials() = 0;
@@ -59,6 +65,7 @@ public:
 	MeshModel(string fileName);
 	~MeshModel(void);
 	virtual void loadFile(string fileName);
+	void draw(GLuint program, const mat4& from3dTo2d) override;
 	void setMaterialProperties() override;
 	void setMaterialProperties(const Color& color) override;
 	void setMaterialProperties(const Material& material) override;
@@ -81,7 +88,6 @@ public:
 class CubeMeshModel : public PrimMeshModel {
 public:
 	CubeMeshModel();
-	void draw(const mat4& from3dTo2d) override;
 };
 
 class PyramidMeshModel : public MeshModel {

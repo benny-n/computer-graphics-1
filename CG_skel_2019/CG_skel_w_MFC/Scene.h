@@ -25,6 +25,7 @@ class Scene {
 	bool mControlWorld;
 	BlurIntensity mBlurIntensity;
 	bool mBloom;
+	GLuint mProgram;
 
 public:
 	Scene();

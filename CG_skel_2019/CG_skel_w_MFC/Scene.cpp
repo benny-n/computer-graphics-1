@@ -12,6 +12,9 @@ Scene::Scene(Renderer* renderer) : mRenderer(renderer), mRenderCameras(false), m
 	auto ambientLight = make_shared<AmbientLight>();
 	mLights.push_back(ambientLight);
 	mRasterizer = make_unique<FlatRasterizer>(mLights);
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	mProgram = InitShader("flat_vshader.glsl", "flat_fshader.glsl");
+	glEnable(GL_DEPTH_TEST);
 }
 
 const vector<ModelPtr>& Scene::getModels() { return mModels; }
@@ -437,19 +440,15 @@ void Scene::draw() {
 	//mRenderer->clearColorBuffer();
 	//glClear(GL_COLOR_BUFFER_BIT);
 	mPolygons.clear();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	auto activeCamera = mCameras[mActiveCamera];
 	mRenderer->setCameraTransform(activeCamera->getTransform());
 	mRenderer->setProjection(activeCamera->getProjection());
 
-	glClear(GL_COLOR_BUFFER_BIT);
 	for each (auto model in mModels) {
-		if (model->mDrawBoundryBox)
-			mRenderer->drawSquares(&(model->mBoundryBox.mVertexPositions));
-		model->draw(mRenderer->from3dTo2d());
+		model->draw(mProgram, mRenderer->from3dTo2d());
 	}
-	glFlush();
-	glutSwapBuffers();
 
 	//preparePolygons();
 	//mRenderer->drawTriangles(mPolygons);
@@ -463,6 +462,8 @@ void Scene::draw() {
 	for (int i = 0; i < (int)mBlurIntensity; i++) 
 		mRenderer->blur();
 	//mRenderer->swapBuffers();
+	glFlush();
+	glutSwapBuffers();
 }
 
 void Scene::drawDemo() {

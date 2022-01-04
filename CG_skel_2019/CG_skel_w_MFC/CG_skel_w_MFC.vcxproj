@@ -140,6 +140,8 @@
     <None Include="flat_fshader.glsl" />
     <None Include="flat_vshader.glsl" />
     <None Include="fshader.glsl" />
+    <None Include="misc_fshader.glsl" />
+    <None Include="misc_vshader.glsl" />
     <None Include="vshader.glsl" />
     <None Include="ReadMe.txt" />
   </ItemGroup>

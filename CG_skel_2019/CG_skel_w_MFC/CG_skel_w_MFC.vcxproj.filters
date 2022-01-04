@@ -130,5 +130,11 @@
     <None Include="flat_fshader.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="misc_fshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="misc_vshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
