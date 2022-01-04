@@ -34,6 +34,7 @@ public:
 	virtual void setMaterialProperties(const Color& color) = 0;
 	virtual void setMaterialProperties(const Material& material) = 0;
 	virtual void transform(const mat4& m , const mat4& g, bool transformWorld) = 0;
+	virtual void draw(const mat4&) {};
 	virtual const vector<vec3>& getVertices() = 0;
 	virtual const vector<vec3>& getVertexNormals() = 0;
 	virtual const vector<Material>& getMaterials() = 0;
@@ -80,6 +81,7 @@ public:
 class CubeMeshModel : public PrimMeshModel {
 public:
 	CubeMeshModel();
+	void draw(const mat4&) override;
 };
 
 class PyramidMeshModel : public MeshModel {

@@ -137,6 +137,8 @@
     <ResourceCompile Include="CG_skel_w_MFC.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="flat_fshader.glsl" />
+    <None Include="flat_vshader.glsl" />
     <None Include="fshader.glsl" />
     <None Include="vshader.glsl" />
     <None Include="ReadMe.txt" />

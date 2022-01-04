@@ -57,6 +57,9 @@ public:
 	void setCameraTransform(const mat4& cTransform);
 	void setProjection(const mat4& projection);
 	void setObjectMatrices(const ModelPtr model);
+	const mat4 final() {
+		return mProjection * mCameraTransform * mAspectRatioTransform * mWorldTransform * mObjectTransform;
+	}
 	void calcTriangleAndFaceNormalCoordinates(vec3 triangles3d[3], const mat4& from3dTo2d);
 	void drawTriangles(const vector<Poly>& polygons);
 	void drawSquares(const vector<vec3>* vertices);

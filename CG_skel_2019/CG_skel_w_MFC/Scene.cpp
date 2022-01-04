@@ -434,29 +434,35 @@ void Scene::scanLineZBuffer() {
 }
 
 void Scene::draw() {
-	mRenderer->clearColorBuffer();
+	//mRenderer->clearColorBuffer();
+	//glClear(GL_COLOR_BUFFER_BIT);
 	mPolygons.clear();
 
 	auto activeCamera = mCameras[mActiveCamera];
 	mRenderer->setCameraTransform(activeCamera->getTransform());
 	mRenderer->setProjection(activeCamera->getProjection());
 
+	glClear(GL_COLOR_BUFFER_BIT);
 	for each (auto model in mModels) {
 		if (model->mDrawBoundryBox)
 			mRenderer->drawSquares(&(model->mBoundryBox.mVertexPositions));
+		model->draw(mRenderer->final());
 	}
-	preparePolygons();
-	mRenderer->drawTriangles(mPolygons);
+	glFlush();
+	glutSwapBuffers();
+
+	//preparePolygons();
+	//mRenderer->drawTriangles(mPolygons);
 	if (mRenderCameras) {
 		for each (auto camera in mCameras) {
 			camera->draw(mRenderer);
 		}
 	}
-	if (!mModels.empty()) scanLineZBuffer();
+	//if (!mModels.empty()) scanLineZBuffer();
 	if (mBloom) mRenderer->bloom();
 	for (int i = 0; i < (int)mBlurIntensity; i++) 
 		mRenderer->blur();
-	mRenderer->swapBuffers();
+	//mRenderer->swapBuffers();
 }
 
 void Scene::drawDemo() {

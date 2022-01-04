@@ -124,5 +124,11 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="ReadMe.txt" />
+    <None Include="flat_vshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="flat_fshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -346,6 +346,39 @@ CubeMeshModel::CubeMeshModel() {
 	calcVertexNormals();
 }
 
+void CubeMeshModel::draw(const mat4& m4) {
+	GLuint program = InitShader("flat_vshader.glsl", "flat_fshader.glsl");
+	GLfloat points[108];
+	for (size_t i = 0; i < 36; i++) {
+		points[3 * i] = mVertexPositions[i].x;
+		points[3 * i + 1] = mVertexPositions[i].y;
+		points[3 * i + 2] = mVertexPositions[i].z;
+	}
+	glUseProgram(program);
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	GLuint buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+	GLuint loc = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(loc);
+	glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	GLuint modelviewLoc = glGetUniformLocation(program, "modelview");
+	mat4 m4new = m4 * mWorldTransform * mModelTransform;
+	GLfloat m4f[16];
+	for (size_t i = 0; i < 4; i++) {
+		for (size_t j = 0; j < 4; j++) {
+			m4f[i * 4 + j] = m4new[i][j];
+		}
+	}
+	glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, m4f);
+	glDrawArrays(GL_TRIANGLES, 0, 108);
+
+}
+
 // Pyramid
 PyramidMeshModel::PyramidMeshModel() {
 	mName = "pyramid";
