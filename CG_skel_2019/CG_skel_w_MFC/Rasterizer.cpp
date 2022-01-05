@@ -46,7 +46,7 @@ Color FlatRasterizer::process(int x, int y, const Poly& polygon, const vec3& eye
 
 void GouraudRasterizer::preprocess(Poly& polygon, const vec3& eye) {
 	for (int i = 0; i < 3; i++) {
-		vec3 p = polygon.mTriangle.mVertices[i];
+		vec3 p = polygon.mTriangle.mVertexPositions[i];
 		vec3 n = polygon.mTriangle.mVertexNormals[i];
 		polygon.mVertexColors[i] = calcColorForPoint(polygon, eye, p, n);
 	}
@@ -60,7 +60,7 @@ Color GouraudRasterizer::process(int x, int y, const Poly& polygon, const vec3& 
 Color PhongRasterizer::process(int x, int y, const Poly& polygon, const vec3& eye) {
 	vec3 bc = polygon.barycentricCoordinates(x, y);
 	// reverse linear interpolation
-	vec3 p = polygon.mTriangle.mVertices[0] * bc[0] + polygon.mTriangle.mVertices[1] * bc[1] + polygon.mTriangle.mVertices[2] * bc[2];
+	vec3 p = polygon.mTriangle.mVertexPositions[0] * bc[0] + polygon.mTriangle.mVertexPositions[1] * bc[1] + polygon.mTriangle.mVertexPositions[2] * bc[2];
 	vec3 n = polygon.mTriangle.mVertexNormals[0] * bc[0] + polygon.mTriangle.mVertexNormals[1] * bc[1] + polygon.mTriangle.mVertexNormals[2] * bc[2];
 	return calcColorForPoint(polygon, eye, p, n);
 }

@@ -6,7 +6,7 @@
 
 class Triangle {
 public:
-	vec3 mVertices[3];
+	vec3 mVertexPositions[3];
 	vec3 mVertexNormals[3];
 
 	Triangle(const vec3 v[3]);
@@ -23,7 +23,7 @@ public:
 
 class ScreenTriangle {
 public:
-	vec2 mVertices[3];
+	vec2 mVertexPositions[3];
 
 	ScreenTriangle(const vec2 v[3]);
 };

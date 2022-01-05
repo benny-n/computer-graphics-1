@@ -67,9 +67,6 @@ public:
 	void removeActiveModel();
 	void removeActiveCamera();
 	void removeActiveLight();
-	void preparePolygons();
-	void putColor(int x, int y, const Poly& polygon);
-	void scanLineZBuffer();
 	void draw();
 	void drawDemo();
 

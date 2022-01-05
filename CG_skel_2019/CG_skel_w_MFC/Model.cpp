@@ -13,7 +13,7 @@ using namespace std;
 void Model::BoundryBox::initVertexPositions()
 {
 
-	mVertices = {
+	mVertexPositions = {
 		mMinVec.x, mMinVec.y, mMaxVec.z,
 		mMinVec.x, mMinVec.y, mMinVec.z,
 		mMinVec.x, mMinVec.y, mMinVec.z,
@@ -69,40 +69,9 @@ void Model::BoundryBox::initVertexPositions()
 		mMaxVec.x, mMaxVec.y, mMaxVec.z
 	};
 
-	glGenBuffers(1, &mBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, mBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mVertices.size(), mVertices.data(), GL_STATIC_DRAW);
-
-	// First Face (bottom)
-	mVertexPositions[0] = vec3(mMinVec.x, mMinVec.y, mMaxVec.z);
-	mVertexPositions[1] = vec3(mMinVec.x, mMinVec.y, mMinVec.z);
-	mVertexPositions[2] = vec3(mMaxVec.x, mMinVec.y, mMinVec.z);
-	mVertexPositions[3] = vec3(mMaxVec.x, mMinVec.y, mMaxVec.z);
-	// Second Face (front)
-	mVertexPositions[4] = vec3(mMaxVec.x, mMinVec.y, mMaxVec.z);
-	mVertexPositions[5] = vec3(mMinVec.x, mMinVec.y, mMaxVec.z);
-	mVertexPositions[6] = vec3(mMinVec.x, mMaxVec.y, mMaxVec.z);
-	mVertexPositions[7] = vec3(mMaxVec.x, mMaxVec.y, mMaxVec.z);
-	// Third Face (top)
-	mVertexPositions[8] = vec3(mMaxVec.x, mMaxVec.y, mMaxVec.z);
-	mVertexPositions[9] = vec3(mMinVec.x, mMaxVec.y, mMaxVec.z);
-	mVertexPositions[10] = vec3(mMinVec.x, mMaxVec.y, mMinVec.z);
-	mVertexPositions[11] = vec3(mMaxVec.x, mMaxVec.y, mMinVec.z);
-	// Fourth Face (back)
-	mVertexPositions[12] = vec3(mMaxVec.x, mMaxVec.y, mMinVec.z);
-	mVertexPositions[13] = vec3(mMaxVec.x, mMinVec.y, mMinVec.z);
-	mVertexPositions[14] = vec3(mMinVec.x, mMinVec.y, mMinVec.z);
-	mVertexPositions[15] = vec3(mMinVec.x, mMaxVec.y, mMinVec.z);
-	// Fifth Face (left)
-	mVertexPositions[16] = vec3(mMinVec.x, mMaxVec.y, mMinVec.z);
-	mVertexPositions[17] = vec3(mMinVec.x, mMinVec.y, mMinVec.z);
-	mVertexPositions[18] = vec3(mMinVec.x, mMinVec.y, mMaxVec.z);
-	mVertexPositions[19] = vec3(mMinVec.x, mMaxVec.y, mMaxVec.z);
-	// Sixth Face (right)
-	mVertexPositions[20] = vec3(mMaxVec.x, mMaxVec.y, mMaxVec.z);
-	mVertexPositions[21] = vec3(mMaxVec.x, mMaxVec.y, mMinVec.z);
-	mVertexPositions[22] = vec3(mMaxVec.x, mMinVec.y, mMinVec.z);
-	mVertexPositions[23] = vec3(mMaxVec.x, mMaxVec.y, mMinVec.z);
+	glGenBuffers(1, &mVertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mVertexPositions.size(), mVertexPositions.data(), GL_STATIC_DRAW);
 }
 
 void Model::BoundryBox::transform(const mat4& m)
@@ -115,16 +84,14 @@ vec4 Model::BoundryBox::center() {
 	return (mMinVec + mMaxVec) / 2.0;
 }
 
-void Model::BoundryBox::draw(GLfloat transformation[]) {
-	GLuint program = InitShader("misc_vshader.glsl", "misc_fshader.glsl");
-	glUseProgram(program);
-	glBindBuffer(GL_ARRAY_BUFFER, mBuffer);
+void Model::BoundryBox::draw(GLuint program, GLfloat transformation[]) {
+	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
 	GLuint loc = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(loc);
 	glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	GLuint modelviewLoc = glGetUniformLocation(program, "modelview");
 	glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, transformation);
-	glDrawArrays(GL_LINES, 0, mVertices.size());
+	glDrawArrays(GL_LINES, 0, mVertexPositions.size());
 }
 
 // Model
@@ -250,30 +217,67 @@ void MeshModel::loadFile(string fileName)
 	//Then mVertexPositions should contain:
 	//mVertexPositions={v1,v2,v3,v1,v3,v4}
 
-	mVertexPositions = vector<vec3>(faces.size() * 3);
-	mVertexNormals = vector<vec3>(faces.size() * 3);
 	mVertexMaterials = vector<Material>(faces.size() * 3);
+	vector<vec3> vertexNormalPositions(faces.size() * 3);
 	// iterate through all stored faces and create triangles
 	int k=0;
 	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it) {
 		for (int i = 0; i < 3; i++)
 		{
 			vec3 vertex = vertices[it->v[i] - 1];
-			mVertices.push_back(vertex.x);
-			mVertices.push_back(vertex.y);
-			mVertices.push_back(vertex.z);
-			mVertexPositions[k] = vertex;
+			mVertexPositions.push_back(vertex.x);
+			mVertexPositions.push_back(vertex.y);
+			mVertexPositions.push_back(vertex.z);
 			mVertexMaterials[k] = Material();
 			if (!vertexNormals.empty())
-				mVertexNormals[k] = vertexNormals[it->vn[i] - 1];
+				vertexNormalPositions[k] = vertexNormals[it->vn[i] - 1];
 			k++;
 		}
 	}
-	if (vertexNormals.empty()) calcVertexNormals();
+	glGenBuffers(1, &mVertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mVertexPositions.size(), mVertexPositions.data(), GL_STATIC_DRAW);
+	
+	if (vertexNormals.empty()) vertexNormalPositions = calcVertexNormals();
 
-	glGenBuffers(1, &mBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, mBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mVertices.size(), mVertices.data(), GL_STATIC_DRAW);
+	initVertexNormalBuffer(vertexNormalPositions);
+	initFaceNormalBuffer();
+}
+
+void MeshModel::initVertexNormalBuffer(vector<vec3>& vertexNormals) {
+	for (int i = 0; i < vertexNormals.size(); i++) {
+		vec3 normal = vertexNormals[i];
+		mVertexNormals.push_back(mVertexPositions[3 * i]);
+		mVertexNormals.push_back(mVertexPositions[3 * i + 1]);
+		mVertexNormals.push_back(mVertexPositions[3 * i + 2]);
+		mVertexNormals.push_back(normal.x + mVertexPositions[3 * i]);
+		mVertexNormals.push_back(normal.y + mVertexPositions[3 * i + 1]);
+		mVertexNormals.push_back(normal.z + mVertexPositions[3 * i + 2]);
+	}
+	glGenBuffers(1, &mVertexNormalBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, mVertexNormalBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mVertexNormals.size(), mVertexNormals.data(), GL_STATIC_DRAW);
+}
+
+void MeshModel::initFaceNormalBuffer() {
+	for (int i = 0; i < mVertexPositions.size(); i += 9) {
+		const vec3 v1(mVertexPositions[i], mVertexPositions[i + 1], mVertexPositions[i + 2]);
+		const vec3 v2(mVertexPositions[i + 3], mVertexPositions[i + 4], mVertexPositions[i + 5]);
+		const vec3 v3(mVertexPositions[i + 6], mVertexPositions[i + 7], mVertexPositions[i + 8]);
+		const vec3 vi = v2 - v1;
+		const vec3 vj = v3 - v1;
+		vec3 center = (v1 + v2 + v3) / 3;
+		vec3 normal = center + vec3(normalize(cross(vi, vj)));
+		mFaceNormals.push_back(center.x);
+		mFaceNormals.push_back(center.y);
+		mFaceNormals.push_back(center.z);
+		mFaceNormals.push_back(normal.x);
+		mFaceNormals.push_back(normal.y);
+		mFaceNormals.push_back(normal.z);
+	}
+	glGenBuffers(1, &mFaceNormalBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, mFaceNormalBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mFaceNormals.size(), mFaceNormals.data(), GL_STATIC_DRAW);
 }
 
 void MeshModel::draw(GLuint program, const mat4& from3dTo2d) {
@@ -281,7 +285,7 @@ void MeshModel::draw(GLuint program, const mat4& from3dTo2d) {
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);*/
 	glUseProgram(program);
-	glBindBuffer(GL_ARRAY_BUFFER, mBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
 	GLuint loc = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(loc);
 	glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -294,8 +298,30 @@ void MeshModel::draw(GLuint program, const mat4& from3dTo2d) {
 		}
 	}
 	glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, modelView);
-	glDrawArrays(GL_TRIANGLES, 0, mVertices.size());
-	if (mDrawBoundryBox) mBoundryBox.draw(modelView);
+	glDrawArrays(GL_TRIANGLES, 0, mVertexPositions.size());
+	if (mDrawBoundryBox || mDrawVertexNormals || mDrawFaceNormals) {
+		GLuint program = InitShader("misc_vshader.glsl", "misc_fshader.glsl");
+		glUseProgram(program);
+		if (mDrawBoundryBox) mBoundryBox.draw(program, modelView);
+		if (mDrawVertexNormals) {
+			glBindBuffer(GL_ARRAY_BUFFER, mVertexNormalBuffer);
+			GLuint loc = glGetAttribLocation(program, "vPosition");
+			glEnableVertexAttribArray(loc);
+			glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+			GLuint modelviewLoc = glGetUniformLocation(program, "modelview");
+			glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, finalTransform);
+			glDrawArrays(GL_LINES, 0, mVertexNormals.size());
+		}
+		if (mDrawFaceNormals) {
+			glBindBuffer(GL_ARRAY_BUFFER, mFaceNormalBuffer);
+			GLuint loc = glGetAttribLocation(program, "vPosition");
+			glEnableVertexAttribArray(loc);
+			glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+			GLuint modelviewLoc = glGetUniformLocation(program, "modelview");
+			glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, finalTransform);
+			glDrawArrays(GL_LINES, 0, mFaceNormals.size());
+		}
+	}
 }
 
 void MeshModel::setMaterialProperties() {
@@ -331,25 +357,6 @@ void MeshModel::setMaterialProperties(const Material& material) {
 	}		
 }
 
-void MeshModel::calcVertexNormals(){
-	map<vec3, vector<int>> vertexIndeces;
-	for (int i = 0; i < mVertexPositions.size(); i++) vertexIndeces[mVertexPositions[i]].push_back(i);
-	for (int i = 0; i < mVertexPositions.size(); i += 3) {
-		const vec3 v1 = mVertexPositions[i];
-		const vec3 v2 = mVertexPositions[i + 1];
-		const vec3 v3 = mVertexPositions[i + 2];
-		const vec3 vi = v2 - v1;
-		const vec3 vj = v3 - v1;
-		vec3 normal = vec3(normalize(cross(vi, vj)));
-		float area = length((cross(vi, vj)));
-		normal *= area;
-		for each (int index in vertexIndeces[v1]) mVertexNormals[index] += normal;
-		for each (int index in vertexIndeces[v2]) mVertexNormals[index] += normal;
-		for each (int index in vertexIndeces[v3]) mVertexNormals[index] += normal;
-	}
-	for (int i = 0; i < mVertexNormals.size(); i++) mVertexNormals[i] = normalize(mVertexNormals[i]);
-}
-
 void MeshModel::transform(const mat4& m, const mat4& g, bool transformWorld) {
 	mBoundryBox.transform(m);
 	if (transformWorld) {
@@ -361,9 +368,39 @@ void MeshModel::transform(const mat4& m, const mat4& g, bool transformWorld) {
 	}
 }
 
-const vector<vec3>& MeshModel::getVertices() { return mVertexPositions; }
+vector<vec3> MeshModel::calcVertexNormals(){
+	map<vec3, int> vertexIndeces;
+	vector<vec3> vertexPositions(mVertexPositions.size() / 3);
+	vector<vec3> vertexNormals;
+	for (int i = 0; i < mVertexPositions.size(); i += 3) {
+		vertexPositions[i / 3] = vec3(mVertexPositions[i], mVertexPositions[i + 1], mVertexPositions[i + 2]);
+	}
 
-const vector<vec3>& MeshModel::getVertexNormals() { return mVertexNormals; }
+	int i = 0;
+	for each (auto vertex in vertexPositions) {
+		if (vertexIndeces.find(vertex) == vertexIndeces.end()) {
+			vertexNormals.push_back(vec3());
+			vertexIndeces[vertex] = i;
+		}
+	}
+	
+	for (int i = 0; i < vertexPositions.size(); i += 3) {
+		const vec3 v1 = vertexPositions[i];
+		const vec3 v2 = vertexPositions[i + 1];
+		const vec3 v3 = vertexPositions[i + 2];
+		const vec3 vi = v2 - v1;
+		const vec3 vj = v3 - v1;
+		vec3 normal = vec3(normalize(cross(vi, vj)));
+		float area = length((cross(vi, vj)));
+		normal *= area;
+		vertexNormals[vertexIndeces[v1]] += normal;
+		vertexNormals[vertexIndeces[v2]] += normal;
+		vertexNormals[vertexIndeces[v3]] += normal;
+	}
+	for (i = 0; i < vertexNormals.size(); i++) vertexNormals[i] = normalize(vertexNormals[i]);
+
+	return vertexNormals;
+}
 
 const vector<Material>& MeshModel::getMaterials() { return mVertexMaterials; }
 
@@ -379,11 +416,9 @@ PrimMeshModel::~PrimMeshModel(){}
 // Cube
 CubeMeshModel::CubeMeshModel() {
 	mName = "cube";
-	mVertexPositions = vector<vec3>(36);
-	mVertexNormals = vector<vec3>(36);
 	mVertexMaterials = vector<Material>(36);
 
-	mVertices = {
+	mVertexPositions = {
 		-1, -1, 1,
 		-1, -1, -1,
 		1, -1, 1,
@@ -422,25 +457,26 @@ CubeMeshModel::CubeMeshModel() {
 		1, 1, -1
 	};
 
-	glGenBuffers(1, &mBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, mBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mVertices.size(), mVertices.data(), GL_STATIC_DRAW);
+	glGenBuffers(1, &mVertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mVertexPositions.size(), mVertexPositions.data(), GL_STATIC_DRAW);
 
 	// Boundry box in this case is just the cube itself
 	mBoundryBox.mMaxVec = vec4(1);
 	mBoundryBox.mMinVec = vec4(vec3(-1));
 	mBoundryBox.initVertexPositions();
-	calcVertexNormals();
+	vector<vec3> vertexNormals = calcVertexNormals();
+
+	initVertexNormalBuffer(vertexNormals);
+	initFaceNormalBuffer();
 }
 
 // Pyramid
 PyramidMeshModel::PyramidMeshModel() {
 	mName = "pyramid";
-	mVertexPositions = vector<vec3>(18);
-	mVertexNormals = vector<vec3>(18);
 	mVertexMaterials = vector<Material>(18);
 
-	mVertices = {
+	mVertexPositions = {
 		-1, 0, 1,
 		-1, 0, -1,
 		1, 0, 1,
@@ -461,13 +497,16 @@ PyramidMeshModel::PyramidMeshModel() {
 		0, 2, 0
 	};
 
-	glGenBuffers(1, &mBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, mBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mVertices.size(), mVertices.data(), GL_STATIC_DRAW);
+	glGenBuffers(1, &mVertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mVertexPositions.size(), mVertexPositions.data(), GL_STATIC_DRAW);
 
 	// Boundry box
 	mBoundryBox.mMaxVec = vec4(vec3(1, 2, 1));
 	mBoundryBox.mMinVec = vec4(vec3(-1, 0, -1));
 	mBoundryBox.initVertexPositions();
-	calcVertexNormals();
+	vector<vec3> vertexNormals = calcVertexNormals();
+
+	initVertexNormalBuffer(vertexNormals);
+	initFaceNormalBuffer();
 }

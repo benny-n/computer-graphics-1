@@ -325,10 +325,10 @@ void Renderer::drawTriangles(const vector<Poly>& polygons) {
 		if (poly.mDrawVertexNormal) {
 			for (int i = 0; i < 3; i++) {
 				vec4 normal(poly.mTriangle.mVertexNormals[i]);
-				normal += vec4(poly.mTriangle.mVertices[i], 0);
+				normal += vec4(poly.mTriangle.mVertexPositions[i], 0);
 				normal = from3dTo2d * normal;
 				normal = normal / normal.w;
-				clipAndDrawLine(poly.mProjectedTriangle.mVertices[i], vec3FromVec4(normal));
+				clipAndDrawLine(poly.mProjectedTriangle.mVertexPositions[i], vec3FromVec4(normal));
 			}
 		}
 		//clipAndDrawLine(poly.mProjectedTriangle.mVertices[0], poly.mProjectedTriangle.mVertices[1]);

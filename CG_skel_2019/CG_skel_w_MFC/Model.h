@@ -10,23 +10,26 @@ class Model {
 protected:
 	virtual ~Model() {}
 	class BoundryBox {
-		vector<GLfloat> mVertices;
-		GLuint mBuffer;
+		vector<GLfloat> mVertexPositions;
+		GLuint mVertexBuffer;
 
 	public:
-		vector<vec3> mVertexPositions;
 		vec4 mMinVec;
 		vec4 mMaxVec;
 
-		BoundryBox() : mVertices(72), mVertexPositions(24), mMinVec(vec3(FLT_MAX)), mMaxVec(vec3(FLT_MIN)) {}
+		BoundryBox() : mVertexPositions(72), mMinVec(vec3(FLT_MAX)), mMaxVec(vec3(FLT_MIN)) {}
 		void initVertexPositions();
 		void transform(const mat4& m);
 		vec4 center();
-		void draw(GLfloat transformation[]);
+		void draw(GLuint program, GLfloat transformation[]);
 	};
 	string mName;
-	vector<GLfloat> mVertices;
-	GLuint mBuffer;
+	vector<GLfloat> mVertexPositions;
+	GLuint mVertexBuffer;
+	vector<GLfloat> mVertexNormals;
+	GLuint mVertexNormalBuffer;
+	vector<GLfloat> mFaceNormals;
+	GLuint mFaceNormalBuffer;
 
 public:
 	bool mDrawBoundryBox;
@@ -41,8 +44,6 @@ public:
 	virtual void setMaterialProperties(const Material& material) = 0;
 	virtual void transform(const mat4& m , const mat4& g, bool transformWorld) = 0;
 	virtual void draw(GLuint program, const mat4& from3dTo2d) = 0;
-	virtual const vector<vec3>& getVertices() = 0;
-	virtual const vector<vec3>& getVertexNormals() = 0;
 	virtual const vector<Material>& getMaterials() = 0;
 	virtual const mat4& getModelTransform() = 0;
 	virtual const mat4& getWorldTransform() = 0;
@@ -53,9 +54,6 @@ public:
 class MeshModel : public Model {
 protected :
 	MeshModel() {}
-	vector<vec3> mVertexPositions;
-	vector<vec3> mVertexNormals;
-	vector<vec3> mFaceNormals;
 	vector<Material> mVertexMaterials;
 	mat4 mModelTransform;
 	mat4 mWorldTransform;
@@ -65,14 +63,14 @@ public:
 	MeshModel(string fileName);
 	~MeshModel(void);
 	virtual void loadFile(string fileName);
+	void initVertexNormalBuffer(vector<vec3>& vertexNormals);
+	void initFaceNormalBuffer();
 	void draw(GLuint program, const mat4& from3dTo2d) override;
 	void setMaterialProperties() override;
 	void setMaterialProperties(const Color& color) override;
 	void setMaterialProperties(const Material& material) override;
-	void calcVertexNormals();
 	void transform(const mat4& m, const mat4& g, bool transformWorld) override;
-	const vector<vec3>& getVertices();
-	const vector<vec3>& getVertexNormals();
+	vector<vec3> calcVertexNormals();
 	const vector<Material>& getMaterials();
 	const mat4& getModelTransform();
 	const mat4& getWorldTransform();
