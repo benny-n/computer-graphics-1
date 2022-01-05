@@ -337,9 +337,6 @@ void Scene::removeActiveLight()
 }
 
 void Scene::draw() {
-	//mRenderer->clearColorBuffer();
-	//glClear(GL_COLOR_BUFFER_BIT);
-	mPolygons.clear();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	auto activeCamera = mCameras[mActiveCamera];
@@ -350,22 +347,16 @@ void Scene::draw() {
 		model->draw(mProgram, mRenderer->from3dTo2d());
 	}
 
-	//mRenderer->drawTriangles(mPolygons);
 	if (mRenderCameras) {
 		for each (auto camera in mCameras) {
-			camera->draw(mRenderer);
+			camera->draw(mRenderer->from3dTo2d());
 		}
 	}
 	if (mBloom) mRenderer->bloom();
 	for (int i = 0; i < (int)mBlurIntensity; i++) 
 		mRenderer->blur();
-	//mRenderer->swapBuffers();
 	glFlush();
 	glutSwapBuffers();
 }
 
-void Scene::drawDemo() {
-	mRenderer->setDemoBuffer();
-	mRenderer->swapBuffers();
-}
 

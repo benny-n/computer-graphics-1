@@ -102,6 +102,22 @@ void Camera::perspective(const float fovy, const float aspect,
 	frustum(left, right, bottom, top, zNear, zFar);
 }
 
-void Camera::draw(Renderer* renderer) {
-	renderer->drawCamera(mEye);
+void Camera::draw(const mat4& from3dTo2d) {
+	GLuint program = InitShader("misc_vshader.glsl", "misc_fshader.glsl");
+	glUseProgram(program);
+	GLuint buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	GLfloat points[12] = { mEye.x + 1, mEye.y, mEye.z,
+						  mEye.x - 1, mEye.y, mEye.z,
+						  mEye.x, mEye.y + 1, mEye.z,
+						  mEye.x, mEye.y - 1, mEye.z
+	};
+	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+	GLuint loc = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(loc);
+	glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	GLuint modelviewLoc = glGetUniformLocation(program, "modelview");
+	glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, from3dTo2d);
+	glDrawArrays(GL_LINES, 0, 4);	
 }

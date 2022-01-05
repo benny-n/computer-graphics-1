@@ -313,13 +313,37 @@ void MeshModel::draw(GLuint program, const mat4& from3dTo2d) {
 			glDrawArrays(GL_LINES, 0, mVertexNormals.size());
 		}
 		if (mDrawFaceNormals) {
-			glBindBuffer(GL_ARRAY_BUFFER, mFaceNormalBuffer);
+			GLuint faceNormalBuffer;
+			vector<GLfloat> faceNormals;
+			mat4 modelTranform = mWorldTransform * mModelTransform;
+			mat4 normalTransform =  mWorldTransform * mNormalTransform;
+			for (int i = 0; i < mVertexPositions.size(); i += 9) {
+				const vec3 v1(mVertexPositions[i], mVertexPositions[i + 1], mVertexPositions[i + 2]);
+				const vec3 v2(mVertexPositions[i + 3], mVertexPositions[i + 4], mVertexPositions[i + 5]);
+				const vec3 v3(mVertexPositions[i + 6], mVertexPositions[i + 7], mVertexPositions[i + 8]);
+				const vec3 vi = v2 - v1;
+				const vec3 vj = v3 - v1;
+				vec3 center = (v1 + v2 + v3) / 3;
+				center = vec3FromVec4(modelTranform * vec4(center));
+				vec3 normal = vec3(cross(vi, vj));
+				normal = vec3FromVec4(normalTransform * vec4(normal));
+				normal = center + normalize(normal);
+				faceNormals.push_back(center.x);
+				faceNormals.push_back(center.y);
+				faceNormals.push_back(center.z);
+				faceNormals.push_back(normal.x);
+				faceNormals.push_back(normal.y);
+				faceNormals.push_back(normal.z);
+			}
+			glGenBuffers(1, &faceNormalBuffer);
+			glBindBuffer(GL_ARRAY_BUFFER, faceNormalBuffer);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * faceNormals.size(), faceNormals.data(), GL_STATIC_DRAW);
 			GLuint loc = glGetAttribLocation(program, "vPosition");
 			glEnableVertexAttribArray(loc);
 			glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
 			GLuint modelviewLoc = glGetUniformLocation(program, "modelview");
-			glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, finalTransform);
-			glDrawArrays(GL_LINES, 0, mFaceNormals.size());
+			glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, from3dTo2d);
+			glDrawArrays(GL_LINES, 0, faceNormals.size());
 		}
 	}
 }

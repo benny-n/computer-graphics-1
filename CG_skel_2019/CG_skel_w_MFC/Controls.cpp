@@ -477,9 +477,6 @@ void mainMenu(int id) {
 		glutPostRedisplay();
 		initMenu();
 		break;
-	//case MAIN_DEMO:
-	//	gScene->drawDemo();
-	//	break;
 	case HELP:AfxMessageBox(_T(
 		"Messages will appear on the console window\n\n"
 		"Keyboard Controls:\n"
