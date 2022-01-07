@@ -271,7 +271,7 @@ void MeshModel::initFlatBuffer() {
 		buffer.push_back(mVertexPositions[i + 1]);
 		buffer.push_back(mVertexPositions[i + 2]);
 		// face
-		int faceIndex = (i / 9) * 3;
+		int faceIndex = (i / 9) * 6;
 			// center 
 		buffer.push_back(faceNormals[faceIndex]);
 		buffer.push_back(faceNormals[faceIndex + 1]);

@@ -2,7 +2,7 @@
 #define AMBIENT 0
 #define POINT 1
 #define PARALLEL 2
-
+#define MAX_LIGHTS 128
 
 struct Light {
     int type;
@@ -14,7 +14,7 @@ struct Light {
 };
 
 uniform int numLights;
-uniform Light lights[];
+uniform Light lights[MAX_LIGHTS];
 uniform mat4 modelview;
 uniform vec3 eye;
 in vec4 vPosition;
@@ -29,7 +29,7 @@ in float alpha;
 out vec4 out_color;
 
 vec3 calcColor() {
-	vec3 color;
+	vec3 color = vec3(0, 0, 0);
 	vec3 v = normalize(eye - faceCenter);
 	vec3 l, r;
 
