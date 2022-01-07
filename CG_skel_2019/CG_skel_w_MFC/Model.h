@@ -64,7 +64,6 @@ public:
 	~MeshModel(void);
 	virtual void loadFile(string fileName);
 	void initVertexNormalBuffer(vector<vec3>& vertexNormals);
-	void initFaceNormalBuffer();
 	void draw(GLuint program, const mat4& from3dTo2d) override;
 	void setMaterialProperties() override;
 	void setMaterialProperties(const Color& color) override;

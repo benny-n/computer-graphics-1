@@ -241,7 +241,6 @@ void MeshModel::loadFile(string fileName)
 	if (vertexNormals.empty()) vertexNormalPositions = calcVertexNormals();
 
 	initVertexNormalBuffer(vertexNormalPositions);
-	initFaceNormalBuffer();
 }
 
 void MeshModel::initVertexNormalBuffer(vector<vec3>& vertexNormals) {
@@ -257,27 +256,6 @@ void MeshModel::initVertexNormalBuffer(vector<vec3>& vertexNormals) {
 	glGenBuffers(1, &mVertexNormalBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexNormalBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mVertexNormals.size(), mVertexNormals.data(), GL_STATIC_DRAW);
-}
-
-void MeshModel::initFaceNormalBuffer() {
-	for (int i = 0; i < mVertexPositions.size(); i += 9) {
-		const vec3 v1(mVertexPositions[i], mVertexPositions[i + 1], mVertexPositions[i + 2]);
-		const vec3 v2(mVertexPositions[i + 3], mVertexPositions[i + 4], mVertexPositions[i + 5]);
-		const vec3 v3(mVertexPositions[i + 6], mVertexPositions[i + 7], mVertexPositions[i + 8]);
-		const vec3 vi = v2 - v1;
-		const vec3 vj = v3 - v1;
-		vec3 center = (v1 + v2 + v3) / 3;
-		vec3 normal = center + vec3(normalize(cross(vi, vj)));
-		mFaceNormals.push_back(center.x);
-		mFaceNormals.push_back(center.y);
-		mFaceNormals.push_back(center.z);
-		mFaceNormals.push_back(normal.x);
-		mFaceNormals.push_back(normal.y);
-		mFaceNormals.push_back(normal.z);
-	}
-	glGenBuffers(1, &mFaceNormalBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, mFaceNormalBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mFaceNormals.size(), mFaceNormals.data(), GL_STATIC_DRAW);
 }
 
 void MeshModel::draw(GLuint program, const mat4& from3dTo2d) {
@@ -392,22 +370,19 @@ void MeshModel::transform(const mat4& m, const mat4& g, bool transformWorld) {
 	}
 }
 
+//for (int i = 0; i < mVertexPositions.size(); i += 3) {
+//	vertexPositions[i / 3] = vec3(mVertexPositions[i], mVertexPositions[i + 1], mVertexPositions[i + 2]);
+//}
+
 vector<vec3> MeshModel::calcVertexNormals(){
-	map<vec3, int> vertexIndeces;
+	map<vec3, vector<int>> vertexIndices;
 	vector<vec3> vertexPositions(mVertexPositions.size() / 3);
-	vector<vec3> vertexNormals;
+	vector<vec3> vertexNormals(mVertexPositions.size() / 3);
 	for (int i = 0; i < mVertexPositions.size(); i += 3) {
 		vertexPositions[i / 3] = vec3(mVertexPositions[i], mVertexPositions[i + 1], mVertexPositions[i + 2]);
 	}
 
-	int i = 0;
-	for each (auto vertex in vertexPositions) {
-		if (vertexIndeces.find(vertex) == vertexIndeces.end()) {
-			vertexNormals.push_back(vec3());
-			vertexIndeces[vertex] = i;
-		}
-	}
-	
+	for (int i = 0; i < vertexPositions.size(); i++) vertexIndices[vertexPositions[i]].push_back(i);
 	for (int i = 0; i < vertexPositions.size(); i += 3) {
 		const vec3 v1 = vertexPositions[i];
 		const vec3 v2 = vertexPositions[i + 1];
@@ -417,11 +392,11 @@ vector<vec3> MeshModel::calcVertexNormals(){
 		vec3 normal = vec3(normalize(cross(vi, vj)));
 		float area = length((cross(vi, vj)));
 		normal *= area;
-		vertexNormals[vertexIndeces[v1]] += normal;
-		vertexNormals[vertexIndeces[v2]] += normal;
-		vertexNormals[vertexIndeces[v3]] += normal;
+		for each (int index in vertexIndices[v1]) vertexNormals[index] += normal;
+		for each (int index in vertexIndices[v2]) vertexNormals[index] += normal;
+		for each (int index in vertexIndices[v3]) vertexNormals[index] += normal;
 	}
-	for (i = 0; i < vertexNormals.size(); i++) vertexNormals[i] = normalize(vertexNormals[i]);
+	for (int i = 0; i < vertexNormals.size(); i++) vertexNormals[i] = normalize(vertexNormals[i]);
 
 	return vertexNormals;
 }
@@ -492,7 +467,6 @@ CubeMeshModel::CubeMeshModel() {
 	vector<vec3> vertexNormals = calcVertexNormals();
 
 	initVertexNormalBuffer(vertexNormals);
-	initFaceNormalBuffer();
 }
 
 // Pyramid
@@ -532,5 +506,4 @@ PyramidMeshModel::PyramidMeshModel() {
 	vector<vec3> vertexNormals = calcVertexNormals();
 
 	initVertexNormalBuffer(vertexNormals);
-	initFaceNormalBuffer();
 }
