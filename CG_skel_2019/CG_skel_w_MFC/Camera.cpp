@@ -103,7 +103,8 @@ void Camera::perspective(const float fovy, const float aspect,
 	frustum(left, right, bottom, top, zNear, zFar);
 }
 
-void Camera::draw(GLuint program, const mat4& from3dTo2d) {
+void Camera::draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) {
+	GLuint program = rasterizer->getMiscProgram();
 	glUseProgram(program);
 	GLuint buffer;
 	glGenBuffers(1, &buffer);

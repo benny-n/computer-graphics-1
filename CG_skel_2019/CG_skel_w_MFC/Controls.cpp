@@ -430,13 +430,13 @@ void activeLightOptionsMenu(int id) {
 void pickRasterizerMenu(int id) {
 	switch (id) {
 	case FLAT: 
-		gScene->setFlatRasterizer();
+		gScene->setRasterizer(ShaderType::Flat);
 		break;
 	case GOURAUD: 
-		gScene->setGouraudRasterizer();
+		gScene->setRasterizer(ShaderType::Gouraud);
 		break;
 	case PHONG:
-		gScene->setPhongRasterizer();
+		gScene->setRasterizer(ShaderType::Phong);
 		break;
 	}
 	glutPostRedisplay();

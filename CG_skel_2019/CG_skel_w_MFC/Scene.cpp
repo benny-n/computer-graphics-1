@@ -11,13 +11,7 @@ Scene::Scene(Renderer* renderer) : mRenderer(renderer), mRenderCameras(false), m
 	mCameras.push_back(defaultCamera);
 	auto ambientLight = make_shared<AmbientLight>();
 	mLights.push_back(ambientLight);
-	mRasterizer = make_unique<FlatRasterizer>(mLights);
-	mMiscProgram = InitShader("misc_vshader.glsl", "misc_fshader.glsl");
-	mFlatProgram = InitShader("flat_vshader.glsl", "flat_fshader.glsl");
-	mGouraudProgram = InitShader("gouraud_vshader.glsl", "gouraud_fshader.glsl");
-	//mPhongProgram = InitShader("phong_vshader.glsl", "phong_fshader.glsl");
-	mActiveProgram = mFlatProgram;
-	glUseProgram(mActiveProgram);
+	mRasterizer = make_shared<Rasterizer>();
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glEnable(GL_DEPTH_TEST);
 }
@@ -32,20 +26,7 @@ const vector<Poly>& Scene::getPolygons() { return mPolygons; }
 
 const SceneElement& Scene::getControlledElement() { return mControlledElement; }
 
-void Scene::setFlatRasterizer() { 
-	mActiveProgram = mFlatProgram; 
-	glUseProgram(mActiveProgram);
-}
-
-void Scene::setGouraudRasterizer() { 
-	mActiveProgram = mGouraudProgram; 
-	glUseProgram(mActiveProgram);
-}
-
-void Scene::setPhongRasterizer() { 
-	mActiveProgram = mPhongProgram; 
-	glUseProgram(mActiveProgram);
-}
+void Scene::setRasterizer(ShaderType shaderType) { mRasterizer->setActiveProgram(shaderType); }
 
 void Scene::loadOBJModel(string fileName) {
 	auto model = make_shared<MeshModel>(fileName);
@@ -351,20 +332,21 @@ void Scene::removeActiveLight()
 }
 
 void Scene::setGlLights() {
+	GLuint program = mRasterizer->getActiveProgram();
 	for (int i = 0; i < mLights.size(); i++) {
 		std::string currentLightStr = std::string("lights[" + std::to_string(i) + "]");
 		std::string tempString = currentLightStr + ".type";
-		GLuint currentLightType = glGetUniformLocation(mActiveProgram, tempString.c_str());
+		GLuint currentLightType = glGetUniformLocation(program, tempString.c_str());
 		tempString = currentLightStr + ".position";
-		GLuint currentLightPosition = glGetUniformLocation(mActiveProgram, tempString.c_str());
+		GLuint currentLightPosition = glGetUniformLocation(program, tempString.c_str());
 		tempString = currentLightStr + ".direction";
-		GLuint currentLightDirection = glGetUniformLocation(mActiveProgram, tempString.c_str());
+		GLuint currentLightDirection = glGetUniformLocation(program, tempString.c_str());
 		tempString = currentLightStr + ".la";
-		GLuint currentLightLa = glGetUniformLocation(mActiveProgram, tempString.c_str());
+		GLuint currentLightLa = glGetUniformLocation(program, tempString.c_str());
 		tempString = currentLightStr + ".ld";
-		GLuint currentLightLd = glGetUniformLocation(mActiveProgram, tempString.c_str());
+		GLuint currentLightLd = glGetUniformLocation(program, tempString.c_str());
 		tempString = currentLightStr + ".ls";
-		GLuint currentLightLs = glGetUniformLocation(mActiveProgram, tempString.c_str());
+		GLuint currentLightLs = glGetUniformLocation(program, tempString.c_str());
 
 		glUniform1i(currentLightType, (GLint)mLights[i]->getType());
 		glUniform3fv(currentLightPosition, 1, mLights[i]->getPosition());
@@ -374,7 +356,7 @@ void Scene::setGlLights() {
 		glUniform3fv(currentLightLs, 1, mLights[i]->mLs.toVec());
 	}
 
-	GLuint numLights = glGetUniformLocation(mActiveProgram, "numLights");
+	GLuint numLights = glGetUniformLocation(program, "numLights");
 	glUniform1i(numLights, (GLsizei)mLights.size());
 
 }
@@ -382,7 +364,7 @@ void Scene::setGlLights() {
 void Scene::draw() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	setGlLights();
-	GLuint eyeLoc = glGetUniformLocation(mActiveProgram, "eye");
+	GLuint eyeLoc = glGetUniformLocation(mRasterizer->getActiveProgram(), "eye");
 	glUniform3fv(eyeLoc, 1, mCameras[mActiveCamera]->getEye());
 
 	auto activeCamera = mCameras[mActiveCamera];
@@ -390,12 +372,12 @@ void Scene::draw() {
 	mRenderer->setProjection(activeCamera->getProjection());
 
 	for each (auto model in mModels) {
-		model->draw(mActiveProgram, mMiscProgram, mRenderer->from3dTo2d());
+		model->draw(mRasterizer, mRenderer->from3dTo2d());
 	}
 
 	if (mRenderCameras) {
 		for each (auto camera in mCameras) {
-			camera->draw(mMiscProgram, mRenderer->from3dTo2d());
+			camera->draw(mRasterizer, mRenderer->from3dTo2d());
 		}
 	}
 	if (mBloom) mRenderer->bloom();

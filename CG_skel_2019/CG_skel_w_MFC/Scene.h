@@ -25,11 +25,6 @@ class Scene {
 	bool mControlWorld;
 	BlurIntensity mBlurIntensity;
 	bool mBloom;
-	GLuint mMiscProgram;
-	GLuint mFlatProgram;
-	GLuint mGouraudProgram;
-	GLuint mPhongProgram;
-	GLuint mActiveProgram;
 
 public:
 	Scene();
@@ -39,9 +34,7 @@ public:
 	const vector<LightPtr>& getLights();
 	const vector<Poly>& getPolygons();
 	const SceneElement& getControlledElement();
-	void setFlatRasterizer();
-	void setGouraudRasterizer();
-	void setPhongRasterizer();
+	void setRasterizer(ShaderType shaderType);
 	void loadOBJModel(string fileName);
 	void addCubeModel();
 	void addPyramidModel();

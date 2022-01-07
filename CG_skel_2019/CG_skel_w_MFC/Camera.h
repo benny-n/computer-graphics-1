@@ -1,5 +1,6 @@
 #pragma once
 #include "Renderer.h"
+#include "Rasterizer.h"
 
 enum class RotationAxis {
 	X, Y, Z
@@ -32,7 +33,7 @@ public:
 		const float zNear, const float zFar);
 	void perspective(const float fovy, const float aspect,
 		const float zNear, const float zFar);
-	void draw(GLuint program, const mat4& from3dTo2d);
+	void draw(RasterizerPtr rasterizer, const mat4& from3dTo2d);
 };
 
 typedef shared_ptr<Camera> CameraPtr;

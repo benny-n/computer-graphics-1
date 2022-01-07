@@ -259,7 +259,7 @@ inline static void setGlAttribute(GLuint program, const char* name, int size, in
 	glVertexAttribPointer(loc, size, GL_FLOAT, GL_FALSE, stride * sizeof(float), (void*)(offset * sizeof(float)));
 }
 
-void MeshModel::initFlatBuffer(GLuint program) {
+int MeshModel::initFlatBuffer(GLuint program) {
 	vector<GLfloat> faceNormals = calcFaceNormals();
 	vector<GLfloat> buffer;
 	for (int i = 0; i < mVertexPositions.size(); i += 3) {
@@ -311,9 +311,11 @@ void MeshModel::initFlatBuffer(GLuint program) {
 	setGlAttribute(program, "ks", 3, 22, 15);
 	setGlAttribute(program, "emission", 3, 22, 18);
 	setGlAttribute(program, "alpha", 1, 22, 21);
+
+	return buffer.size();
 }
 
-void MeshModel::initGouraudBuffer(GLuint program) {
+int MeshModel::initGouraudBuffer(GLuint program) {
 	vector<GLfloat> buffer;
 	for (int i = 0; i < mVertexPositions.size(); i += 3) {
 		// position
@@ -357,27 +359,27 @@ void MeshModel::initGouraudBuffer(GLuint program) {
 	setGlAttribute(program, "ks", 3, 19, 12);
 	setGlAttribute(program, "emission", 3, 19, 15);
 	setGlAttribute(program, "alpha", 1, 19, 18);
+
+	return buffer.size();
 }
 
-void MeshModel::initShaderBuffer(GLuint program) {
-	initFlatBuffer(program);
-	/*switch (gShaderType) {
-	case ShaderType::Flat:
-		initFlatBuffer();
-		break;
-	case ShaderType::Gouraud:
-		initGouraudBuffer();
-		break;
-	case ShaderType::Phong:
-		break;
-	default:
-		break;
-	}*/
+int MeshModel::initShaderBuffer(RasterizerPtr rasterizer) {
+	GLuint program = rasterizer->getActiveProgram();
+	switch (rasterizer->getShaderType()) {
+		case ShaderType::Flat:
+			return initFlatBuffer(program);
+		case ShaderType::Gouraud:
+			return initGouraudBuffer(program);
+		case ShaderType::Phong:
+			break;
+	}
 }
 
-void MeshModel::draw(GLuint program, GLuint miscProgram, const mat4& from3dTo2d) {
+void MeshModel::draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) {
+	GLuint program = rasterizer->getActiveProgram();
+	GLuint miscProgram = rasterizer->getMiscProgram();
 	glUseProgram(program);
-	initShaderBuffer(program);
+	int bufferSize = initShaderBuffer(rasterizer);
 	GLuint modelviewLoc = glGetUniformLocation(program, "modelview");
 	mat4 finalTransform = from3dTo2d * mWorldTransform * mModelTransform;
 	GLfloat modelView[16];
@@ -387,7 +389,7 @@ void MeshModel::draw(GLuint program, GLuint miscProgram, const mat4& from3dTo2d)
 		}
 	}
 	glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, modelView);
-	glDrawArrays(GL_TRIANGLES, 0, mVertexPositions.size());
+	glDrawArrays(GL_TRIANGLES, 0, bufferSize);
 	if (mDrawBoundryBox || mDrawVertexNormals || mDrawFaceNormals) {
 		glUseProgram(miscProgram);
 		if (mDrawBoundryBox) mBoundryBox.draw(miscProgram, modelView);
