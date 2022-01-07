@@ -5,8 +5,8 @@
 
 using namespace std;
 
-enum class LightType {
-	Ambient, Point, Parallel
+enum class LightType: GLint {
+	Ambient = 0, Point = 1, Parallel = 2
 };
 
 class Light {
@@ -26,11 +26,13 @@ public:
 	virtual void rotate(const mat4& m) {}
 	virtual LightType getType() = 0;
 	virtual string getTypeString() = 0;
+	virtual vec3 getPosition();
+	virtual vec3 getDirection();
 };
 
 class AmbientLight : public Light {
 public:
-	AmbientLight() : Light(Color{0.5,0.5,0.5}, Color{0.15,0.15,0.15}, Color{0.1,0.1,0.1}) {}
+	AmbientLight() : Light(Color{0.5,0.5,0.5}, Color{0,0,0}, Color{0,0,0}) {}
 	LightType getType() override;
 	string getTypeString() override;
 };
@@ -38,10 +40,10 @@ public:
 class PointLight : public Light {
 	vec4 mPosition;
 public:
-	PointLight(const vec3& p) : Light(Color{ 0.1,0.1,0.1 }, Color{ 0.5,0.5,0.5 }, Color{ 0.3,0.3,0.3 }), mPosition(p) {}
+	PointLight(const vec3& p) : Light(Color{ 0,0,0 }, Color{ 0.5,0.5,0.5 }, Color{ 0.3,0.3,0.3 }), mPosition(p) {}
 	LightType getType() override;
 	string getTypeString() override;
-	vec3 getPosition();
+	vec3 getPosition() override;
 	void setPosition(const vec3& p);
 	void translate(const vec3& v) override;
 };
@@ -49,10 +51,10 @@ public:
 class ParallelLight : public Light {
 	vec4 mDirection;
 public:
-	ParallelLight(const vec3& d) : Light(Color{ 0.1,0.1,0.1 }, Color{ 0.5,0.5,0.5 }, Color{ 0.3,0.3,0.3 }), mDirection(d) {}
+	ParallelLight(const vec3& d) : Light(Color{ 0,0,0 }, Color{ 0.5,0.5,0.5 }, Color{ 0.3,0.3,0.3 }), mDirection(d) {}
 	LightType getType() override;
 	string getTypeString() override;
-	vec3 getDirection();
+	vec3 getDirection() override;
 	void setDirection(const vec3& d);
 	void rotate(const mat4& m) override;
 };

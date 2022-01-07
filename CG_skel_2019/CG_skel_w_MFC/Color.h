@@ -10,6 +10,8 @@ struct Color {
 	Color() : r(1), g(1), b(1) {}
 	Color(float r, float g, float b) : r(r), g(g), b(b) {}
 
+	vec3 toVec() { return vec3(r, g, b); }
+
 	Color operator + (const Color& c) const {
 		return Color{ r + c.r, g + c.g, b + c.b };
 	}

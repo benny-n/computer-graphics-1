@@ -27,6 +27,10 @@ void Light::modifyIntensities(const vec3& v) {
 	mLs.b *= v[2];
 }
 
+vec3 Light::getPosition() { return vec3(); }
+
+vec3 Light::getDirection() { return vec3(); }
+
 LightType AmbientLight::getType() { return LightType::Ambient; }
 
 string AmbientLight::getTypeString(){ return "ambient"; }
@@ -36,10 +40,7 @@ LightType PointLight::getType() { return LightType::Point; }
 
 string PointLight::getTypeString() { return "point"; }
 
-vec3 PointLight::getPosition()
-{
-	return vec3FromVec4(mPosition);
-}
+vec3 PointLight::getPosition() { return vec3FromVec4(mPosition); }
 
 
 void PointLight::setPosition(const vec3& p) { mPosition = p; }
@@ -54,10 +55,7 @@ LightType ParallelLight::getType() { return LightType::Parallel; }
 
 string ParallelLight::getTypeString() { return "parallel"; }
 
-vec3 ParallelLight::getDirection()
-{
-	return vec3FromVec4(mDirection);
-}
+vec3 ParallelLight::getDirection() { return vec3FromVec4(mDirection); }
 
 
 void ParallelLight::setDirection(const vec3& d) { mDirection = d; }

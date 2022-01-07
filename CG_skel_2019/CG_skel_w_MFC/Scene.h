@@ -25,7 +25,6 @@ class Scene {
 	bool mControlWorld;
 	BlurIntensity mBlurIntensity;
 	bool mBloom;
-	GLuint mProgram;
 
 public:
 	Scene();
@@ -67,6 +66,7 @@ public:
 	void removeActiveModel();
 	void removeActiveCamera();
 	void removeActiveLight();
+	void setGlLights();
 	void draw();
 	void drawDemo();
 
