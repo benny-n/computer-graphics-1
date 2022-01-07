@@ -15,11 +15,6 @@
 // The one and only application object
 Scene *gScene;
 Renderer *gRenderer;
-GLuint gMiscProgram;
-GLuint gFlatProgram;
-GLuint gGouraudProgram;
-GLuint gPhongProgram;
-GLuint gActiveProgram;
 
 int my_main( int argc, char **argv )
 {

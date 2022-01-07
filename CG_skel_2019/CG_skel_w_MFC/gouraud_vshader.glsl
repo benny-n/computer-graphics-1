@@ -17,21 +17,20 @@ uniform int numLights;
 uniform Light lights[MAX_LIGHTS];
 uniform mat4 modelview;
 uniform vec3 eye;
-in vec4 vPosition;
-in vec3 faceCenter;
-in vec3 faceNormal;
+in vec3 vPosition;
+in vec3 vNormal;
 in vec3 ka;
 in vec3 kd;
 in vec3 ks;
 in vec3 emission;
 in float alpha;
 
-out vec4 out_color;
+varying vec4 out_color;
 
 vec3 calcColor() {
 	vec3 color = vec3(0, 0, 0);
-	vec3 v = normalize(eye - faceCenter);
-	vec3 n = faceNormal - faceCenter;
+	vec3 v = normalize(eye - vPosition);
+	vec3 n = vNormal;
 	vec3 l, r;
 
 	for (int i = 0; i < numLights; i++) {
@@ -40,7 +39,7 @@ vec3 calcColor() {
 				l = v;
 				break;
 			case POINT: 
-				l = normalize(lights[i].position - faceCenter);
+				l = normalize(lights[i].position - vPosition);
 				break;
 			case PARALLEL: 
 				l = normalize(-lights[i].direction);
@@ -60,6 +59,6 @@ vec3 calcColor() {
 
 void main()
 {
-    gl_Position = modelview * vPosition;
+    gl_Position = modelview * vec4(vPosition,1);
     out_color = vec4(calcColor(),1);
 }

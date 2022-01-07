@@ -136,5 +136,17 @@
     <None Include="misc_vshader.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="gouraud_fshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="gouraud_vshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="phong_fshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="phong_vshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

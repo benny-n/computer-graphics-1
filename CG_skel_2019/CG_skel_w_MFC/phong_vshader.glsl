@@ -17,7 +17,7 @@ uniform int numLights;
 uniform Light lights[MAX_LIGHTS];
 uniform mat4 modelview;
 uniform vec3 eye;
-in vec4 vPosition;
+in vec3 vPosition;
 in vec3 faceCenter;
 in vec3 faceNormal;
 in vec3 ka;
@@ -60,6 +60,6 @@ vec3 calcColor() {
 
 void main()
 {
-    gl_Position = modelview * vPosition;
+    gl_Position = modelview * vec4(vPosition,1);
     out_color = vec4(calcColor(),1);
 }

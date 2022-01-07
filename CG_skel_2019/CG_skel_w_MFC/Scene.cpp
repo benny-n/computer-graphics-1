@@ -1,11 +1,6 @@
 #include "stdafx.h"
 #include "Scene.h"
 using namespace std;
-extern GLuint gMiscProgram;
-extern GLuint gFlatProgram;
-extern GLuint gGouraudProgram;
-extern GLuint gPhongProgram;
-extern GLuint gActiveProgram;
 
 // Scene
 Scene::Scene() : Scene(&Renderer()){}
@@ -17,9 +12,12 @@ Scene::Scene(Renderer* renderer) : mRenderer(renderer), mRenderCameras(false), m
 	auto ambientLight = make_shared<AmbientLight>();
 	mLights.push_back(ambientLight);
 	mRasterizer = make_unique<FlatRasterizer>(mLights);
-	gMiscProgram = InitShader("misc_vshader.glsl", "misc_fshader.glsl");
-	gFlatProgram = InitShader("flat_vshader.glsl", "flat_fshader.glsl");
-	gActiveProgram = gFlatProgram;
+	mMiscProgram = InitShader("misc_vshader.glsl", "misc_fshader.glsl");
+	mFlatProgram = InitShader("flat_vshader.glsl", "flat_fshader.glsl");
+	mGouraudProgram = InitShader("gouraud_vshader.glsl", "gouraud_fshader.glsl");
+	//mPhongProgram = InitShader("phong_vshader.glsl", "phong_fshader.glsl");
+	mActiveProgram = mFlatProgram;
+	glUseProgram(mActiveProgram);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glEnable(GL_DEPTH_TEST);
 }
@@ -34,11 +32,20 @@ const vector<Poly>& Scene::getPolygons() { return mPolygons; }
 
 const SceneElement& Scene::getControlledElement() { return mControlledElement; }
 
-void Scene::setFlatRasterizer() { mRasterizer = make_unique<FlatRasterizer>(mLights); }
+void Scene::setFlatRasterizer() { 
+	mActiveProgram = mFlatProgram; 
+	glUseProgram(mActiveProgram);
+}
 
-void Scene::setGouraudRasterizer() { mRasterizer = make_unique<GouraudRasterizer>(mLights); }
+void Scene::setGouraudRasterizer() { 
+	mActiveProgram = mGouraudProgram; 
+	glUseProgram(mActiveProgram);
+}
 
-void Scene::setPhongRasterizer() { mRasterizer = make_unique<PhongRasterizer>(mLights); }
+void Scene::setPhongRasterizer() { 
+	mActiveProgram = mPhongProgram; 
+	glUseProgram(mActiveProgram);
+}
 
 void Scene::loadOBJModel(string fileName) {
 	auto model = make_shared<MeshModel>(fileName);
@@ -347,17 +354,17 @@ void Scene::setGlLights() {
 	for (int i = 0; i < mLights.size(); i++) {
 		std::string currentLightStr = std::string("lights[" + std::to_string(i) + "]");
 		std::string tempString = currentLightStr + ".type";
-		GLuint currentLightType = glGetUniformLocation(gActiveProgram, tempString.c_str());
+		GLuint currentLightType = glGetUniformLocation(mActiveProgram, tempString.c_str());
 		tempString = currentLightStr + ".position";
-		GLuint currentLightPosition = glGetUniformLocation(gActiveProgram, tempString.c_str());
+		GLuint currentLightPosition = glGetUniformLocation(mActiveProgram, tempString.c_str());
 		tempString = currentLightStr + ".direction";
-		GLuint currentLightDirection = glGetUniformLocation(gActiveProgram, tempString.c_str());
+		GLuint currentLightDirection = glGetUniformLocation(mActiveProgram, tempString.c_str());
 		tempString = currentLightStr + ".la";
-		GLuint currentLightLa = glGetUniformLocation(gActiveProgram, tempString.c_str());
+		GLuint currentLightLa = glGetUniformLocation(mActiveProgram, tempString.c_str());
 		tempString = currentLightStr + ".ld";
-		GLuint currentLightLd = glGetUniformLocation(gActiveProgram, tempString.c_str());
+		GLuint currentLightLd = glGetUniformLocation(mActiveProgram, tempString.c_str());
 		tempString = currentLightStr + ".ls";
-		GLuint currentLightLs = glGetUniformLocation(gActiveProgram, tempString.c_str());
+		GLuint currentLightLs = glGetUniformLocation(mActiveProgram, tempString.c_str());
 
 		glUniform1i(currentLightType, (GLint)mLights[i]->getType());
 		glUniform3fv(currentLightPosition, 1, mLights[i]->getPosition());
@@ -367,7 +374,7 @@ void Scene::setGlLights() {
 		glUniform3fv(currentLightLs, 1, mLights[i]->mLs.toVec());
 	}
 
-	GLuint numLights = glGetUniformLocation(gActiveProgram, "numLights");
+	GLuint numLights = glGetUniformLocation(mActiveProgram, "numLights");
 	glUniform1i(numLights, (GLsizei)mLights.size());
 
 }
@@ -375,20 +382,20 @@ void Scene::setGlLights() {
 void Scene::draw() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	setGlLights();
-	GLuint eyeLoc = glGetUniformLocation(gActiveProgram, "eye");
-	glUniform3fv(eyeLoc, 3, mCameras[mActiveCamera]->getEye());
+	GLuint eyeLoc = glGetUniformLocation(mActiveProgram, "eye");
+	glUniform3fv(eyeLoc, 1, mCameras[mActiveCamera]->getEye());
 
 	auto activeCamera = mCameras[mActiveCamera];
 	mRenderer->setCameraTransform(activeCamera->getTransform());
 	mRenderer->setProjection(activeCamera->getProjection());
 
 	for each (auto model in mModels) {
-		model->draw(mRenderer->from3dTo2d());
+		model->draw(mActiveProgram, mMiscProgram, mRenderer->from3dTo2d());
 	}
 
 	if (mRenderCameras) {
 		for each (auto camera in mCameras) {
-			camera->draw(mRenderer->from3dTo2d());
+			camera->draw(mMiscProgram, mRenderer->from3dTo2d());
 		}
 	}
 	if (mBloom) mRenderer->bloom();

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Camera.h"
 
-extern GLuint gMiscProgram;
 
 // Camera
 Camera::Camera() {
@@ -104,8 +103,8 @@ void Camera::perspective(const float fovy, const float aspect,
 	frustum(left, right, bottom, top, zNear, zFar);
 }
 
-void Camera::draw(const mat4& from3dTo2d) {
-	glUseProgram(gMiscProgram);
+void Camera::draw(GLuint program, const mat4& from3dTo2d) {
+	glUseProgram(program);
 	GLuint buffer;
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
@@ -115,10 +114,10 @@ void Camera::draw(const mat4& from3dTo2d) {
 						  mEye.x, mEye.y - 1, mEye.z
 	};
 	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
-	GLuint loc = glGetAttribLocation(gMiscProgram, "vPosition");
+	GLuint loc = glGetAttribLocation(program, "vPosition");
 	glEnableVertexAttribArray(loc);
 	glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	GLuint modelviewLoc = glGetUniformLocation(gMiscProgram, "modelview");
+	GLuint modelviewLoc = glGetUniformLocation(program, "modelview");
 	glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, from3dTo2d);
 	glDrawArrays(GL_LINES, 0, 4);	
 }

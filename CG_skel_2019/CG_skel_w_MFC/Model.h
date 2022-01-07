@@ -21,7 +21,7 @@ protected:
 		void initVertexPositions();
 		void transform(const mat4& m);
 		vec4 center();
-		void draw(GLfloat transformation[]);
+		void draw(GLuint miscProgram, GLfloat transformation[]);
 	};
 	string mName;
 	vector<GLfloat> mVertexPositions;
@@ -42,7 +42,7 @@ public:
 	virtual void setMaterialProperties(const Color& color) = 0;
 	virtual void setMaterialProperties(const Material& material) = 0;
 	virtual void transform(const mat4& m , const mat4& g, bool transformWorld) = 0;
-	virtual void draw(const mat4& from3dTo2d) = 0;
+	virtual void draw(GLuint program, GLuint miscProgram, const mat4& from3dTo2d) = 0;
 	virtual const vector<Material>& getMaterials() = 0;
 	virtual const mat4& getModelTransform() = 0;
 	virtual const mat4& getWorldTransform() = 0;
@@ -63,11 +63,12 @@ public:
 	~MeshModel(void);
 	virtual void loadFile(string fileName);
 	void initVertexNormalBuffer(vector<vec3>& vertexNormals);
-	void initFlatBuffer();
-	void setFlatAttribs();
-	void draw(const mat4& from3dTo2d) override;
-	void drawVertexNormals(const mat4& finalTransform);
-	void drawFaceNormals(const mat4& from3dTo2d);
+	void initFlatBuffer(GLuint program);
+	void initGouraudBuffer(GLuint program);
+	void initShaderBuffer(GLuint program);
+	void draw(GLuint program, GLuint miscProgram, const mat4& from3dTo2d) override;
+	void drawVertexNormals(GLuint miscProgram, const mat4& finalTransform);
+	void drawFaceNormals(GLuint miscProgram, const mat4& from3dTo2d);
 	void setMaterialProperties() override;
 	void setMaterialProperties(const Color& color) override;
 	void setMaterialProperties(const Material& material) override;

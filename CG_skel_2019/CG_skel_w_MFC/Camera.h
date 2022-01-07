@@ -32,7 +32,7 @@ public:
 		const float zNear, const float zFar);
 	void perspective(const float fovy, const float aspect,
 		const float zNear, const float zFar);
-	void draw(const mat4& from3dTo2d);
+	void draw(GLuint program, const mat4& from3dTo2d);
 };
 
 typedef shared_ptr<Camera> CameraPtr;
