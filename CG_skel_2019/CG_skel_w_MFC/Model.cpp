@@ -535,14 +535,6 @@ vector<GLfloat> MeshModel::calcFaceNormals()
 	return faceNormals;
 }
 
-const vector<Material>& MeshModel::getMaterials() { return mVertexMaterials; }
-
-const mat4& MeshModel::getModelTransform() { return mModelTransform; }
-
-const mat4& MeshModel::getWorldTransform() { return mWorldTransform; }
-
-const mat4& MeshModel::getNormalTransform() { return mNormalTransform; }
-
 // Prim
 PrimMeshModel::~PrimMeshModel(){}
 

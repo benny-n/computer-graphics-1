@@ -60,8 +60,8 @@ vec3 calcColor(vec3 position, vec3 normal) {
 
 void main()
 {
-	vec3 modifyedPosition = (modelview * vec4(vPosition,1)).xyz;
-	vec3 modifyedNormal = (normalview * vec4(vNormal,1)).xyz;
-    gl_Position = vec4(modifyedPosition,1);
-    out_color = vec4(calcColor(modifyedPosition, modifyedNormal),1);
+	vec3 modifiedPosition = (modelview * vec4(vPosition,1)).xyz;
+	vec3 modifiedNormal = (normalview * vec4(vNormal,1)).xyz;
+    gl_Position = vec4(modifiedPosition,1);
+    out_color = vec4(calcColor(modifiedPosition, modifiedNormal),1);
 }

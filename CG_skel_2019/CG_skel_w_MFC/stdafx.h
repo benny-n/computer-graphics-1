@@ -32,7 +32,6 @@
 #include "vec.h"
 #include "mat.h"
 #include "Scene.h"
-#include "Renderer.h"
 #include "InitShader.h"
 #include "InputDialog.h"
 #include "Controls.h"

@@ -27,8 +27,8 @@ protected:
 	string mName;
 	vector<GLfloat> mVertexPositions;
 	vector<GLfloat> mVertexNormals;
-	GLuint mVertexNormalBuffer;
 	vector<GLfloat> mFaceNormals;
+	GLuint mVertexNormalBuffer;
 	GLuint mFaceNormalBuffer;
 
 public:
@@ -44,10 +44,6 @@ public:
 	virtual void setMaterialProperties(const Material& material) = 0;
 	virtual void transform(const mat4& m , const mat4& g, bool transformWorld) = 0;
 	virtual void draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) = 0;
-	virtual const vector<Material>& getMaterials() = 0;
-	virtual const mat4& getModelTransform() = 0;
-	virtual const mat4& getWorldTransform() = 0;
-	virtual const mat4& getNormalTransform() = 0;
 };
 
 
@@ -76,10 +72,6 @@ public:
 	void transform(const mat4& m, const mat4& g, bool transformWorld) override;
 	vector<vec3> calcVertexNormals();
 	vector<GLfloat> calcFaceNormals();
-	const vector<Material>& getMaterials();
-	const mat4& getModelTransform();
-	const mat4& getWorldTransform();
-	const mat4& getNormalTransform();
 };
 
 class PrimMeshModel : public MeshModel {

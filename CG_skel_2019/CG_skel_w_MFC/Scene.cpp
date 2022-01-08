@@ -3,10 +3,11 @@
 using namespace std;
 
 // Scene
-Scene::Scene() : Scene(&Renderer()){}
 
-Scene::Scene(Renderer* renderer) : mRenderer(renderer), mRenderCameras(false), mControlledElement(SceneElement::Camera), mControlWorld(false), 
-									mBlurIntensity(BlurIntensity::None), mBloom(false), mActiveModel(0), mActiveLight(0), mActiveCamera(0) {
+Scene::Scene() : mRenderCameras(false), mControlledElement(SceneElement::Camera), mControlWorld(false),
+				 mActiveModel(0), mActiveLight(0), mActiveCamera(0) {
+	initOpenGLRendering();
+	createBuffers(512, 512);
 	auto defaultCamera = make_shared<Camera>();
 	mCameras.push_back(defaultCamera);
 	auto ambientLight = make_shared<AmbientLight>();
@@ -21,8 +22,6 @@ const vector<ModelPtr>& Scene::getModels() { return mModels; }
 const vector<CameraPtr>& Scene::getCameras() { return mCameras; }
 
 const vector<LightPtr>& Scene::getLights() { return mLights; }
-
-const vector<Poly>& Scene::getPolygons() { return mPolygons; }
 
 const SceneElement& Scene::getControlledElement() { return mControlledElement; }
 
@@ -81,6 +80,62 @@ void Scene::toggleControlWorld() {
 	printControlMsg();
 }
 
+void Scene::initOpenGLRendering()
+{
+	int a = glGetError();
+	a = glGetError();
+	glGenTextures(1, &mScreenTex);
+	a = glGetError();
+	glGenVertexArrays(1, &mScreenVtc);
+	GLuint buffer;
+	glBindVertexArray(mScreenVtc);
+	glGenBuffers(1, &buffer);
+	const GLfloat vtc[] = {
+		-1, -1,
+		1, -1,
+		-1, 1,
+		-1, 1,
+		1, -1,
+		1, 1
+	};
+	const GLfloat tex[] = {
+		0,0,
+		1,0,
+		0,1,
+		0,1,
+		1,0,
+		1,1 };
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vtc) + sizeof(tex), NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vtc), vtc);
+	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vtc), sizeof(tex), tex);
+
+	GLuint program = InitShader("vshader.glsl", "fshader.glsl");
+	glUseProgram(program);
+	GLint  vPosition = glGetAttribLocation(program, "vPosition");
+
+	glEnableVertexAttribArray(vPosition);
+	glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0,
+		0);
+
+	GLint  vTexCoord = glGetAttribLocation(program, "vTexCoord");
+	glEnableVertexAttribArray(vTexCoord);
+	glVertexAttribPointer(vTexCoord, 2, GL_FLOAT, GL_FALSE, 0,
+		(GLvoid*)sizeof(vtc));
+	glProgramUniform1i(program, glGetUniformLocation(program, "texture"), 0);
+	a = glGetError();
+}
+
+void Scene::createBuffers(int width, int height) {
+	mWidth = width;
+	mHeight = height;
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, mScreenTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, mWidth, mHeight, 0, GL_RGB, GL_FLOAT, NULL);
+	glViewport(0, 0, mWidth, mHeight);
+	glutReshapeWindow(width, height);
+}
+
 void Scene::toggleRenderCameras(){
 	mRenderCameras = !mRenderCameras;
 }
@@ -95,14 +150,6 @@ void Scene::togglePlotVertexNormals(){
 
 void Scene::togglePlotFaceNormals(){
 	mModels[mActiveModel]->mDrawFaceNormals = !mModels[mActiveModel]->mDrawFaceNormals;
-}
-
-void Scene::setBlur(const BlurIntensity& intensity){
-	mBlurIntensity = intensity;
-}
-
-void Scene::toggleBloom(){
-	mBloom = !mBloom;
 }
 
 void Scene::changeActiveModelMaterial() {
@@ -237,6 +284,7 @@ void Scene::modifyActiveCamera(const vec4& v, bool isEye) {
 	}
 }
 
+
 void Scene::modifyActiveLight(const vec3& v, bool isPosition) {
 	if (isPosition) {
 		if (mLights[mActiveLight]->getType() != LightType::Point) return; // should never happen
@@ -248,6 +296,14 @@ void Scene::modifyActiveLight(const vec3& v, bool isPosition) {
 		shared_ptr<ParallelLight> parallelLight = dynamic_pointer_cast<ParallelLight>(mLights[mActiveLight]);
 		parallelLight->setDirection(v);
 	}
+}
+
+
+void Scene::reshape(int width, int height) {
+	createBuffers(width, height);
+	if (mWidth > mHeight) mAspectRatioTransform = scale(1, mWidth / (float)mHeight, 1);
+	else  mAspectRatioTransform = scale(mHeight / (float)mWidth, 1, 1);
+
 }
 
 void Scene::iterateControlledElement()
@@ -368,21 +424,20 @@ void Scene::draw() {
 	glUniform3fv(eyeLoc, 1, mCameras[mActiveCamera]->getEye());
 
 	auto activeCamera = mCameras[mActiveCamera];
-	mRenderer->setCameraTransform(activeCamera->getTransform());
-	mRenderer->setProjection(activeCamera->getProjection());
+	const mat4 projection = activeCamera->getProjection();
+	const mat4 cameraTransform = activeCamera->getTransform();
+	const mat4 from3dTo2d = projection * cameraTransform * mAspectRatioTransform;
 
 	for each (auto model in mModels) {
-		model->draw(mRasterizer, mRenderer->from3dTo2d());
+		model->draw(mRasterizer, from3dTo2d);
 	}
 
 	if (mRenderCameras) {
 		for each (auto camera in mCameras) {
-			camera->draw(mRasterizer, mRenderer->from3dTo2d());
+			camera->draw(mRasterizer, from3dTo2d);
 		}
 	}
-	if (mBloom) mRenderer->bloom();
-	for (int i = 0; i < (int)mBlurIntensity; i++) 
-		mRenderer->blur();
+
 	glFlush();
 	glutSwapBuffers();
 }

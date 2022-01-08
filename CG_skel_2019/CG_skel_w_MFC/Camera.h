@@ -1,5 +1,4 @@
 #pragma once
-#include "Renderer.h"
 #include "Rasterizer.h"
 
 enum class RotationAxis {

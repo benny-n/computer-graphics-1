@@ -6,7 +6,6 @@
 #include "Camera.h"
 #include "Light.h"
 #include "Rasterizer.h"
-#include "Renderer.h"
 using namespace std;
 
 enum class SceneElement {
@@ -17,25 +16,25 @@ class Scene {
 	vector<ModelPtr> mModels;
 	vector<LightPtr> mLights;
 	vector<CameraPtr> mCameras;
-	vector<Poly> mPolygons;
 	RasterizerPtr mRasterizer;
-	Renderer* mRenderer;
 	SceneElement mControlledElement;
+	mat4 mAspectRatioTransform;
+	GLuint mScreenTex;
+	GLuint mScreenVtc;
 	bool mRenderCameras;
 	bool mControlWorld;
-	BlurIntensity mBlurIntensity;
-	bool mBloom;
 
 public:
+	int mWidth, mHeight;
 	Scene();
-	Scene(Renderer *renderer);
 	const vector<ModelPtr>& getModels();
 	const vector<CameraPtr>& getCameras();
 	const vector<LightPtr>& getLights();
-	const vector<Poly>& getPolygons();
 	const SceneElement& getControlledElement();
 	void setRasterizer(ShaderType shaderType);
 	void loadOBJModel(string fileName);
+	void initOpenGLRendering();
+	void createBuffers(int width, int height);
 	void addCubeModel();
 	void addPyramidModel();
 	void addCamera();
@@ -46,8 +45,6 @@ public:
 	void togglePlotBoundryBox();
 	void togglePlotVertexNormals();
 	void togglePlotFaceNormals();
-	void setBlur(const BlurIntensity& intensity);
-	void toggleBloom();
 	void changeActiveModelMaterial();
 	void changeActiveModelMaterial(const Color& color);
 	void changeActiveModelMaterial(const Material& material);
@@ -58,6 +55,7 @@ public:
 	void transformActive(const vec3& v); // for translating
 	void modifyActiveCamera(const vec4& v, bool isEye);
 	void modifyActiveLight(const vec3& v, bool isPosition);
+	void reshape(int width, int height);
 	void iterateControlledElement();
 	void iterateActive();
 	void printControlMsg();

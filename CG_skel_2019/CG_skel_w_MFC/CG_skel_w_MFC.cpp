@@ -14,7 +14,6 @@
 
 // The one and only application object
 Scene *gScene;
-Renderer *gRenderer;
 
 int my_main( int argc, char **argv )
 {
@@ -37,9 +36,7 @@ int my_main( int argc, char **argv )
 	}
 	cout << "Using GLEW " << glewGetString(GLEW_VERSION) << endl;
 	
-	
-	gRenderer = new Renderer(512,512);
-	gScene = new Scene(gRenderer);
+	gScene = new Scene();
 	//----------------------------------------------------------------------------
 	// Initialize Callbacks
 
@@ -54,7 +51,6 @@ int my_main( int argc, char **argv )
 
 	glutMainLoop();
 	delete gScene;
-	delete gRenderer;
 	return 0;
 }
 

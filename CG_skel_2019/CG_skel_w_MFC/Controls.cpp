@@ -8,7 +8,6 @@ int gLastX, gLastY;
 bool gLbDown, gRbDown, gMbDown;
 float gSensetivity = 1;
 extern Scene* gScene;
-extern Renderer* gRenderer;
 
 
 float getFloatFromUser(const string& directive, bool wantFraction)
@@ -38,7 +37,7 @@ void display(void) { gScene->draw(); }
 void reshape(int width, int height)
 {
 	//cout << width << " " << height << endl;
-	gRenderer->reshape(width, height);
+	gScene->reshape(width, height);
 	gScene->draw();
 }
 
@@ -442,28 +441,10 @@ void pickRasterizerMenu(int id) {
 	glutPostRedisplay();
 }
 
-void blurIntensityMenu(int id) {
-	switch (id) {
-	case NONE:
-		gScene->setBlur(BlurIntensity::None);
-		break;
-	case WEAK:
-		gScene->setBlur(BlurIntensity::Weak);
-		break;
-	case MEDIUM:
-		gScene->setBlur(BlurIntensity::Medium);
-		break;
-	case STRONG:
-		gScene->setBlur(BlurIntensity::Strong);
-		break;
-	}
-	glutPostRedisplay();
-}
 
 void specialEffectsMenu(int id) {
 	switch (id) {
-	case BLOOM:
-		gScene->toggleBloom();
+	default:
 		break;
 	}
 	glutPostRedisplay();
@@ -606,17 +587,8 @@ void initMenu()
 	glutAddMenuEntry("Gouraud", GOURAUD);
 	glutAddMenuEntry("Phong", PHONG);
 
-	//create blur intensity menu
-	int menuBlurIntensity = glutCreateMenu(blurIntensityMenu);
-	glutAddMenuEntry("None", NONE);
-	glutAddMenuEntry("Weak", WEAK);
-	glutAddMenuEntry("Medium", MEDIUM);
-	glutAddMenuEntry("Strong", STRONG);
-
 	//create special effects menu
 	int menuSpecialEffects = glutCreateMenu(specialEffectsMenu);
-	glutAddSubMenu("Blur", menuBlurIntensity);
-	glutAddMenuEntry("Bloom", BLOOM);
 
 	//finally, create the main menu and start adding submenus to it
 	glutCreateMenu(mainMenu);
