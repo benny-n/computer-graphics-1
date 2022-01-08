@@ -65,7 +65,7 @@ public:
 	virtual void loadFile(string fileName);
 	void initVertexNormalBuffer(vector<vec3>& vertexNormals);
 	int initFlatBuffer(GLuint program);
-	int initGouraudBuffer(GLuint program);
+	int initSmoothBuffer(GLuint program);
 	int initShaderBuffer(RasterizerPtr rasterizer);
 	void draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) override;
 	void drawVertexNormals(GLuint miscProgram, const mat4& finalTransform);

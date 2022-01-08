@@ -315,7 +315,7 @@ int MeshModel::initFlatBuffer(GLuint program) {
 	return buffer.size();
 }
 
-int MeshModel::initGouraudBuffer(GLuint program) {
+int MeshModel::initSmoothBuffer(GLuint program) {
 	vector<GLfloat> buffer;
 	for (int i = 0; i < mVertexPositions.size(); i += 3) {
 		// position
@@ -360,6 +360,16 @@ int MeshModel::initGouraudBuffer(GLuint program) {
 	setGlAttribute(program, "emission", 3, 19, 15);
 	setGlAttribute(program, "alpha", 1, 19, 18);
 
+	GLuint normalviewLoc = glGetUniformLocation(program, "normalview");
+	mat4 normalTransform = mWorldTransform * mNormalTransform;
+	GLfloat normalView[16];
+	for (size_t i = 0; i < 4; i++) {
+		for (size_t j = 0; j < 4; j++) {
+			normalView[i * 4 + j] = normalTransform[i][j];
+		}
+	}
+	glUniformMatrix4fv(normalviewLoc, 1, GL_TRUE, normalView);
+
 	return buffer.size();
 }
 
@@ -369,8 +379,9 @@ int MeshModel::initShaderBuffer(RasterizerPtr rasterizer) {
 		case ShaderType::Flat:
 			return initFlatBuffer(program);
 		case ShaderType::Gouraud:
-			return initGouraudBuffer(program);
+			return initSmoothBuffer(program);
 		case ShaderType::Phong:
+			return initSmoothBuffer(program);
 			break;
 	}
 }

@@ -16,6 +16,7 @@ struct Light {
 uniform int numLights;
 uniform Light lights[MAX_LIGHTS];
 uniform mat4 modelview;
+uniform mat4 normalview;
 uniform vec3 eye;
 in vec3 vPosition;
 in vec3 vNormal;
@@ -27,10 +28,10 @@ in float alpha;
 
 varying vec4 out_color;
 
-vec3 calcColor() {
+vec3 calcColor(vec3 position, vec3 normal) {
 	vec3 color = vec3(0, 0, 0);
-	vec3 v = normalize(eye - vPosition);
-	vec3 n = vNormal;
+	vec3 v = normalize(eye - position);
+	vec3 n = normal;
 	vec3 l, r;
 
 	for (int i = 0; i < numLights; i++) {
@@ -39,7 +40,7 @@ vec3 calcColor() {
 				l = v;
 				break;
 			case POINT: 
-				l = normalize(lights[i].position - vPosition);
+				l = normalize(lights[i].position - position);
 				break;
 			case PARALLEL: 
 				l = normalize(-lights[i].direction);
@@ -59,6 +60,8 @@ vec3 calcColor() {
 
 void main()
 {
-    gl_Position = modelview * vec4(vPosition,1);
-    out_color = vec4(calcColor(),1);
+	vec3 modifyedPosition = (modelview * vec4(vPosition,1)).xyz;
+	vec3 modifyedNormal = (normalview * vec4(vNormal,1)).xyz;
+    gl_Position = vec4(modifyedPosition,1);
+    out_color = vec4(calcColor(modifyedPosition, modifyedNormal),1);
 }
