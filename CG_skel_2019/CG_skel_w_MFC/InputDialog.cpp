@@ -405,7 +405,7 @@ void CBoxDialog::OnPaint() {
 //    Class CFovyDialog
 // -------------------------
 
-CFovyDialog::CFovyDialog(CString title) : CInputDialog(title), mFovy(90), mAspectRatio(1), mZNear(5), mZFar(15) {}
+CFovyDialog::CFovyDialog(CString title) : CInputDialog(title), mFovy(45), mAspectRatio(1), mZNear(5), mZFar(15) {}
 
 CFovyDialog::~CFovyDialog() {}
 

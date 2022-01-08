@@ -330,6 +330,7 @@ void Scene::iterateActive() {
 		break;
 	case SceneElement::Light:
 		mActiveLight = (mActiveLight + 1) % mLights.size();
+		initMenu();
 		break;
 	case SceneElement::Model:
 		if (!mModels.empty()) mActiveModel = (mActiveModel + 1) % mModels.size();

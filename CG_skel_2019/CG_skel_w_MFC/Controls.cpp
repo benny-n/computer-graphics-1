@@ -210,6 +210,7 @@ void addPrimMenu(int id) {
 
 void selectModelMenu(int id) {
 	gScene->mActiveModel = id;
+	gScene->printControlMsg();
 }
 
 void changeMaterialMenu(int id) {
@@ -288,6 +289,7 @@ void activeModelOptionsMenu(int id) {
 void selectCameraMenu(int id) {
 	gScene->mActiveCamera = id;
 	gScene->printControlMsg();
+	glutPostRedisplay();
 }
 
 void activeCameraOptionsMenu(int id) {
@@ -369,6 +371,7 @@ void addLightMenu(int id) {
 void selectLightMenu(int id) {
 	gScene->mActiveLight = id;
 	gScene->printControlMsg();
+	initMenu();
 }
 
 void changeLightColorMenu(int id) {
