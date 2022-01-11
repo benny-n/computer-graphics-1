@@ -94,9 +94,9 @@ void Model::BoundryBox::draw(GLuint miscProgram, GLfloat transformation[]) {
 }
 
 // Model
-const string& Model::getName() {
-	return mName;
-}
+const string& Model::getName() { return mName; }
+
+const int Model::getNumVertices() { return mVertexPositions.size() / 3; }
 
 // Not ours
 struct FaceIdcs
@@ -386,6 +386,11 @@ int MeshModel::initShaderBuffer(RasterizerPtr rasterizer) {
 	}
 }
 
+const Material& MeshModel::getMaterial()
+{
+	return mVertexMaterials[0];
+}
+
 void MeshModel::draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) {
 	GLuint program = rasterizer->getActiveProgram();
 	GLuint miscProgram = rasterizer->getMiscProgram();
@@ -451,12 +456,20 @@ void MeshModel::setMaterialProperties() {
 	}
 }
 
+void MeshModel::setMaterialProperties(int index, int stepSize) {
+	for (int i = index * stepSize; i < index * stepSize + stepSize && i < mVertexMaterials.size(); i++) {
+		mVertexMaterials[i].ka = Color(1,0.84,0);
+		mVertexMaterials[i].kd = Color(1, 0.84, 0);
+		mVertexMaterials[i].ks = Color(1, 0.84, 0);
+		mVertexMaterials[i].alpha = 60;
+	}
+}
+
 void MeshModel::setMaterialProperties(const Color& color) {
 	for (int i = 0; i < mVertexMaterials.size(); i++) {
 		mVertexMaterials[i].ka = color;
 		mVertexMaterials[i].kd = color;
 		mVertexMaterials[i].ks = color;
-		mVertexMaterials[i].emission = color;
 	}
 }
 

@@ -31,6 +31,8 @@ public:
 	const vector<CameraPtr>& getCameras();
 	const vector<LightPtr>& getLights();
 	const SceneElement& getControlledElement();
+	const Material& getActiveModelMaterial();
+	const int getActiveModelNumVertices();
 	void setRasterizer(ShaderType shaderType);
 	void loadOBJModel(string fileName);
 	void initOpenGLRendering();
@@ -46,6 +48,7 @@ public:
 	void togglePlotVertexNormals();
 	void togglePlotFaceNormals();
 	void changeActiveModelMaterial();
+	void changeActiveModelMaterial(int index, int stepSize);
 	void changeActiveModelMaterial(const Color& color);
 	void changeActiveModelMaterial(const Material& material);
 	void changeActiveLightColor(const Color& color);

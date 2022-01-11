@@ -468,7 +468,7 @@ void CFovyDialog::OnPaint() {
 // -------------------------
 
 CMaterialDialog::CMaterialDialog(CString title) : CInputDialog(title), mKaR(0.5), mKaG(0.5), mKaB(0.5), 
-                         mKdR(0.5), mKdG(0.5), mKdB(0.5), mKsR(0.5), mKsG(0.5), mKsB(0.5), mEmissionR(0), mEmissionG(0), mEmissionB(0), mAlpha(0.5) {}
+                         mKdR(0.5), mKdG(0.5), mKdB(0.5), mKsR(0.5), mKsG(0.5), mKsB(0.5), mEmissionR(0), mEmissionG(0), mEmissionB(0), mAlpha(32) {}
 
 CMaterialDialog::~CMaterialDialog() {}
 

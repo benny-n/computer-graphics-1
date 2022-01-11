@@ -25,6 +25,10 @@ const vector<LightPtr>& Scene::getLights() { return mLights; }
 
 const SceneElement& Scene::getControlledElement() { return mControlledElement; }
 
+const Material& Scene::getActiveModelMaterial() { return mModels[mActiveModel]->getMaterial(); }
+
+const int Scene::getActiveModelNumVertices() { return mModels[mActiveModel]->getNumVertices(); }
+
 void Scene::setRasterizer(ShaderType shaderType) { mRasterizer->setActiveProgram(shaderType); }
 
 void Scene::loadOBJModel(string fileName) {
@@ -154,6 +158,10 @@ void Scene::togglePlotFaceNormals(){
 
 void Scene::changeActiveModelMaterial() {
 	mModels[mActiveModel]->setMaterialProperties();
+}
+
+void Scene::changeActiveModelMaterial(int index, int stepSize) {
+	mModels[mActiveModel]->setMaterialProperties(index, stepSize);
 }
 
 void Scene::changeActiveModelMaterial(const Color& color) {

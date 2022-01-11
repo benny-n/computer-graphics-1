@@ -66,6 +66,13 @@
 #define GOURAUD 2
 #define PHONG 3
 
+// animations menu
+#define VERTEX_ANIMATION 1
+
+// color animation menu
+#define INVERT_COLORS 1
+#define BANANIFY 2
+
 
 // define for sensetivity
 #define SCALE_UP (1 + 0.2 * gSensetivity)
@@ -73,8 +80,6 @@
 #define ROTATE (12 * gSensetivity)
 #define TRANSLATE (0.2 * gSensetivity)
 
-float getFloatFromUser(const string& directive, bool wantFraction = false);
-void inputMessage();
 void display(void);
 void reshape(int width, int height);
 void keyboard(unsigned char key, int x, int y);
@@ -93,6 +98,7 @@ void selectLightMenu(int id);
 void changeLightColorMenu(int id);
 void activeLightOptionsMenu(int id);
 void pickRasterizerMenu(int id);
-void specialEffectsMenu(int id);
+void animationsMenu(int id);
+void colorAnimationsMenu(int id);
 void mainMenu(int id);
 void initMenu();

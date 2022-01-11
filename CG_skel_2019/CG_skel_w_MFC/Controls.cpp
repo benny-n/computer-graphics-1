@@ -7,28 +7,47 @@ using namespace std;
 int gLastX, gLastY;
 bool gLbDown, gRbDown, gMbDown;
 float gSensetivity = 1;
+Material gInitialMaterial;
+Material gFinalMaterial;
 extern Scene* gScene;
 
+// gold 255,215,0
 
-float getFloatFromUser(const string& directive, bool wantFraction)
-{
-	float input = -1;
-	cout << directive << ": ";
-	cin >> input;
-	while (!cin || (wantFraction && (input < 0 || input > 1))) {
-		// Clear the error flag
-		cin.clear();
-		// Ignore the characters to avoid looping forever
-		cin.ignore(LLONG_MAX, '\n');
-		AfxMessageBox(_T("The value you entered is invalid.\n"
-						  "Please try again"));
-		cout << directive << ": ";
-		cin >> input;
-	}
-	return input;
+void interpolateMaterial(int value) {
+	const float alpha = value / 120.0;
+	Material currMaterial = {
+		(1 - alpha) * gInitialMaterial.ka + alpha * gFinalMaterial.ka,
+		(1 - alpha) * gInitialMaterial.kd + alpha * gFinalMaterial.kd,
+		(1 - alpha) * gInitialMaterial.ks + alpha * gFinalMaterial.ks,
+		gInitialMaterial.emission,
+		gInitialMaterial.alpha, 
+	};
+	gScene->changeActiveModelMaterial(currMaterial);
 }
 
-void inputMessage() { AfxMessageBox(_T("Please enter your wanted parameters in the console window")); }
+void invertModelColors(int value) {
+	if (value >= 120) {
+		initMenu();
+		glutAttachMenu(GLUT_RIGHT_BUTTON);
+		return;
+	}
+	interpolateMaterial(value);
+	glutPostRedisplay();
+	glutTimerFunc(16, invertModelColors, value + 1);
+}
+
+void bananify(int value) {
+	// step size + num steps
+	int stepSize = gScene->getActiveModelNumVertices() / 1536;
+	if (value >= 1536) {
+		initMenu();
+		glutAttachMenu(GLUT_RIGHT_BUTTON);
+		return;
+	}
+	gScene->changeActiveModelMaterial(value, stepSize);
+	glutPostRedisplay();
+	glutTimerFunc(1, bananify, value + 1);
+}
 
 //----------------------------------------------------------------------------
 // Callbacks
@@ -445,12 +464,27 @@ void pickRasterizerMenu(int id) {
 }
 
 
-void specialEffectsMenu(int id) {
+void animationsMenu(int id) {
 	switch (id) {
+	case VERTEX_ANIMATION:
+		break;
 	default:
 		break;
 	}
-	glutPostRedisplay();
+}
+
+void colorAnimationsMenu(int id) {
+	glutDetachMenu(GLUT_RIGHT_BUTTON);
+	switch (id) {
+	case INVERT_COLORS:
+		gInitialMaterial = gScene->getActiveModelMaterial();
+		gFinalMaterial = gInitialMaterial.invert();
+		invertModelColors(0);
+		break;
+	case BANANIFY:
+		bananify(0);
+		break;
+	}
 }
 
 void mainMenu(int id) {
@@ -590,8 +624,16 @@ void initMenu()
 	glutAddMenuEntry("Gouraud", GOURAUD);
 	glutAddMenuEntry("Phong", PHONG);
 
-	//create special effects menu
-	int menuSpecialEffects = glutCreateMenu(specialEffectsMenu);
+	// create color animations menu
+	int menuColorAnimations = glutCreateMenu(colorAnimationsMenu);
+	glutAddMenuEntry("Invert Colors", INVERT_COLORS);
+	glutAddMenuEntry("Bananify", BANANIFY);
+
+	//create animations menu
+	int menuAnimations = glutCreateMenu(animationsMenu);
+	glutAddMenuEntry("Vertex Animation", VERTEX_ANIMATION);
+	glutAddSubMenu("Color Animations", menuColorAnimations);
+
 
 	//finally, create the main menu and start adding submenus to it
 	glutCreateMenu(mainMenu);
@@ -610,7 +652,7 @@ void initMenu()
 	glutAddSubMenu("Select Light", menuSelectLight);
 	glutAddSubMenu("Active Light Options", menuActiveLightOptions);
 	glutAddSubMenu("Pick Rasterizer", menuPickRasterizer);
-	glutAddSubMenu("Special Effects", menuSpecialEffects);
+	glutAddSubMenu("Animations", menuAnimations);
 
 	//glutAddMenuEntry("Demo", MAIN_DEMO);
 	glutAddMenuEntry("Help", HELP);

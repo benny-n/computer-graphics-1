@@ -39,7 +39,10 @@ public:
 
 	Model() : mDrawBoundryBox(false), mDrawVertexNormals(false), mDrawFaceNormals(false) {}
 	const string& getName();
+	virtual const Material& getMaterial() = 0;
+	const int getNumVertices();
 	virtual void setMaterialProperties() = 0;
+	virtual void setMaterialProperties(int index, int stepSize) = 0;
 	virtual void setMaterialProperties(const Color& color) = 0;
 	virtual void setMaterialProperties(const Material& material) = 0;
 	virtual void transform(const mat4& m , const mat4& g, bool transformWorld) = 0;
@@ -63,10 +66,12 @@ public:
 	int initFlatBuffer(GLuint program);
 	int initSmoothBuffer(GLuint program);
 	int initShaderBuffer(RasterizerPtr rasterizer);
+	const Material& getMaterial() override;
 	void draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) override;
 	void drawVertexNormals(GLuint miscProgram, const mat4& finalTransform);
 	void drawFaceNormals(GLuint miscProgram, const mat4& from3dTo2d);
 	void setMaterialProperties() override;
+	void setMaterialProperties(int index, int stepSize) override;
 	void setMaterialProperties(const Color& color) override;
 	void setMaterialProperties(const Material& material) override;
 	void transform(const mat4& m, const mat4& g, bool transformWorld) override;
