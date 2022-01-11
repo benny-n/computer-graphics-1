@@ -48,13 +48,12 @@ public:
 	void togglePlotVertexNormals();
 	void togglePlotFaceNormals();
 	void changeActiveModelMaterial();
-	void changeActiveModelMaterial(int index, int stepSize);
 	void changeActiveModelMaterial(const Color& color);
 	void changeActiveModelMaterial(const Material& material);
+	void changeActiveModelVertexMaterial(int index, const Material& nextMaterial);
 	void changeActiveLightColor(const Color& color);
 	void changeActiveLightColor(const Color& c1, const Color& c2, const Color& c3);
-	void shrinkActiveModelFace(int faceIndex);
-	void growActiveModelFace(int faceIndex);
+	void growActiveModelVertex(int vertexIndex);
 	void transformActive(const mat4& m); // for scaling
 	void transformActive(const float degrees, const RotationAxis& axis); // for rotating
 	void transformActive(const vec3& v); // for translating

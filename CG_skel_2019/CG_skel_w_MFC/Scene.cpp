@@ -160,10 +160,6 @@ void Scene::changeActiveModelMaterial() {
 	mModels[mActiveModel]->setMaterialProperties();
 }
 
-void Scene::changeActiveModelMaterial(int index, int stepSize) {
-	mModels[mActiveModel]->setMaterialProperties(index, stepSize);
-}
-
 void Scene::changeActiveModelMaterial(const Color& color) {
 	mModels[mActiveModel]->setMaterialProperties(color);
 }
@@ -172,16 +168,17 @@ void Scene::changeActiveModelMaterial(const Material& material) {
 	mModels[mActiveModel]->setMaterialProperties(material);
 }
 
+void Scene::changeActiveModelVertexMaterial(int index, const Material& nextMaterial) {
+	mModels[mActiveModel]->setMaterialProperties(index, nextMaterial);
+}
+
 void Scene::changeActiveLightColor(const Color& color) { mLights[mActiveLight]->setColor(color); }
 
 void Scene::changeActiveLightColor(const Color& c1, const Color& c2, const Color& c3) { 
 	mLights[mActiveLight]->setColor(c1, c2, c3); 
 }
 
-
-void Scene::shrinkActiveModelFace(int faceIndex) { mModels[mActiveModel]->shrinkFace(faceIndex); }
-
-void Scene::growActiveModelFace(int faceIndex) { mModels[mActiveModel]->growFace(faceIndex); }
+void Scene::growActiveModelVertex(int vertexIndex) { mModels[mActiveModel]->growVertex(vertexIndex); }
 
 //SCALING
 void Scene::transformActive(const mat4& m){ 

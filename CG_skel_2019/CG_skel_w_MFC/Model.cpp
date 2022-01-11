@@ -391,12 +391,10 @@ const Material& MeshModel::getMaterial()
 	return mVertexMaterials[0];
 }
 
-void MeshModel::shrinkFace(int faceIndex) {
-	mVertexPositions[faceIndex] *= 0.5;
-}
-
-void MeshModel::growFace(int faceIndex) {
-	mVertexPositions[faceIndex] *= 2.0;
+void MeshModel::growVertex(int vertexIndex) {
+	for (int i = 3 * vertexIndex; i < 3 * vertexIndex + 3; i++) {
+		mVertexPositions[i] *= 1.05;
+	}
 }
 
 void MeshModel::draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) {
@@ -464,15 +462,6 @@ void MeshModel::setMaterialProperties() {
 	}
 }
 
-void MeshModel::setMaterialProperties(int index, int stepSize) {
-	for (int i = index * stepSize; i < index * stepSize + stepSize && i < mVertexMaterials.size(); i++) {
-		mVertexMaterials[i].ka = Color(1,0.84,0);
-		mVertexMaterials[i].kd = Color(1, 0.84, 0);
-		mVertexMaterials[i].ks = Color(1, 0.84, 0);
-		mVertexMaterials[i].alpha = 60;
-	}
-}
-
 void MeshModel::setMaterialProperties(const Color& color) {
 	for (int i = 0; i < mVertexMaterials.size(); i++) {
 		mVertexMaterials[i].ka = color;
@@ -485,6 +474,10 @@ void MeshModel::setMaterialProperties(const Material& material) {
 	for (int i = 0; i < mVertexMaterials.size(); i++) {
 		mVertexMaterials[i] = material;
 	}		
+}
+
+void MeshModel::setMaterialProperties(int index, const Material& material) {
+	mVertexMaterials[index] = material;
 }
 
 void MeshModel::transform(const mat4& m, const mat4& g, bool transformWorld) {

@@ -67,7 +67,7 @@
 #define PHONG 3
 
 // animations menu
-#define GROW_AND_SHRINK 1
+#define HULK_OUT 1
 
 // color animation menu
 #define INVERT_COLORS 1

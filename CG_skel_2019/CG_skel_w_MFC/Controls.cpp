@@ -10,20 +10,8 @@ float gSensetivity = 1;
 Material gInitialMaterial;
 Material gFinalMaterial;
 extern Scene* gScene;
-vector<int> gIndices;
-void grow(int value);
-void shrink(int value);
 
-void init(int size) {
-	gIndices.clear();
-	gIndices = vector<int>(size);
-	for (int i = 0; i < size; i++) {
-		gIndices[i] = i;
-	}
-}
-
-void interpolateMaterial(int value) {
-	const float alpha = value / 120.0;
+const Material interpolateMaterial(float alpha) {
 	Material currMaterial = {
 		(1 - alpha) * gInitialMaterial.ka + alpha * gFinalMaterial.ka,
 		(1 - alpha) * gInitialMaterial.kd + alpha * gFinalMaterial.kd,
@@ -31,7 +19,7 @@ void interpolateMaterial(int value) {
 		gInitialMaterial.emission,
 		gInitialMaterial.alpha, 
 	};
-	gScene->changeActiveModelMaterial(currMaterial);
+	return currMaterial;
 }
 
 void invertModelColors(int value) {
@@ -40,47 +28,53 @@ void invertModelColors(int value) {
 		glutAttachMenu(GLUT_RIGHT_BUTTON);
 		return;
 	}
-	interpolateMaterial(value);
+	Material nextMaterial = interpolateMaterial(value / 120.0);
+	gScene->changeActiveModelMaterial(nextMaterial);
 	glutPostRedisplay();
 	glutTimerFunc(16, invertModelColors, value + 1);
 }
 
-void bananify(int value) {
-	// step size + num steps
-	int stepSize = gScene->getActiveModelNumVertices() / 384;
-	int numSteps = gScene->getActiveModelNumVertices() / stepSize;
-	if (value >= 1 + numSteps) {
-		initMenu();
-		glutAttachMenu(GLUT_RIGHT_BUTTON);
-		return;
-	}
-	gScene->changeActiveModelMaterial(value, stepSize);
-	glutPostRedisplay();
-	glutTimerFunc(4, bananify, value + 1);
-}
-
-void shrink(int value) {
+void bananifyVertex(int value) {
 	int actualValue = 0xff & value;
-	int randIndex = value >> 8;
-	cout << "shrink: " << randIndex << endl;
-	gScene->shrinkActiveModelFace(randIndex);
+	if (actualValue >= 32) return;
+	int index = value >> 8;
+	Material nextMaterial = interpolateMaterial(actualValue / 32.0);
+	gScene->changeActiveModelVertexMaterial(index, nextMaterial);
+	int nextVal = (index << 8) | (actualValue + 1);
 	glutPostRedisplay();
-	glutTimerFunc(200, grow, actualValue + 1);
+	glutTimerFunc(16, bananifyVertex, nextVal);
 }
 
-void grow(int value) {
-	if (value >= 10) {
+void bananify(int value) {
+	if (value >= gScene->getActiveModelNumVertices()) {
 		initMenu();
 		glutAttachMenu(GLUT_RIGHT_BUTTON);
 		return;
 	}
-	float random = (float)rand() / RAND_MAX;
-	int randIndex = random * gScene->getActiveModelNumVertices();
-	cout << "grow: " << randIndex << endl;
-	gScene->growActiveModelFace(randIndex);
-	value = (randIndex << 8) | value;
+	bananifyVertex(value << 8);
 	glutPostRedisplay();
-	glutTimerFunc(200, shrink, value);
+	glutTimerFunc(16, bananify, value + 1);
+}
+
+void growVertex(int value) {
+	int actualValue = 0xff & value;
+	if (actualValue >= 16) return;
+	int index = value >> 8;
+	gScene->growActiveModelVertex(index);
+	int nextVal = (index << 8) | (actualValue + 1);
+	glutPostRedisplay();
+	glutTimerFunc(16, growVertex, nextVal);
+}
+
+void hulkOut(int value) {
+	if (value >= gScene->getActiveModelNumVertices()) {
+		initMenu();
+		glutAttachMenu(GLUT_RIGHT_BUTTON);
+		return;
+	}
+	growVertex(value << 8);
+	glutPostRedisplay();
+	glutTimerFunc(16, hulkOut, value + 1);
 }
 
 //----------------------------------------------------------------------------
@@ -501,8 +495,8 @@ void pickRasterizerMenu(int id) {
 void animationsMenu(int id) {
 	glutDetachMenu(GLUT_RIGHT_BUTTON);
 	switch (id) {
-	case GROW_AND_SHRINK:
-		grow(0);
+	case HULK_OUT:
+		hulkOut(0);
 		break;
 	default:
 		break;
@@ -518,6 +512,8 @@ void colorAnimationsMenu(int id) {
 		invertModelColors(0);
 		break;
 	case BANANIFY:
+		gInitialMaterial = gScene->getActiveModelMaterial();
+		gFinalMaterial = Material{Color(0.8,0.67,0),Color(0.8,0.67,0),Color(0.8,0.67,0),Color(0,0,0),16 };
 		bananify(0);
 		break;
 	}
@@ -667,7 +663,7 @@ void initMenu()
 
 	//create animations menu
 	int menuAnimations = glutCreateMenu(animationsMenu);
-	glutAddMenuEntry("Vertex Animation", GROW_AND_SHRINK);
+	glutAddMenuEntry("Hulk Out", HULK_OUT);
 	glutAddSubMenu("Color Animations", menuColorAnimations);
 
 
