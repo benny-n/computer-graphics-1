@@ -391,6 +391,14 @@ const Material& MeshModel::getMaterial()
 	return mVertexMaterials[0];
 }
 
+void MeshModel::shrinkFace(int faceIndex) {
+	mVertexPositions[faceIndex] *= 0.5;
+}
+
+void MeshModel::growFace(int faceIndex) {
+	mVertexPositions[faceIndex] *= 2.0;
+}
+
 void MeshModel::draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) {
 	GLuint program = rasterizer->getActiveProgram();
 	GLuint miscProgram = rasterizer->getMiscProgram();

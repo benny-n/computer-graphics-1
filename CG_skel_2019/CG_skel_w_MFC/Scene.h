@@ -53,6 +53,8 @@ public:
 	void changeActiveModelMaterial(const Material& material);
 	void changeActiveLightColor(const Color& color);
 	void changeActiveLightColor(const Color& c1, const Color& c2, const Color& c3);
+	void shrinkActiveModelFace(int faceIndex);
+	void growActiveModelFace(int faceIndex);
 	void transformActive(const mat4& m); // for scaling
 	void transformActive(const float degrees, const RotationAxis& axis); // for rotating
 	void transformActive(const vec3& v); // for translating

@@ -178,6 +178,11 @@ void Scene::changeActiveLightColor(const Color& c1, const Color& c2, const Color
 	mLights[mActiveLight]->setColor(c1, c2, c3); 
 }
 
+
+void Scene::shrinkActiveModelFace(int faceIndex) { mModels[mActiveModel]->shrinkFace(faceIndex); }
+
+void Scene::growActiveModelFace(int faceIndex) { mModels[mActiveModel]->growFace(faceIndex); }
+
 //SCALING
 void Scene::transformActive(const mat4& m){ 
 	switch (mControlledElement) {

@@ -67,7 +67,7 @@
 #define PHONG 3
 
 // animations menu
-#define VERTEX_ANIMATION 1
+#define GROW_AND_SHRINK 1
 
 // color animation menu
 #define INVERT_COLORS 1

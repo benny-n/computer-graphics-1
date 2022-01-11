@@ -41,6 +41,8 @@ public:
 	const string& getName();
 	virtual const Material& getMaterial() = 0;
 	const int getNumVertices();
+	virtual void shrinkFace(int faceIndex) = 0;
+	virtual void growFace(int faceIndex) = 0;
 	virtual void setMaterialProperties() = 0;
 	virtual void setMaterialProperties(int index, int stepSize) = 0;
 	virtual void setMaterialProperties(const Color& color) = 0;
@@ -67,6 +69,8 @@ public:
 	int initSmoothBuffer(GLuint program);
 	int initShaderBuffer(RasterizerPtr rasterizer);
 	const Material& getMaterial() override;
+	void shrinkFace(int faceIndex) override;
+	void growFace(int faceIndex) override;
 	void draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) override;
 	void drawVertexNormals(GLuint miscProgram, const mat4& finalTransform);
 	void drawFaceNormals(GLuint miscProgram, const mat4& from3dTo2d);

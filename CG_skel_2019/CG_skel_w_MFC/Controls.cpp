@@ -10,8 +10,17 @@ float gSensetivity = 1;
 Material gInitialMaterial;
 Material gFinalMaterial;
 extern Scene* gScene;
+vector<int> gIndices;
+void grow(int value);
+void shrink(int value);
 
-// gold 255,215,0
+void init(int size) {
+	gIndices.clear();
+	gIndices = vector<int>(size);
+	for (int i = 0; i < size; i++) {
+		gIndices[i] = i;
+	}
+}
 
 void interpolateMaterial(int value) {
 	const float alpha = value / 120.0;
@@ -38,15 +47,40 @@ void invertModelColors(int value) {
 
 void bananify(int value) {
 	// step size + num steps
-	int stepSize = gScene->getActiveModelNumVertices() / 1536;
-	if (value >= 1536) {
+	int stepSize = gScene->getActiveModelNumVertices() / 384;
+	int numSteps = gScene->getActiveModelNumVertices() / stepSize;
+	if (value >= 1 + numSteps) {
 		initMenu();
 		glutAttachMenu(GLUT_RIGHT_BUTTON);
 		return;
 	}
 	gScene->changeActiveModelMaterial(value, stepSize);
 	glutPostRedisplay();
-	glutTimerFunc(1, bananify, value + 1);
+	glutTimerFunc(4, bananify, value + 1);
+}
+
+void shrink(int value) {
+	int actualValue = 0xff & value;
+	int randIndex = value >> 8;
+	cout << "shrink: " << randIndex << endl;
+	gScene->shrinkActiveModelFace(randIndex);
+	glutPostRedisplay();
+	glutTimerFunc(200, grow, actualValue + 1);
+}
+
+void grow(int value) {
+	if (value >= 10) {
+		initMenu();
+		glutAttachMenu(GLUT_RIGHT_BUTTON);
+		return;
+	}
+	float random = (float)rand() / RAND_MAX;
+	int randIndex = random * gScene->getActiveModelNumVertices();
+	cout << "grow: " << randIndex << endl;
+	gScene->growActiveModelFace(randIndex);
+	value = (randIndex << 8) | value;
+	glutPostRedisplay();
+	glutTimerFunc(200, shrink, value);
 }
 
 //----------------------------------------------------------------------------
@@ -465,8 +499,10 @@ void pickRasterizerMenu(int id) {
 
 
 void animationsMenu(int id) {
+	glutDetachMenu(GLUT_RIGHT_BUTTON);
 	switch (id) {
-	case VERTEX_ANIMATION:
+	case GROW_AND_SHRINK:
+		grow(0);
 		break;
 	default:
 		break;
@@ -631,7 +667,7 @@ void initMenu()
 
 	//create animations menu
 	int menuAnimations = glutCreateMenu(animationsMenu);
-	glutAddMenuEntry("Vertex Animation", VERTEX_ANIMATION);
+	glutAddMenuEntry("Vertex Animation", GROW_AND_SHRINK);
 	glutAddSubMenu("Color Animations", menuColorAnimations);
 
 
