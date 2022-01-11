@@ -304,6 +304,39 @@ void changeModelColorMenu(int id) {
 	glutPostRedisplay();
 }
 
+void changeTexCoordsMenu(int id) {
+	switch (id) {
+	case PROJECTION_ON_PLAIN:
+		gScene->getModels()[gScene->mActiveModel]->projectionOnPlain();
+		break;
+	case TBD_TEX_COORDS:
+		break;
+	}
+	glutPostRedisplay();
+}
+
+void texFileMenu(int id)
+{
+	CFileDialog dlg(TRUE, _T(".png"), NULL, NULL, _T("*.png|*.*"));
+	if (dlg.DoModal() == IDOK)
+	{
+		gScene->loadTexture((LPCTSTR)dlg.GetPathName());
+		glutPostRedisplay();
+		initMenu();
+	}
+}
+
+void changeTexMenu(int id) {
+	switch (id) {
+	case NO_TEX:
+		gScene->getModels()[gScene->mActiveModel]->setTexture();
+		break;
+	case TBD_TEX:
+		break;
+	}
+	glutPostRedisplay();
+}
+
 void activeModelOptionsMenu(int id) {
 	switch (id)
 	{
@@ -590,6 +623,21 @@ void initMenu()
 	glutAddMenuEntry("Yellow", YELLOW);
 	glutAddMenuEntry("Choose custom color", CUSTOM_COLOR);
 
+	//create change texture coords menu
+	int menuChangeTexCoords = glutCreateMenu(changeTexCoordsMenu);
+	glutAddMenuEntry("Project on Plain", PROJECTION_ON_PLAIN);
+	glutAddMenuEntry("TBD", TBD_TEX_COORDS);
+
+	//create file menu (not us)
+	int menuTexFile = glutCreateMenu(texFileMenu);
+	glutAddMenuEntry("Open..", FILE_OPEN);
+
+	//create change texture menu
+	int menuChangeTex = glutCreateMenu(changeTexMenu);
+	glutAddSubMenu("From File", menuTexFile);
+	glutAddMenuEntry("TBD", TBD_TEX);
+	glutAddMenuEntry("No Texture", NO_TEX);
+
 	//create active model options menu
 	int menuActiveModelOptions = glutCreateMenu(activeModelOptionsMenu);
 	glutAddMenuEntry("Plot Boundry Box", PLOT_BOUNDRY_BOX);
@@ -598,6 +646,8 @@ void initMenu()
 	glutAddMenuEntry("Move To", MOVE_MODEL_TO);
 	glutAddSubMenu("Change Material", menuChangeMaterial);
 	glutAddSubMenu("Change Color", menuChangeModelColor);
+	glutAddSubMenu("Change Texture Coordinates", menuChangeTexCoords);
+	glutAddSubMenu("Change Texture", menuChangeTex);
 	glutAddMenuEntry("Remove Active Model", REMOVE_ACTIVE_MODEL);
 
 	//create select camera menu

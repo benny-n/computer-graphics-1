@@ -20,7 +20,6 @@ Scene::Scene() : mRenderCameras(false), mControlledElement(SceneElement::Camera)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glEnable(GL_DEPTH_TEST);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY_EXT);
-	loadTexture("textures/spot_texture.png");
 }
 
 const vector<ModelPtr>& Scene::getModels() { return mModels; }
@@ -50,11 +49,10 @@ void Scene::loadTexture(string fileName) {
     stbi_set_flip_vertically_on_load(true);
     
     GLubyte *data = stbi_load(fileName.c_str(), &width, &height, &channel_count, 0);
-	if (!data) cout << "fuck" << endl;;
     if(!data) return;
     
-	//GLuint handle;
-    glActiveTexture(0);
+	GLuint handle;
+    glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &handle);
     glBindTexture(GL_TEXTURE_2D, handle);
     
@@ -67,6 +65,8 @@ void Scene::loadTexture(string fileName) {
     glGenerateMipmap(GL_TEXTURE_2D);
     
     stbi_image_free(data);
+
+	mModels[mActiveModel]->setTexture(handle);
 }
 
 void Scene::addCubeModel() {

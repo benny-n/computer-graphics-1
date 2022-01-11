@@ -8,7 +8,6 @@
 #include <map>
 
 using namespace std;
-extern GLuint handle;
 
 //Boundry Box
 void Model::BoundryBox::initVertexPositions()
@@ -98,6 +97,27 @@ void Model::BoundryBox::draw(GLuint miscProgram, GLfloat transformation[]) {
 const string& Model::getName() { return mName; }
 
 const int Model::getNumVertices() { return mVertexPositions.size() / 3; }
+
+void Model::setTexture() {
+	mUseTexture = false;
+}
+
+void Model::setTexture(GLuint tex) {
+	mUseTexture = true;
+	mTexture = tex;
+}
+
+void Model::projectionOnPlain() {
+	mVertexTex.clear();
+	float maxX = mBoundryBox.mMaxVec.x;
+	float minX = mBoundryBox.mMinVec.x;
+	float maxY = mBoundryBox.mMaxVec.y;
+	float minY = mBoundryBox.mMinVec.y;
+	for (int i = 0; i < mVertexPositions.size(); i += 3) {
+		mVertexTex.push_back((mVertexPositions[i] - minX) / (maxX - minX));
+		mVertexTex.push_back((mVertexPositions[i + 1] - minY) / (maxY - minY));
+	}
+}
 
 // Not ours
 struct FaceIdcs
@@ -244,6 +264,7 @@ void MeshModel::loadFile(string fileName)
 		}
 	}
 	if (vertexNormals.empty()) vertexNormalPositions = calcVertexNormals();
+	if (vertexTex.empty()) projectionOnPlain();
 
 	initVertexNormalBuffer(vertexNormalPositions);
 }
@@ -433,7 +454,9 @@ void MeshModel::draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) {
 		}
 	}
 	glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, modelView);
-	glBindTexture(GL_TEXTURE_2D, handle);
+	GLuint useTexture = glGetUniformLocation(program, "useTex");
+	glUniform1i(useTexture, mUseTexture);
+	glBindTexture(GL_TEXTURE_2D, mTexture);
 	glDrawArrays(GL_TRIANGLES, 0, bufferSize);
 	if (mDrawBoundryBox || mDrawVertexNormals || mDrawFaceNormals) {
 		glUseProgram(miscProgram);
@@ -624,6 +647,7 @@ CubeMeshModel::CubeMeshModel() {
 	mBoundryBox.mMinVec = vec4(vec3(-1));
 	mBoundryBox.initVertexPositions();
 	vector<vec3> vertexNormals = calcVertexNormals();
+	projectionOnPlain();
 
 	initVertexNormalBuffer(vertexNormals);
 }
@@ -659,6 +683,7 @@ PyramidMeshModel::PyramidMeshModel() {
 	mBoundryBox.mMinVec = vec4(vec3(-1, 0, -1));
 	mBoundryBox.initVertexPositions();
 	vector<vec3> vertexNormals = calcVertexNormals();
+	projectionOnPlain();
 
 	initVertexNormalBuffer(vertexNormals);
 }

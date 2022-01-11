@@ -31,6 +31,8 @@ protected:
 	vector<GLfloat> mFaceNormals;
 	GLuint mVertexNormalBuffer;
 	GLuint mFaceNormalBuffer;
+	GLuint mTexture;
+	bool mUseTexture;
 
 public:
 	bool mDrawBoundryBox;
@@ -38,10 +40,13 @@ public:
 	bool mDrawFaceNormals;
 	BoundryBox mBoundryBox;
 
-	Model() : mDrawBoundryBox(false), mDrawVertexNormals(false), mDrawFaceNormals(false) {}
+	Model() : mUseTexture(false), mDrawBoundryBox(false), mDrawVertexNormals(false), mDrawFaceNormals(false) {}
 	const string& getName();
-	virtual const Material& getMaterial() = 0;
 	const int getNumVertices();
+	void setTexture();
+	void setTexture(GLuint tex);
+	void projectionOnPlain();
+	virtual const Material& getMaterial() = 0;
 	virtual void growVertex(int vertexIndex) = 0;
 	virtual void setMaterialProperties() = 0;
 	virtual void setMaterialProperties(const Color& color) = 0;

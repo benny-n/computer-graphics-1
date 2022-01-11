@@ -43,6 +43,14 @@
 #define YELLOW 5
 #define CUSTOM_COLOR 6
 
+// change texture coords menu
+#define PROJECTION_ON_PLAIN 1
+#define TBD_TEX_COORDS 2
+
+// change texture menu
+#define NO_TEX 1
+#define TBD_TEX 2
+
 // active camera options menu
 #define FOCUS 1
 #define ORTHO 2
@@ -91,6 +99,8 @@ void addPrimMenu(int id);
 void selectModelMenu(int id);
 void changeMaterialMenu(int id);
 void changeModelColorMenu(int id);
+void changeTexCoordsMenu(int id);
+void changeTexMenu(int id);
 void activeModelOptionsMenu(int id);
 void selectCameraMenu(int id);
 void activeCameraOptionsMenu(int id);
