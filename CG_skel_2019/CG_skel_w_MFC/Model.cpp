@@ -8,6 +8,7 @@
 #include <map>
 
 using namespace std;
+extern GLuint handle;
 
 //Boundry Box
 void Model::BoundryBox::initVertexPositions()
@@ -168,6 +169,7 @@ void MeshModel::loadFile(string fileName)
 	vector<FaceIdcs> faces;
 	vector<vec3> vertices;
 	vector<vec3> vertexNormals;
+	vector<vec2> vertexTex;
 	float x, y, z;
 	// while not end of file
 	while (!ifile.eof())
@@ -195,6 +197,9 @@ void MeshModel::loadFile(string fileName)
 		}
 		else if (lineType == "vn"){
 			vertexNormals.push_back(vec3fFromStream(issLine));
+		}
+		else if (lineType == "vt") {
+			vertexTex.push_back(vec2fFromStream(issLine));
 		}
 		else if (lineType == "f")
 			faces.push_back(issLine);
@@ -230,6 +235,11 @@ void MeshModel::loadFile(string fileName)
 			mVertexMaterials[k] = Material();
 			if (!vertexNormals.empty())
 				vertexNormalPositions[k] = vertexNormals[it->vn[i] - 1];
+			if (!vertexTex.empty()) {
+				vec2 tex = vertexTex[it->vt[i] - 1];
+				mVertexTex.push_back(tex.x);
+				mVertexTex.push_back(tex.y);
+			}
 			k++;
 		}
 	}
@@ -297,20 +307,26 @@ int MeshModel::initFlatBuffer(GLuint program) {
 		buffer.push_back(mVertexMaterials[materialIndex].emission.b);
 			// alpha
 		buffer.push_back(mVertexMaterials[materialIndex].alpha);
+		// tex
+		int texIndex = (i / 3) * 2;
+		buffer.push_back(mVertexTex[texIndex]);
+		buffer.push_back(mVertexTex[texIndex + 1]);
 	}
 	GLuint flatBuffer;
 	glGenBuffers(1, &flatBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, flatBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * buffer.size(), buffer.data(), GL_STATIC_DRAW);
 
-	setGlAttribute(program, "vPosition", 3, 22, 0);
-	setGlAttribute(program, "faceCenter", 3, 22, 3);
-	setGlAttribute(program, "faceNormal", 3, 22, 6);
-	setGlAttribute(program, "ka", 3, 22, 9);
-	setGlAttribute(program, "kd", 3, 22, 12);
-	setGlAttribute(program, "ks", 3, 22, 15);
-	setGlAttribute(program, "emission", 3, 22, 18);
-	setGlAttribute(program, "alpha", 1, 22, 21);
+	int stride = 24;
+	setGlAttribute(program, "vPosition", 3, stride, 0);
+	setGlAttribute(program, "faceCenter", 3, stride, 3);
+	setGlAttribute(program, "faceNormal", 3, stride, 6);
+	setGlAttribute(program, "ka", 3, stride, 9);
+	setGlAttribute(program, "kd", 3, stride, 12);
+	setGlAttribute(program, "ks", 3, stride, 15);
+	setGlAttribute(program, "emission", 3, stride, 18);
+	setGlAttribute(program, "alpha", 1, stride, 21);
+	setGlAttribute(program, "tex", 2, stride, 22);
 
 	return buffer.size();
 }
@@ -332,33 +348,39 @@ int MeshModel::initSmoothBuffer(GLuint program) {
 		buffer.push_back(mVertexMaterials[materialIndex].ka.r);
 		buffer.push_back(mVertexMaterials[materialIndex].ka.g);
 		buffer.push_back(mVertexMaterials[materialIndex].ka.b);
-		// kd
+			// kd
 		buffer.push_back(mVertexMaterials[materialIndex].kd.r);
 		buffer.push_back(mVertexMaterials[materialIndex].kd.g);
 		buffer.push_back(mVertexMaterials[materialIndex].kd.b);
-		// ks
+			// ks
 		buffer.push_back(mVertexMaterials[materialIndex].ks.r);
 		buffer.push_back(mVertexMaterials[materialIndex].ks.g);
 		buffer.push_back(mVertexMaterials[materialIndex].ks.b);
-		// emission
+			// emission
 		buffer.push_back(mVertexMaterials[materialIndex].emission.r);
 		buffer.push_back(mVertexMaterials[materialIndex].emission.g);
 		buffer.push_back(mVertexMaterials[materialIndex].emission.b);
-		// alpha
+			// alpha
 		buffer.push_back(mVertexMaterials[materialIndex].alpha);
+		// tex
+		int texIndex = (i / 3) * 2;
+		buffer.push_back(mVertexTex[texIndex]);
+		buffer.push_back(mVertexTex[texIndex + 1]);
 	}
 	GLuint gouraudBuffer;
 	glGenBuffers(1, &gouraudBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, gouraudBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * buffer.size(), buffer.data(), GL_STATIC_DRAW);
 
-	setGlAttribute(program, "vPosition", 3, 19, 0);
-	setGlAttribute(program, "vNormal", 3, 19, 3);
-	setGlAttribute(program, "ka", 3, 19, 6);
-	setGlAttribute(program, "kd", 3, 19, 9);
-	setGlAttribute(program, "ks", 3, 19, 12);
-	setGlAttribute(program, "emission", 3, 19, 15);
-	setGlAttribute(program, "alpha", 1, 19, 18);
+	int stride = 21;
+	setGlAttribute(program, "vPosition", 3, stride, 0);
+	setGlAttribute(program, "vNormal", 3, stride, 3);
+	setGlAttribute(program, "ka", 3, stride, 6);
+	setGlAttribute(program, "kd", 3, stride, 9);
+	setGlAttribute(program, "ks", 3, stride, 12);
+	setGlAttribute(program, "emission", 3, stride, 15);
+	setGlAttribute(program, "alpha", 1, stride, 18);
+	setGlAttribute(program, "tex", 2, stride, 19);
 
 	GLuint normalviewLoc = glGetUniformLocation(program, "normalview");
 	mat4 normalTransform = mWorldTransform * mNormalTransform;
@@ -411,6 +433,7 @@ void MeshModel::draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) {
 		}
 	}
 	glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, modelView);
+	glBindTexture(GL_TEXTURE_2D, handle);
 	glDrawArrays(GL_TRIANGLES, 0, bufferSize);
 	if (mDrawBoundryBox || mDrawVertexNormals || mDrawFaceNormals) {
 		glUseProgram(miscProgram);

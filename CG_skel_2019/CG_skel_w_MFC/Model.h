@@ -27,6 +27,7 @@ protected:
 	string mName;
 	vector<GLfloat> mVertexPositions;
 	vector<GLfloat> mVertexNormals;
+	vector<GLfloat> mVertexTex;
 	vector<GLfloat> mFaceNormals;
 	GLuint mVertexNormalBuffer;
 	GLuint mFaceNormalBuffer;

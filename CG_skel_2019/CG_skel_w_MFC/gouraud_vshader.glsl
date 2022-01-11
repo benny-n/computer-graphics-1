@@ -25,8 +25,11 @@ in vec3 kd;
 in vec3 ks;
 in vec3 emission;
 in float alpha;
+in vec2 tex;
+
 
 varying vec4 out_color;
+out vec2 fTex;
 
 vec3 calcColor(vec3 position, vec3 normal) {
 	vec3 color = vec3(0, 0, 0);
@@ -64,4 +67,5 @@ void main()
 	vec3 modifiedNormal = (normalview * vec4(vNormal,1)).xyz;
     gl_Position = vec4(modifiedPosition,1);
     out_color = vec4(calcColor(modifiedPosition, modifiedNormal),1);
+	fTex = tex;
 }

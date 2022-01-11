@@ -10,6 +10,7 @@ in vec3 kd;
 in vec3 ks;
 in vec3 emission;
 in float alpha;
+in vec2 tex;
 
 varying vec3 fPosition;
 varying vec3 fNormal;
@@ -18,7 +19,7 @@ varying vec3 fKd;
 varying vec3 fKs;
 varying vec3 fEmission;
 varying float fAlpha;
-
+out vec2 fTex;
 
 
 void main()
@@ -33,4 +34,5 @@ void main()
     fKs = ks;
     fEmission = emission;
     fAlpha = alpha;
+    fTex = tex;
 }

@@ -25,8 +25,10 @@ in vec3 kd;
 in vec3 ks;
 in vec3 emission;
 in float alpha;
+in vec2 tex;
 
 out vec4 out_color;
+out vec2 fTex;
 
 vec3 calcColor() {
 	vec3 color = vec3(0, 0, 0);
@@ -62,4 +64,5 @@ void main()
 {
     gl_Position = modelview * vPosition;
     out_color = vec4(calcColor(),1);
+	fTex = tex;
 }

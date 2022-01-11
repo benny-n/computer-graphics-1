@@ -35,6 +35,7 @@ public:
 	const int getActiveModelNumVertices();
 	void setRasterizer(ShaderType shaderType);
 	void loadOBJModel(string fileName);
+	void loadTexture(string fileName);
 	void initOpenGLRendering();
 	void createBuffers(int width, int height);
 	void addCubeModel();
