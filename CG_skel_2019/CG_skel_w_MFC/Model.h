@@ -30,11 +30,16 @@ protected:
 	vector<GLfloat> mVertexPositions;
 	vector<GLfloat> mVertexNormals;
 	vector<GLfloat> mVertexTex;
+	vector<GLfloat> mVertexTB;
 	vector<GLfloat> mFaceNormals;
 	GLuint mVertexNormalBuffer;
 	GLuint mFaceNormalBuffer;
 	GLuint mTexture;
 	bool mUseTexture;
+	GLuint mNormalMap;
+	bool mUseNormalMap;
+
+	void calcTB();
 
 public:
 	bool mDrawBoundryBox;
@@ -42,11 +47,13 @@ public:
 	bool mDrawFaceNormals;
 	BoundryBox mBoundryBox;
 
-	Model() : mUseTexture(false), mDrawBoundryBox(false), mDrawVertexNormals(false), mDrawFaceNormals(false) {}
+	Model() : mUseTexture(false), mUseNormalMap(false), mDrawBoundryBox(false), mDrawVertexNormals(false), mDrawFaceNormals(false) {}
 	const string& getName();
 	const int getNumVertices();
 	void setTexture();
 	void setTexture(GLuint tex);
+	void setNormalMap();
+	void setNormalMap(GLuint tex);
 	void projectionOnPlain();
 	void projectionOnCylinder();
 	virtual const Material& getMaterial() = 0;
@@ -75,6 +82,7 @@ public:
 	void initVertexNormalBuffer(vector<vec3>& vertexNormals);
 	int initFlatBuffer(GLuint program);
 	int initSmoothBuffer(GLuint program);
+	int initNMBuffer(GLuint program);
 	int initShaderBuffer(RasterizerPtr rasterizer);
 	const Material& getMaterial() override;
 	void growVertex(int VertexIndex) override;

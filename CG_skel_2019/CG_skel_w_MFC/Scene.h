@@ -36,6 +36,7 @@ public:
 	void setRasterizer(ShaderType shaderType);
 	void loadOBJModel(string fileName);
 	void loadTexture(string fileName);
+	void loadNormalMap(string fileName);
 	void initOpenGLRendering();
 	void createBuffers(int width, int height);
 	void addCubeModel();
@@ -67,7 +68,7 @@ public:
 	void removeActiveModel();
 	void removeActiveCamera();
 	void removeActiveLight();
-	void setGlLights();
+	void setGlLights(GLuint program);
 	void draw();
 	void drawDemo();
 

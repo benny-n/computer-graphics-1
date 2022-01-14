@@ -52,6 +52,9 @@
 #define NO_TEX 1
 #define TBD_TEX 2
 
+// change normal map menu
+#define	NO_NORMAL_MAP 1	
+
 // active camera options menu
 #define FOCUS 1
 #define ORTHO 2
@@ -101,7 +104,10 @@ void selectModelMenu(int id);
 void changeMaterialMenu(int id);
 void changeModelColorMenu(int id);
 void changeTexCoordsMenu(int id);
+void texFileMenu(int id);
 void changeTexMenu(int id);
+void normalMapFileMenu(int id);
+void changeNormalMapMenu(int id);
 void activeModelOptionsMenu(int id);
 void selectCameraMenu(int id);
 void activeCameraOptionsMenu(int id);

@@ -318,9 +318,8 @@ void changeTexCoordsMenu(int id) {
 	glutPostRedisplay();
 }
 
-void texFileMenu(int id)
-{
-	CFileDialog dlg(TRUE, _T(".png"), NULL, NULL, _T("*.png|*.*"));
+void texFileMenu(int id) {
+	CFileDialog dlg(TRUE, _T(".png|.jpg"), NULL, NULL, _T("*.png|*.jpg|*.*"));
 	if (dlg.DoModal() == IDOK)
 	{
 		gScene->loadTexture((LPCTSTR)dlg.GetPathName());
@@ -335,6 +334,25 @@ void changeTexMenu(int id) {
 		gScene->getModels()[gScene->mActiveModel]->setTexture();
 		break;
 	case TBD_TEX:
+		break;
+	}
+	glutPostRedisplay();
+}
+
+void normalMapFileMenu(int id) {
+	CFileDialog dlg(TRUE, _T(".png|.jpg"), NULL, NULL, _T("*.png|*.jpg|*.*"));
+	if (dlg.DoModal() == IDOK)
+	{
+		gScene->loadNormalMap((LPCTSTR)dlg.GetPathName());
+		glutPostRedisplay();
+		initMenu();
+	}
+}
+
+void changeNormalMapMenu(int id) {
+	switch (id) {
+	case NO_NORMAL_MAP:
+		gScene->getModels()[gScene->mActiveModel]->setNormalMap();
 		break;
 	}
 	glutPostRedisplay();
@@ -632,7 +650,7 @@ void initMenu()
 	glutAddMenuEntry("Project on Cylinder", PROJECTION_ON_CYLINDER);
 	glutAddMenuEntry("TBD", TBD_TEX_COORDS);
 
-	//create file menu (not us)
+	//create texture file menu 
 	int menuTexFile = glutCreateMenu(texFileMenu);
 	glutAddMenuEntry("Open..", FILE_OPEN);
 
@@ -641,6 +659,15 @@ void initMenu()
 	glutAddSubMenu("From File", menuTexFile);
 	glutAddMenuEntry("TBD", TBD_TEX);
 	glutAddMenuEntry("No Texture", NO_TEX);
+
+	//create normal map file menu
+	int menuNormalMapFile = glutCreateMenu(normalMapFileMenu);
+	glutAddMenuEntry("Open..", FILE_OPEN);
+
+	//create change normal map menu
+	int menuChangeNormalMap = glutCreateMenu(changeNormalMapMenu);
+	glutAddSubMenu("From File", menuNormalMapFile);
+	glutAddMenuEntry("No Normal Map", NO_NORMAL_MAP);
 
 	//create active model options menu
 	int menuActiveModelOptions = glutCreateMenu(activeModelOptionsMenu);
@@ -652,6 +679,7 @@ void initMenu()
 	glutAddSubMenu("Change Color", menuChangeModelColor);
 	glutAddSubMenu("Change Texture Coordinates", menuChangeTexCoords);
 	glutAddSubMenu("Change Texture", menuChangeTex);
+	glutAddSubMenu("Change Normal Map", menuChangeNormalMap);
 	glutAddMenuEntry("Remove Active Model", REMOVE_ACTIVE_MODEL);
 
 	//create select camera menu

@@ -100,17 +100,51 @@ void Model::BoundryBox::draw(GLuint miscProgram, GLfloat transformation[]) {
 }
 
 // Model
+void Model::calcTB() {
+	for (int i = 0, j = 0; i < mVertexPositions.size() && j < mVertexTex.size(); i += 9, j += 6) {
+		vec3 pos1(mVertexPositions[i], mVertexPositions[i + 1], mVertexPositions[i + 2]);
+		vec3 pos2(mVertexPositions[i + 3], mVertexPositions[i + 4], mVertexPositions[i + 5]);
+		vec3 pos3(mVertexPositions[i + 6], mVertexPositions[i + 7], mVertexPositions[i + 8]);
+		vec2 uv1(mVertexTex[j], mVertexTex[j + 1]);
+		vec2 uv2(mVertexTex[j + 2], mVertexTex[j + 3]);
+		vec2 uv3(mVertexTex[j + 4], mVertexTex[j + 5]);
+
+		vec3 edge1 = pos2 - pos1;
+		vec3 edge2 = pos3 - pos1;
+		vec2 deltaUV1 = uv2 - uv1;
+		vec2 deltaUV2 = uv3 - uv1;
+
+		float denominator = (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+		float f = abs(denominator) < 0.00000001? 0 : 1.0f / denominator;
+
+		// T
+		mVertexTB.push_back(f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x));
+		mVertexTB.push_back(f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y));
+		mVertexTB.push_back(f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z));
+		// B
+		mVertexTB.push_back(f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x));
+		mVertexTB.push_back(f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y));
+		mVertexTB.push_back(f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z));
+	}
+}
+
 const string& Model::getName() { return mName; }
 
 const int Model::getNumVertices() { return mVertexPositions.size() / 3; }
 
-void Model::setTexture() {
-	mUseTexture = false;
-}
+void Model::setTexture() { mUseTexture = false; }
 
 void Model::setTexture(GLuint tex) {
 	mUseTexture = true;
 	mTexture = tex;
+}
+
+void Model::setNormalMap() { mUseNormalMap = false; }
+
+void Model::setNormalMap(GLuint nm) {
+	mUseNormalMap = true;
+	mNormalMap = nm;
 }
 
 void Model::projectionOnPlain() {
@@ -123,6 +157,7 @@ void Model::projectionOnPlain() {
 		mVertexTex.push_back((mVertexPositions[i] - minX) / (maxX - minX));
 		mVertexTex.push_back((mVertexPositions[i + 1] - minY) / (maxY - minY));
 	}
+	calcTB();
 }
 
 void Model::projectionOnCylinder() {
@@ -139,6 +174,7 @@ void Model::projectionOnCylinder() {
 		mVertexTex.push_back(theta / 2 * M_PI );
 		mVertexTex.push_back((h - minY) / (maxY - minY));
 	}
+	calcTB();
 }
 
 // Not ours
@@ -287,6 +323,7 @@ void MeshModel::loadFile(string fileName)
 	}
 	if (vertexNormals.empty()) vertexNormalPositions = calcVertexNormals();
 	if (vertexTex.empty()) projectionOnPlain();
+	calcTB();
 
 	initVertexNormalBuffer(vertexNormalPositions);
 }
@@ -410,9 +447,9 @@ int MeshModel::initSmoothBuffer(GLuint program) {
 		buffer.push_back(mVertexTex[texIndex]);
 		buffer.push_back(mVertexTex[texIndex + 1]);
 	}
-	GLuint gouraudBuffer;
-	glGenBuffers(1, &gouraudBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, gouraudBuffer);
+	GLuint smoothBuffer;
+	glGenBuffers(1, &smoothBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, smoothBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * buffer.size(), buffer.data(), GL_STATIC_DRAW);
 
 	int stride = 21;
@@ -438,7 +475,57 @@ int MeshModel::initSmoothBuffer(GLuint program) {
 	return buffer.size();
 }
 
+int MeshModel::initNMBuffer(GLuint program) {
+	vector<GLfloat> buffer;
+	for (int i = 0; i < mVertexPositions.size(); i += 3) {
+		// position
+		buffer.push_back(mVertexPositions[i]);
+		buffer.push_back(mVertexPositions[i + 1]);
+		buffer.push_back(mVertexPositions[i + 2]);
+		// TB
+		int TBIndex = (i / 9) * 6;
+			// tangent
+		buffer.push_back(mVertexTB[TBIndex]);
+		buffer.push_back(mVertexTB[TBIndex + 1]);
+		buffer.push_back(mVertexTB[TBIndex + 2]);
+			// bitangent
+		buffer.push_back(mVertexTB[TBIndex + 3]);
+		buffer.push_back(mVertexTB[TBIndex + 4]);
+		buffer.push_back(mVertexTB[TBIndex + 5]);
+		// alpha
+		buffer.push_back(mVertexMaterials[i / 3].alpha);
+		// tex
+		int texIndex = (i / 3) * 2;
+		buffer.push_back(mVertexTex[texIndex]);
+		buffer.push_back(mVertexTex[texIndex + 1]);
+	}
+	GLuint nmBuffer;
+	glGenBuffers(1, &nmBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, nmBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * buffer.size(), buffer.data(), GL_STATIC_DRAW);
+
+	int stride = 12;
+	setGlAttribute(program, "vPosition", 3, stride, 0);
+	setGlAttribute(program, "tangent", 3, stride, 3);
+	setGlAttribute(program, "bitangent", 3, stride, 6);
+	setGlAttribute(program, "alpha", 1, stride, 9);
+	setGlAttribute(program, "tex", 2, stride, 10);
+
+	GLuint normalviewLoc = glGetUniformLocation(program, "normalview");
+	mat4 normalTransform = mWorldTransform * mNormalTransform;
+	GLfloat normalView[16];
+	for (size_t i = 0; i < 4; i++) {
+		for (size_t j = 0; j < 4; j++) {
+			normalView[i * 4 + j] = normalTransform[i][j];
+		}
+	}
+	glUniformMatrix4fv(normalviewLoc, 1, GL_TRUE, normalView);
+
+	return buffer.size();
+}
+
 int MeshModel::initShaderBuffer(RasterizerPtr rasterizer) {
+	if (mUseNormalMap) return initNMBuffer(rasterizer->getNMProgram());
 	GLuint program = rasterizer->getActiveProgram();
 	switch (rasterizer->getShaderType()) {
 		case ShaderType::Flat:
@@ -465,8 +552,17 @@ void MeshModel::growVertex(int vertexIndex) {
 void MeshModel::draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) {
 	GLuint program = rasterizer->getActiveProgram();
 	GLuint miscProgram = rasterizer->getMiscProgram();
-	glUseProgram(program);
+	if (mUseNormalMap) {
+		program = rasterizer->getNMProgram();
+		glUseProgram(program);
+		GLuint nm = glGetUniformLocation(program, "normalMap");
+		glUniform1i(nm, 1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, mNormalMap);
+	}
+	else glUseProgram(program);
 	int bufferSize = initShaderBuffer(rasterizer);
+	// sending model view
 	GLuint modelviewLoc = glGetUniformLocation(program, "modelview");
 	mat4 finalTransform = from3dTo2d * mWorldTransform * mModelTransform;
 	GLfloat modelView[16];
@@ -476,8 +572,13 @@ void MeshModel::draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) {
 		}
 	}
 	glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, modelView);
+	// sending useTex
 	GLuint useTexture = glGetUniformLocation(program, "useTex");
 	glUniform1i(useTexture, mUseTexture);
+	// activating texture
+	GLuint tex = glGetUniformLocation(program, "texSampler");
+	glUniform1i(tex, 0);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, mTexture);
 	glDrawArrays(GL_TRIANGLES, 0, bufferSize);
 	if (mDrawBoundryBox || mDrawVertexNormals || mDrawFaceNormals) {

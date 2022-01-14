@@ -141,6 +141,8 @@
     <None Include="gouraud_vshader.glsl" />
     <None Include="misc_fshader.glsl" />
     <None Include="misc_vshader.glsl" />
+    <None Include="nm_fshader.glsl" />
+    <None Include="nm_vshader.glsl" />
     <None Include="phong_fshader.glsl" />
     <None Include="phong_vshader.glsl" />
     <None Include="vshader.glsl" />

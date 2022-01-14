@@ -139,5 +139,11 @@
     <None Include="phong_vshader.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="nm_fshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="nm_vshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

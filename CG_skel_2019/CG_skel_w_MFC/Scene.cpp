@@ -69,6 +69,31 @@ void Scene::loadTexture(string fileName) {
 	mModels[mActiveModel]->setTexture(handle);
 }
 
+void Scene::loadNormalMap(string fileName) {
+	GLint width, height, channel_count;
+	stbi_set_flip_vertically_on_load(false);
+
+	GLubyte* data = stbi_load(fileName.c_str(), &width, &height, &channel_count, 0);
+	if (!data) return;
+
+	GLuint handle;
+	glActiveTexture(GL_TEXTURE1);
+	glGenTextures(1, &handle);
+	glBindTexture(GL_TEXTURE_2D, handle);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	stbi_image_free(data);
+
+	mModels[mActiveModel]->setNormalMap(handle);
+}
+
 void Scene::addCubeModel() {
 	auto model = make_shared<CubeMeshModel>();
 	mModels.push_back(model);
@@ -428,8 +453,8 @@ void Scene::removeActiveLight()
 	if (mControlledElement == SceneElement::Light) printControlMsg();
 }
 
-void Scene::setGlLights() {
-	GLuint program = mRasterizer->getActiveProgram();
+void Scene::setGlLights(GLuint program) {
+	glUseProgram(program);
 	for (int i = 0; i < mLights.size(); i++) {
 		std::string currentLightStr = std::string("lights[" + std::to_string(i) + "]");
 		std::string tempString = currentLightStr + ".type";
@@ -455,14 +480,14 @@ void Scene::setGlLights() {
 
 	GLuint numLights = glGetUniformLocation(program, "numLights");
 	glUniform1i(numLights, (GLsizei)mLights.size());
-
+	GLuint eyeLoc = glGetUniformLocation(program, "eye");
+	glUniform3fv(eyeLoc, 1, mCameras[mActiveCamera]->getEye());
 }
 
 void Scene::draw() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	setGlLights();
-	GLuint eyeLoc = glGetUniformLocation(mRasterizer->getActiveProgram(), "eye");
-	glUniform3fv(eyeLoc, 1, mCameras[mActiveCamera]->getEye());
+	setGlLights(mRasterizer->getActiveProgram());
+	setGlLights(mRasterizer->getNMProgram());
 
 	auto activeCamera = mCameras[mActiveCamera];
 	const mat4 projection = activeCamera->getProjection();
