@@ -319,7 +319,7 @@ void changeTexCoordsMenu(int id) {
 }
 
 void texFileMenu(int id) {
-	CFileDialog dlg(TRUE, _T(".png|.jpg"), NULL, NULL, _T("*.png|*.jpg|*.*"));
+	CFileDialog dlg(TRUE, _T(".png"), NULL, NULL, _T("*.png|*.*"));
 	if (dlg.DoModal() == IDOK)
 	{
 		gScene->loadTexture((LPCTSTR)dlg.GetPathName());
@@ -340,7 +340,7 @@ void changeTexMenu(int id) {
 }
 
 void normalMapFileMenu(int id) {
-	CFileDialog dlg(TRUE, _T(".png|.jpg"), NULL, NULL, _T("*.png|*.jpg|*.*"));
+	CFileDialog dlg(TRUE, _T(".png"), NULL, NULL, _T("*.png|*.*"));
 	if (dlg.DoModal() == IDOK)
 	{
 		gScene->loadNormalMap((LPCTSTR)dlg.GetPathName());
