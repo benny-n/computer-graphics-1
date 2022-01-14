@@ -9,6 +9,5 @@ out vec4 fColor;
 
 void main()
 {
-    if (useTex) fColor = texture(texSampler, fTex);
-    else fColor = out_color;
+    fColor = useTex? out_color * texture(texSampler, fTex) : out_color;
 }

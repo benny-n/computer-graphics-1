@@ -17,6 +17,8 @@ protected:
 	public:
 		vec4 mMinVec;
 		vec4 mMaxVec;
+		vec2 mImmutableMinVec;
+		vec2 mImmutableMaxVec;
 
 		BoundryBox() : mVertexPositions(72), mMinVec(vec3(FLT_MAX)), mMaxVec(vec3(FLT_MIN)) {}
 		void initVertexPositions();
@@ -46,6 +48,7 @@ public:
 	void setTexture();
 	void setTexture(GLuint tex);
 	void projectionOnPlain();
+	void projectionOnCylinder();
 	virtual const Material& getMaterial() = 0;
 	virtual void growVertex(int vertexIndex) = 0;
 	virtual void setMaterialProperties() = 0;

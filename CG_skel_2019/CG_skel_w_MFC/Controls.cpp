@@ -309,6 +309,9 @@ void changeTexCoordsMenu(int id) {
 	case PROJECTION_ON_PLAIN:
 		gScene->getModels()[gScene->mActiveModel]->projectionOnPlain();
 		break;
+	case PROJECTION_ON_CYLINDER:
+		gScene->getModels()[gScene->mActiveModel]->projectionOnCylinder();
+		break;
 	case TBD_TEX_COORDS:
 		break;
 	}
@@ -626,6 +629,7 @@ void initMenu()
 	//create change texture coords menu
 	int menuChangeTexCoords = glutCreateMenu(changeTexCoordsMenu);
 	glutAddMenuEntry("Project on Plain", PROJECTION_ON_PLAIN);
+	glutAddMenuEntry("Project on Cylinder", PROJECTION_ON_CYLINDER);
 	glutAddMenuEntry("TBD", TBD_TEX_COORDS);
 
 	//create file menu (not us)

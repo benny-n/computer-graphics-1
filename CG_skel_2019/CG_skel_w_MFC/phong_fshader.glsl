@@ -16,7 +16,10 @@ struct Light {
 uniform int numLights;
 uniform Light lights[MAX_LIGHTS];
 uniform vec3 eye;
+uniform sampler2D texSampler;
+uniform bool useTex;
 
+varying vec2 fTex;
 varying vec3 fPosition;
 varying vec3 fNormal;
 varying vec3 fKa;
@@ -28,6 +31,14 @@ varying float fAlpha;
 out vec4 fColor;
 
 vec3 calcColor() {
+	vec3 actualKa = fKa;
+	vec3 actualKd = fKd;
+	vec3 actualKs = fKs;
+	if (useTex) {
+		actualKa = vec3(1,1,1);
+		actualKd = vec3(1,1,1);
+		actualKs = vec3(1,1,1);
+	}
 	vec3 color = vec3(0, 0, 0);
 	vec3 v = normalize(eye - fPosition);
 	vec3 n = fNormal;
@@ -48,9 +59,9 @@ vec3 calcColor() {
 			return vec3(1,0,0);
 		}
 		r = normalize(2 * n * (dot(n, l)) - l);
-		vec3 Ia =fKa * lights[i].la;
-		vec3 Id = fKd * max(0, dot(l, n)) * lights[i].ld;
-		vec3 Is = dot(n, l) < 0? vec3(0,0,0) : fKs * pow(max(0, dot(r, v)), fAlpha) * lights[i].ls;
+		vec3 Ia = actualKa * lights[i].la;
+		vec3 Id = actualKd * max(0, dot(l, n)) * lights[i].ld;
+		vec3 Is = dot(n, l) < 0? vec3(0,0,0) : actualKs * pow(max(0, dot(r, v)), fAlpha) * lights[i].ls;
 		color = color + Ia + Id + Is;
 	}
 
@@ -58,5 +69,6 @@ vec3 calcColor() {
 }
 
 void main() {
-    fColor = vec4(calcColor(),1);
+    vec4 out_color = vec4(calcColor(),1);
+	fColor = useTex? out_color * texture(texSampler, fTex) : out_color;
 }

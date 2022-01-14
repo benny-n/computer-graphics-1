@@ -45,7 +45,8 @@
 
 // change texture coords menu
 #define PROJECTION_ON_PLAIN 1
-#define TBD_TEX_COORDS 2
+#define PROJECTION_ON_CYLINDER 2
+#define TBD_TEX_COORDS 3
 
 // change texture menu
 #define NO_TEX 1

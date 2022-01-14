@@ -68,6 +68,12 @@ void Model::BoundryBox::initVertexPositions()
 		mMaxVec.x, mMaxVec.y, mMaxVec.z
 	};
 
+	mImmutableMinVec.x = mMinVec.x;
+	mImmutableMinVec.y = mMinVec.y;
+
+	mImmutableMaxVec.x = mMaxVec.x;
+	mImmutableMaxVec.y = mMaxVec.y;
+
 	glGenBuffers(1, &mVertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, mVertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mVertexPositions.size(), mVertexPositions.data(), GL_STATIC_DRAW);
@@ -109,13 +115,29 @@ void Model::setTexture(GLuint tex) {
 
 void Model::projectionOnPlain() {
 	mVertexTex.clear();
-	float maxX = mBoundryBox.mMaxVec.x;
-	float minX = mBoundryBox.mMinVec.x;
-	float maxY = mBoundryBox.mMaxVec.y;
-	float minY = mBoundryBox.mMinVec.y;
+	float maxX = mBoundryBox.mImmutableMaxVec.x;
+	float minX = mBoundryBox.mImmutableMinVec.x;
+	float maxY = mBoundryBox.mImmutableMaxVec.y;
+	float minY = mBoundryBox.mImmutableMinVec.y;
 	for (int i = 0; i < mVertexPositions.size(); i += 3) {
 		mVertexTex.push_back((mVertexPositions[i] - minX) / (maxX - minX));
 		mVertexTex.push_back((mVertexPositions[i + 1] - minY) / (maxY - minY));
+	}
+}
+
+void Model::projectionOnCylinder() {
+	mVertexTex.clear();
+	float maxX = mBoundryBox.mImmutableMaxVec.x;
+	float minX = mBoundryBox.mImmutableMinVec.x;
+	float maxY = mBoundryBox.mImmutableMaxVec.y;
+	float minY = mBoundryBox.mImmutableMinVec.y;
+	for (int i = 0; i < mVertexPositions.size(); i += 3) {
+
+		float theta = atan2(mVertexPositions[i + 2], mVertexPositions[i]) + M_PI;
+		float h = mVertexPositions[i + 1];
+
+		mVertexTex.push_back(theta / 2 * M_PI );
+		mVertexTex.push_back((h - minY) / (maxY - minY));
 	}
 }
 

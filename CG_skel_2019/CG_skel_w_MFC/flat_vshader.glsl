@@ -17,6 +17,7 @@ uniform int numLights;
 uniform Light lights[MAX_LIGHTS];
 uniform mat4 modelview;
 uniform vec3 eye;
+uniform bool useTex;
 in vec4 vPosition;
 in vec3 faceCenter;
 in vec3 faceNormal;
@@ -31,6 +32,14 @@ out vec4 out_color;
 out vec2 fTex;
 
 vec3 calcColor() {
+	vec3 actualKa = ka;
+	vec3 actualKd = kd;
+	vec3 actualKs = ks;
+	if (useTex) {
+		actualKa = vec3(1,1,1);
+		actualKd = vec3(1,1,1);
+		actualKs = vec3(1,1,1);
+	}
 	vec3 color = vec3(0, 0, 0);
 	vec3 v = normalize(eye - faceCenter);
 	vec3 n = faceNormal - faceCenter;
@@ -51,9 +60,9 @@ vec3 calcColor() {
 			return vec3(1,0,0);
 		}
 		r = normalize(2 * n * (dot(n, l)) - l);
-		vec3 Ia = ka * lights[i].la;
-		vec3 Id = kd * max(0, dot(l, n)) * lights[i].ld;
-		vec3 Is = dot(n, l) < 0? vec3(0,0,0) : ks * pow(max(0, dot(r, v)), alpha) * lights[i].ls;
+		vec3 Ia = actualKa * lights[i].la;
+		vec3 Id = actualKd * max(0, dot(l, n)) * lights[i].ld;
+		vec3 Is = dot(n, l) < 0? vec3(0,0,0) : actualKs * pow(max(0, dot(r, v)), alpha) * lights[i].ls;
 		color = color + Ia + Id + Is;
 	}
 
