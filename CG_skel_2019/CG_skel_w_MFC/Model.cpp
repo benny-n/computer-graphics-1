@@ -492,8 +492,26 @@ int MeshModel::initNMBuffer(GLuint program) {
 		buffer.push_back(mVertexTB[TBIndex + 3]);
 		buffer.push_back(mVertexTB[TBIndex + 4]);
 		buffer.push_back(mVertexTB[TBIndex + 5]);
-		// alpha
-		buffer.push_back(mVertexMaterials[i / 3].alpha);
+		// material
+			// ka
+		int materialIndex = i / 3;
+		buffer.push_back(mVertexMaterials[materialIndex].ka.r);
+		buffer.push_back(mVertexMaterials[materialIndex].ka.g);
+		buffer.push_back(mVertexMaterials[materialIndex].ka.b);
+			// kd
+		buffer.push_back(mVertexMaterials[materialIndex].kd.r);
+		buffer.push_back(mVertexMaterials[materialIndex].kd.g);
+		buffer.push_back(mVertexMaterials[materialIndex].kd.b);
+			// ks
+		buffer.push_back(mVertexMaterials[materialIndex].ks.r);
+		buffer.push_back(mVertexMaterials[materialIndex].ks.g);
+		buffer.push_back(mVertexMaterials[materialIndex].ks.b);
+			// emission
+		buffer.push_back(mVertexMaterials[materialIndex].emission.r);
+		buffer.push_back(mVertexMaterials[materialIndex].emission.g);
+		buffer.push_back(mVertexMaterials[materialIndex].emission.b);
+			// alpha
+		buffer.push_back(mVertexMaterials[materialIndex].alpha);
 		// tex
 		int texIndex = (i / 3) * 2;
 		buffer.push_back(mVertexTex[texIndex]);
@@ -504,12 +522,16 @@ int MeshModel::initNMBuffer(GLuint program) {
 	glBindBuffer(GL_ARRAY_BUFFER, nmBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * buffer.size(), buffer.data(), GL_STATIC_DRAW);
 
-	int stride = 12;
+	int stride = 24;
 	setGlAttribute(program, "vPosition", 3, stride, 0);
 	setGlAttribute(program, "tangent", 3, stride, 3);
 	setGlAttribute(program, "bitangent", 3, stride, 6);
-	setGlAttribute(program, "alpha", 1, stride, 9);
-	setGlAttribute(program, "tex", 2, stride, 10);
+	setGlAttribute(program, "ka", 3, stride, 9);
+	setGlAttribute(program, "kd", 3, stride, 12);
+	setGlAttribute(program, "ks", 3, stride, 15);
+	setGlAttribute(program, "emission", 3, stride, 18);
+	setGlAttribute(program, "alpha", 1, stride, 21);
+	setGlAttribute(program, "tex", 2, stride, 22);
 
 	GLuint normalviewLoc = glGetUniformLocation(program, "normalview");
 	mat4 normalTransform = mWorldTransform * mNormalTransform;
@@ -576,10 +598,12 @@ void MeshModel::draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) {
 	GLuint useTexture = glGetUniformLocation(program, "useTex");
 	glUniform1i(useTexture, mUseTexture);
 	// activating texture
-	GLuint tex = glGetUniformLocation(program, "texSampler");
-	glUniform1i(tex, 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, mTexture);
+	if (mUseTexture) {
+		GLuint tex = glGetUniformLocation(program, "texSampler");
+		glUniform1i(tex, 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, mTexture);
+	}
 	glDrawArrays(GL_TRIANGLES, 0, bufferSize);
 	if (mDrawBoundryBox || mDrawVertexNormals || mDrawFaceNormals) {
 		glUseProgram(miscProgram);

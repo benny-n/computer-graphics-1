@@ -71,7 +71,7 @@ void Scene::loadTexture(string fileName) {
 
 void Scene::loadNormalMap(string fileName) {
 	GLint width, height, channel_count;
-	stbi_set_flip_vertically_on_load(false);
+	stbi_set_flip_vertically_on_load(true);
 
 	GLubyte* data = stbi_load(fileName.c_str(), &width, &height, &channel_count, 0);
 	if (!data) return;

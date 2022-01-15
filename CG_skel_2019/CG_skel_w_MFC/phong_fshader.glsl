@@ -64,8 +64,8 @@ vec3 calcColor() {
 		vec3 Is = dot(n, l) < 0? vec3(0,0,0) : actualKs * pow(max(0, dot(r, v)), fAlpha) * lights[i].ls;
 		color = color + Ia + Id + Is;
 	}
-
-	return color + fEmission;
+	if (useTex) color += fEmission;
+	return color;
 }
 
 void main() {

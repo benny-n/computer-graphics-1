@@ -67,7 +67,8 @@ vec3 calcColor(vec3 position, vec3 normal) {
 		color = color + Ia + Id + Is;
 	}
 
-	return color + emission;
+	if (useTex) color += emission;
+	return color;
 }
 
 void main()
