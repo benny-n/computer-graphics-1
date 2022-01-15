@@ -333,7 +333,8 @@ void changeTexMenu(int id) {
 	case NO_TEX:
 		gScene->getModels()[gScene->mActiveModel]->setTexture();
 		break;
-	case TBD_TEX:
+	case WOOD:
+		gScene->getModels()[gScene->mActiveModel]->setTexture(true);
 		break;
 	}
 	glutPostRedisplay();
@@ -657,7 +658,7 @@ void initMenu()
 	//create change texture menu
 	int menuChangeTex = glutCreateMenu(changeTexMenu);
 	glutAddSubMenu("From File", menuTexFile);
-	glutAddMenuEntry("TBD", TBD_TEX);
+	glutAddMenuEntry("Wood", WOOD);
 	glutAddMenuEntry("No Texture", NO_TEX);
 
 	//create normal map file menu

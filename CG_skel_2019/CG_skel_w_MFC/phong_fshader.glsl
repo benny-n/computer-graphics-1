@@ -18,6 +18,7 @@ uniform Light lights[MAX_LIGHTS];
 uniform vec3 eye;
 uniform sampler2D texSampler;
 uniform bool useTex;
+uniform bool useWood;
 
 varying vec2 fTex;
 varying vec3 fPosition;
@@ -27,6 +28,7 @@ varying vec3 fKd;
 varying vec3 fKs;
 varying vec3 fEmission;
 varying float fAlpha;
+varying vec3 woodColor;
 
 out vec4 fColor;
 
@@ -34,7 +36,7 @@ vec3 calcColor() {
 	vec3 actualKa = fKa;
 	vec3 actualKd = fKd;
 	vec3 actualKs = fKs;
-	if (useTex) {
+	if (useTex || useWood) {
 		actualKa = vec3(1,1,1);
 		actualKd = vec3(1,1,1);
 		actualKs = vec3(1,1,1);
@@ -70,5 +72,5 @@ vec3 calcColor() {
 
 void main() {
     vec4 out_color = vec4(calcColor(),1);
-	fColor = useTex? out_color * texture(texSampler, fTex) : out_color;
+	fColor = useTex? out_color * texture(texSampler, fTex) : useWood? out_color * vec4(woodColor,1) : out_color;
 }

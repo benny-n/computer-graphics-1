@@ -38,6 +38,7 @@ protected:
 	bool mUseTexture;
 	GLuint mNormalMap;
 	bool mUseNormalMap;
+	bool mUseWood;
 
 	void calcTB();
 
@@ -47,10 +48,11 @@ public:
 	bool mDrawFaceNormals;
 	BoundryBox mBoundryBox;
 
-	Model() : mUseTexture(false), mUseNormalMap(false), mDrawBoundryBox(false), mDrawVertexNormals(false), mDrawFaceNormals(false) {}
+	Model() : mUseTexture(false), mUseNormalMap(false), mUseWood(false),
+		mDrawBoundryBox(false), mDrawVertexNormals(false), mDrawFaceNormals(false) {}
 	const string& getName();
 	const int getNumVertices();
-	void setTexture();
+	void setTexture(bool wood = false);
 	void setTexture(GLuint tex);
 	void setNormalMap();
 	void setNormalMap(GLuint tex);

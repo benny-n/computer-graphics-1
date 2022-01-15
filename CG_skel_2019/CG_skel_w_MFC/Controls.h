@@ -50,7 +50,7 @@
 
 // change texture menu
 #define NO_TEX 1
-#define TBD_TEX 2
+#define WOOD 2
 
 // change normal map menu
 #define	NO_NORMAL_MAP 1	

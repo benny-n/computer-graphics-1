@@ -18,6 +18,7 @@ uniform Light lights[MAX_LIGHTS];
 uniform mat4 modelview;
 uniform vec3 eye;
 uniform bool useTex;
+uniform bool useWood;
 in vec4 vPosition;
 in vec3 faceCenter;
 in vec3 faceNormal;
@@ -31,11 +32,40 @@ in vec2 tex;
 out vec4 out_color;
 out vec2 fTex;
 
+float noise(float x, float y) {
+	int ix = int(x);
+	int iy = int(y);
+    int n;
+    n = ix+iy*57;
+    x = (n<<13) ^ n;
+    return ( 1.0 - ( (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0);
+}
+
+float turbulence(float x, float y) {
+    float corners, sides, center;
+    corners = (noise(x-1, y-1) + noise(x+1, y-1) + noise(x-1, y+1) + noise(x+1, y+1) ) / 16;
+    sides   = (noise(x-1, y) + noise(x+1, y) + noise(x, y-1) + noise(x, y+1) ) /  8;
+    center  =  noise(x, y) / 4;
+    return corners + sides + center;
+}
+
+vec3 wood_color(float x) {
+	vec3 c1 = vec3(0.0,0.0,0.0);
+	vec3 c2 = vec3(0.64, 0.45,0.28);
+	float t = (sin(x) + 1) / 2;
+	return t * c1 + ( 1-t ) * c2;
+}
+
+vec3 wood() {
+	float noisy = pow(vPosition.x,2) + pow(vPosition.y,2) + turbulence(vPosition.x, vPosition.y);
+	return wood_color(noisy);
+}
+
 vec3 calcColor() {
 	vec3 actualKa = ka;
 	vec3 actualKd = kd;
 	vec3 actualKs = ks;
-	if (useTex) {
+	if (useTex || useWood) {
 		actualKa = vec3(1,1,1);
 		actualKd = vec3(1,1,1);
 		actualKs = vec3(1,1,1);
@@ -73,6 +103,7 @@ vec3 calcColor() {
 void main()
 {
     gl_Position = modelview * vPosition;
-    out_color = vec4(calcColor(),1);
+	vec4 base_color = vec4(calcColor(),1);
+	out_color = useWood? base_color * vec4(wood(),1) : base_color; 
 	fTex = tex;
 }

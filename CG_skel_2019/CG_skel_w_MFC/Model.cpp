@@ -133,11 +133,15 @@ const string& Model::getName() { return mName; }
 
 const int Model::getNumVertices() { return mVertexPositions.size() / 3; }
 
-void Model::setTexture() { mUseTexture = false; }
+void Model::setTexture(bool wood) { 
+	mUseTexture = false;
+	mUseWood = wood;
+}
 
 void Model::setTexture(GLuint tex) {
 	mUseTexture = true;
 	mTexture = tex;
+	mUseWood = false;
 }
 
 void Model::setNormalMap() { mUseNormalMap = false; }
@@ -604,6 +608,9 @@ void MeshModel::draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, mTexture);
 	}
+	// sending turbulent texture
+	GLuint useWoodLoc = glGetUniformLocation(program, "useWood");
+	glUniform1i(useWoodLoc, GLint(mUseWood));
 	glDrawArrays(GL_TRIANGLES, 0, bufferSize);
 	if (mDrawBoundryBox || mDrawVertexNormals || mDrawFaceNormals) {
 		glUseProgram(miscProgram);

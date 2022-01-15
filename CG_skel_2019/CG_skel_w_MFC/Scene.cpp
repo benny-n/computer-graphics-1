@@ -70,6 +70,8 @@ void Scene::loadTexture(string fileName) {
 }
 
 void Scene::loadNormalMap(string fileName) {
+	TCHAR NPath[MAX_PATH];
+	GetCurrentDirectory(MAX_PATH, NPath);
 	GLint width, height, channel_count;
 	stbi_set_flip_vertically_on_load(true);
 
@@ -92,6 +94,12 @@ void Scene::loadNormalMap(string fileName) {
 	stbi_image_free(data);
 
 	mModels[mActiveModel]->setNormalMap(handle);
+}
+
+void Scene::loadSkybox(string title) {
+	TCHAR NPath[MAX_PATH];
+	GetCurrentDirectory(MAX_PATH, NPath);
+	string dir(NPath);
 }
 
 void Scene::addCubeModel() {

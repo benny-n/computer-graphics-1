@@ -37,6 +37,7 @@ public:
 	void loadOBJModel(string fileName);
 	void loadTexture(string fileName);
 	void loadNormalMap(string fileName);
+	void loadSkybox(string title);
 	void initOpenGLRendering();
 	void createBuffers(int width, int height);
 	void addCubeModel();
