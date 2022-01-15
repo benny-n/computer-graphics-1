@@ -85,6 +85,10 @@
 #define INVERT_COLORS 1
 #define BANANIFY 2
 
+// skybos menu
+#define OCEAN 1
+#define NO_SKYBOX 2
+
 
 // define for sensetivity
 #define SCALE_UP (1 + 0.2 * gSensetivity)
@@ -117,5 +121,6 @@ void activeLightOptionsMenu(int id);
 void pickRasterizerMenu(int id);
 void animationsMenu(int id);
 void colorAnimationsMenu(int id);
+void changeSkyboxMenu(int id);
 void mainMenu(int id);
 void initMenu();

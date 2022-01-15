@@ -134,19 +134,37 @@ const string& Model::getName() { return mName; }
 const int Model::getNumVertices() { return mVertexPositions.size() / 3; }
 
 void Model::setTexture(bool wood) { 
+	if (mTexture != 0) {
+		glDeleteTextures(1, &mTexture);
+		mTexture = 0;
+	}
 	mUseTexture = false;
 	mUseWood = wood;
 }
 
 void Model::setTexture(GLuint tex) {
+	if (mTexture != 0) {
+		glDeleteTextures(1, &mTexture);
+		mTexture = 0;
+	}
 	mUseTexture = true;
 	mTexture = tex;
 	mUseWood = false;
 }
 
-void Model::setNormalMap() { mUseNormalMap = false; }
+void Model::setNormalMap() { 
+	if (mNormalMap != 0) {
+		glDeleteTextures(1, &mNormalMap);
+		mNormalMap = 0;
+	}
+	mUseNormalMap = false; 
+}
 
 void Model::setNormalMap(GLuint nm) {
+	if (mNormalMap != 0) {
+		glDeleteTextures(1, &mNormalMap);
+		mNormalMap = 0;
+	}
 	mUseNormalMap = true;
 	mNormalMap = nm;
 }

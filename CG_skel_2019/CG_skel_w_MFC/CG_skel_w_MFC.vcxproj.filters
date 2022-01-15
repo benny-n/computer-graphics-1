@@ -145,5 +145,11 @@
     <None Include="nm_vshader.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="skybox_fshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="skybox_vshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

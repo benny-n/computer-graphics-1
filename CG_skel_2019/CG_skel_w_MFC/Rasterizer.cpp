@@ -8,6 +8,7 @@ Rasterizer::Rasterizer() {
 	mGouraudProgram = InitShader("gouraud_vshader.glsl", "gouraud_fshader.glsl");
 	mPhongProgram = InitShader("phong_vshader.glsl", "phong_fshader.glsl");
 	mNMProgram = InitShader("nm_vshader.glsl", "nm_fshader.glsl");
+	mSkyboxProgram = InitShader("skybox_vshader.glsl", "skybox_fshader.glsl");
 	mActiveProgram = mFlatProgram;
 	glUseProgram(mActiveProgram);
 	mShaderType = ShaderType::Flat;
@@ -16,6 +17,8 @@ Rasterizer::Rasterizer() {
 GLuint Rasterizer::getMiscProgram() { return mMiscProgram; }
 
 GLuint Rasterizer::getNMProgram() { return mNMProgram; }
+
+GLuint Rasterizer::getSkyboxProgram() { return mSkyboxProgram; }
 
 GLuint Rasterizer::getActiveProgram() { return mActiveProgram; }
 

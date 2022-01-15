@@ -21,8 +21,11 @@ class Scene {
 	mat4 mAspectRatioTransform;
 	GLuint mScreenTex;
 	GLuint mScreenVtc;
+	GLuint mSkyBoxTex;
+	bool mUseSkybox;
 	bool mRenderCameras;
 	bool mControlWorld;
+	vector<GLfloat> mSkyboxBuffer;
 
 public:
 	int mWidth, mHeight;
@@ -38,6 +41,7 @@ public:
 	void loadTexture(string fileName);
 	void loadNormalMap(string fileName);
 	void loadSkybox(string title);
+	void removeSkybox();
 	void initOpenGLRendering();
 	void createBuffers(int width, int height);
 	void addCubeModel();
@@ -70,6 +74,7 @@ public:
 	void removeActiveCamera();
 	void removeActiveLight();
 	void setGlLights(GLuint program);
+	void drawSkybox();
 	void draw();
 	void drawDemo();
 

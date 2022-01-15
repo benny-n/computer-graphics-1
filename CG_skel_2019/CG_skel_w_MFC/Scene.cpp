@@ -6,10 +6,17 @@
 using namespace std;
 GLuint handle;
 
+const char pathSeparator =
+#ifdef _WIN32
+'\\';
+#else
+'/';
+#endif
+
 // Scene
 
 Scene::Scene() : mRenderCameras(false), mControlledElement(SceneElement::Camera), mControlWorld(false),
-				 mActiveModel(0), mActiveLight(0), mActiveCamera(0) {
+				 mActiveModel(0), mActiveLight(0), mActiveCamera(0), mSkyBoxTex(0), mUseSkybox(false) {
 	initOpenGLRendering();
 	createBuffers(512, 512);
 	auto defaultCamera = make_shared<Camera>();
@@ -20,6 +27,50 @@ Scene::Scene() : mRenderCameras(false), mControlledElement(SceneElement::Camera)
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glEnable(GL_DEPTH_TEST);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY_EXT);
+
+	mSkyboxBuffer = vector<GLfloat>{
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f
+	};
 }
 
 const vector<ModelPtr>& Scene::getModels() { return mModels; }
@@ -97,9 +148,47 @@ void Scene::loadNormalMap(string fileName) {
 }
 
 void Scene::loadSkybox(string title) {
+	removeSkybox();
 	TCHAR NPath[MAX_PATH];
 	GetCurrentDirectory(MAX_PATH, NPath);
-	string dir(NPath);
+	string dir = string(NPath) + pathSeparator + "skyboxes" + pathSeparator + title + pathSeparator;
+	vector<std::string> faces = { dir + "right.jpg", dir + "left.jpg", dir + "top.jpg",
+								  dir + "bottom.jpg", dir + "front.jpg", dir + "back.jpg" };
+
+	glGenTextures(1, &mSkyBoxTex);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mSkyBoxTex);
+
+	int width, height, nrChannels;
+	for (unsigned int i = 0; i < faces.size(); i++)
+	{
+		unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+		if (data)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+			);
+			stbi_image_free(data);
+		}
+		else
+		{
+			std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
+			stbi_image_free(data);
+		}
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	mUseSkybox = true;
+}
+
+void Scene::removeSkybox() { 
+	if (mSkyBoxTex) {
+		glDeleteTextures(1, &mSkyBoxTex);
+	}
+	mUseSkybox = false; 
 }
 
 void Scene::addCubeModel() {
@@ -492,6 +581,40 @@ void Scene::setGlLights(GLuint program) {
 	glUniform3fv(eyeLoc, 1, mCameras[mActiveCamera]->getEye());
 }
 
+void Scene::drawSkybox() {
+	// switch off depth so box is in background
+	glDepthMask(GL_FALSE);
+	GLuint program = mRasterizer->getSkyboxProgram();
+	glUseProgram(program);
+	auto activeCamera = mCameras[mActiveCamera];
+	const mat4 projection = activeCamera->getProjection();
+	const mat4 cameraTransform = activeCamera->getTransform();
+	// ignore translations
+	const mat4 view(cameraTransform[0][0], cameraTransform[0][1], cameraTransform[0][2], 0,
+					cameraTransform[1][0], cameraTransform[1][1], cameraTransform[1][2], 0,
+					cameraTransform[2][0], cameraTransform[2][1], cameraTransform[2][2], 0,
+					0, 0, 0, 1);
+	const mat4 from3dTo2d = projection * view;
+	// send transform
+	GLuint transformLoc = glGetUniformLocation(program, "transform");
+	GLfloat transform[16];
+	for (size_t i = 0; i < 4; i++) {
+		for (size_t j = 0; j < 4; j++) {
+			transform[i * 4 + j] = from3dTo2d[i][j];
+		}
+	}
+	glUniformMatrix4fv(transformLoc, 1, GL_TRUE, transform);
+	// bind the box
+	GLuint skyboxBuffer;
+	glGenBuffers(1, &skyboxBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, skyboxBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mSkyboxBuffer.size(), mSkyboxBuffer.data(), GL_STATIC_DRAW);
+	// draw
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mSkyBoxTex);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDepthMask(GL_TRUE);
+}
+
 void Scene::draw() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	setGlLights(mRasterizer->getActiveProgram());
@@ -501,6 +624,8 @@ void Scene::draw() {
 	const mat4 projection = activeCamera->getProjection();
 	const mat4 cameraTransform = activeCamera->getTransform();
 	const mat4 from3dTo2d = projection * cameraTransform * mAspectRatioTransform;
+
+	if (mUseSkybox) drawSkybox();
 
 	for each (auto model in mModels) {
 		model->draw(mRasterizer, from3dTo2d);

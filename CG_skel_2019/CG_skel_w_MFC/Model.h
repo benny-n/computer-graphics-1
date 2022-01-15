@@ -48,7 +48,7 @@ public:
 	bool mDrawFaceNormals;
 	BoundryBox mBoundryBox;
 
-	Model() : mUseTexture(false), mUseNormalMap(false), mUseWood(false),
+	Model() : mTexture(0), mUseTexture(false), mNormalMap(0), mUseNormalMap(false), mUseWood(false),
 		mDrawBoundryBox(false), mDrawVertexNormals(false), mDrawFaceNormals(false) {}
 	const string& getName();
 	const int getNumVertices();

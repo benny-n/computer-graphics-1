@@ -145,6 +145,8 @@
     <None Include="nm_vshader.glsl" />
     <None Include="phong_fshader.glsl" />
     <None Include="phong_vshader.glsl" />
+    <None Include="skybox_fshader.glsl" />
+    <None Include="skybox_vshader.glsl" />
     <None Include="vshader.glsl" />
     <None Include="ReadMe.txt" />
   </ItemGroup>

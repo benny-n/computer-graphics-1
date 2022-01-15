@@ -12,6 +12,7 @@ class Rasterizer {
 	GLuint mGouraudProgram;
 	GLuint mPhongProgram;
 	GLuint mNMProgram;
+	GLuint mSkyboxProgram;
 	GLuint mActiveProgram;
 	ShaderType mShaderType;
 
@@ -20,6 +21,7 @@ public:
 
 	GLuint getMiscProgram();
 	GLuint getNMProgram();
+	GLuint getSkyboxProgram();
 	GLuint getActiveProgram();
 	ShaderType getShaderType();
 	void setActiveProgram(ShaderType shaderType);

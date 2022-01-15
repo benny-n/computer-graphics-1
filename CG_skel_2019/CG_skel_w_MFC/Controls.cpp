@@ -574,6 +574,18 @@ void colorAnimationsMenu(int id) {
 	}
 }
 
+void changeSkyboxMenu(int id) {
+	switch (id) {
+	case OCEAN:
+		gScene->loadSkybox("ocean");
+		break;
+	case NO_SKYBOX:
+		gScene->removeSkybox();
+		break;
+	}
+	glutPostRedisplay();
+}
+
 void mainMenu(int id) {
 	switch (id)
 	{
@@ -749,6 +761,11 @@ void initMenu()
 	glutAddMenuEntry("Hulk Out", HULK_OUT);
 	glutAddSubMenu("Color Animations", menuColorAnimations);
 
+	//create skybox menu
+	int menuChangeSkybox = glutCreateMenu(changeSkyboxMenu);
+	glutAddMenuEntry("Ocean", OCEAN);
+	glutAddMenuEntry("None", NO_SKYBOX);
+
 
 	//finally, create the main menu and start adding submenus to it
 	glutCreateMenu(mainMenu);
@@ -768,6 +785,7 @@ void initMenu()
 	glutAddSubMenu("Active Light Options", menuActiveLightOptions);
 	glutAddSubMenu("Pick Rasterizer", menuPickRasterizer);
 	glutAddSubMenu("Animations", menuAnimations);
+	glutAddSubMenu("Skybox", menuChangeSkybox);
 
 	//glutAddMenuEntry("Demo", MAIN_DEMO);
 	glutAddMenuEntry("Help", HELP);
