@@ -71,6 +71,10 @@ Scene::Scene() : mRenderCameras(false), mControlledElement(SceneElement::Camera)
 		-1.0f, -1.0f,  1.0f,
 		 1.0f, -1.0f,  1.0f
 	};
+
+	for (int i = 0; i < mSkyboxBuffer.size(); i++) {
+		mSkyboxBuffer[i] *= 50;
+	}
 }
 
 const vector<ModelPtr>& Scene::getModels() { return mModels; }
@@ -149,11 +153,13 @@ void Scene::loadNormalMap(string fileName) {
 
 void Scene::loadSkybox(string title) {
 	removeSkybox();
-	TCHAR NPath[MAX_PATH];
-	GetCurrentDirectory(MAX_PATH, NPath);
-	string dir = string(NPath) + pathSeparator + "skyboxes" + pathSeparator + title + pathSeparator;
-	vector<std::string> faces = { dir + "right.jpg", dir + "left.jpg", dir + "top.jpg",
-								  dir + "bottom.jpg", dir + "front.jpg", dir + "back.jpg" };
+	vector<std::string> faces = { 
+		"skyboxes\\" + title + "\\right.jpg",
+		"skyboxes\\" + title + "\\left.jpg",
+		"skyboxes\\" + title + "\\top.jpg",
+		"skyboxes\\" + title + "\\bottom.jpg",
+		"skyboxes\\" + title + "\\front.jpg",
+		"skyboxes\\" + title + "\\back.jpg" };
 
 	glGenTextures(1, &mSkyBoxTex);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, mSkyBoxTex);
@@ -584,17 +590,14 @@ void Scene::setGlLights(GLuint program) {
 void Scene::drawSkybox() {
 	// switch off depth so box is in background
 	glDepthMask(GL_FALSE);
+	glEnable(GL_DEPTH_CLAMP);
 	GLuint program = mRasterizer->getSkyboxProgram();
 	glUseProgram(program);
 	auto activeCamera = mCameras[mActiveCamera];
 	const mat4 projection = activeCamera->getProjection();
 	const mat4 cameraTransform = activeCamera->getTransform();
-	// ignore translations
-	const mat4 view(cameraTransform[0][0], cameraTransform[0][1], cameraTransform[0][2], 0,
-					cameraTransform[1][0], cameraTransform[1][1], cameraTransform[1][2], 0,
-					cameraTransform[2][0], cameraTransform[2][1], cameraTransform[2][2], 0,
-					0, 0, 0, 1);
-	const mat4 from3dTo2d = projection * view;
+	
+	const mat4 from3dTo2d = projection * cameraTransform;
 	// send transform
 	GLuint transformLoc = glGetUniformLocation(program, "transform");
 	GLfloat transform[16];
@@ -609,10 +612,14 @@ void Scene::drawSkybox() {
 	glGenBuffers(1, &skyboxBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, skyboxBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mSkyboxBuffer.size(), mSkyboxBuffer.data(), GL_STATIC_DRAW);
+	GLuint loc = glGetAttribLocation(program, "vPosition");
+	glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	// draw
 	glBindTexture(GL_TEXTURE_CUBE_MAP, mSkyBoxTex);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDrawArrays(GL_TRIANGLES, 0, mSkyboxBuffer.size());
+	// return gl to correct state for models
 	glDepthMask(GL_TRUE);
+	glDisable(GL_DEPTH_CLAMP);
 }
 
 void Scene::draw() {

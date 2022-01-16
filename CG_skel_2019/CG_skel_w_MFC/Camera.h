@@ -12,6 +12,7 @@ class Camera {
 	mat4 mCameraTransform;
 	mat4 mLookAt;
 	mat4 mProjection;
+	mat4 mRotations;
 
 public:
 	Camera();
@@ -22,6 +23,7 @@ public:
 	void transform(const float degrees, const RotationAxis& axis); // for rotating
 	void transform(const vec3& v); // for translatin
 	mat4 getTransform();
+	mat4 getRotations();
 	mat4 getProjection();
 	void lookAt(const vec4& eye, const vec4& at, const vec4& up);
 	void ortho(const float left, const float right,

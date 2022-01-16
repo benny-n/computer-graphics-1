@@ -4,8 +4,8 @@
 
 // Camera
 Camera::Camera() {
-	lookAt(vec4(vec3(0, 0, 10)), vec4(vec3(0, 0, 0)), vec4(vec3(0, 1, 0)));
-	ortho(-10, 10, -10, 10, 5, 15);
+	lookAt(vec4(vec3(0, 0, 15)), vec4(vec3(0, 0, 0)), vec4(vec3(0, 1, 0)));
+	ortho(-10, 10, -10, 10, 5, 25);
 }
 
 Camera::Camera(const vec4& eye) {
@@ -51,6 +51,7 @@ void Camera::transform(const vec3& v) {
 }
 
 mat4 Camera::getTransform() { return mLookAt * mCameraTransform; }
+mat4 Camera::getRotations() { return mRotations; }
 mat4 Camera::getProjection() { return mProjection; }
 
 void Camera::lookAt(const vec4& eye, const vec4& at, const vec4& up) {

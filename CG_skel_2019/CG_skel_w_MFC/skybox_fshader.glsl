@@ -2,7 +2,7 @@
 
 uniform samplerCube skybox;
 
-varying vec3 tex;
+in vec3 tex;
 
 out vec4 fColor;
 

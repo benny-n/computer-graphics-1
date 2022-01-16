@@ -4,7 +4,7 @@ uniform mat4 transform;
 
 in vec3 vPosition;
 
-varying vec3 tex;
+out vec3 tex;
 
 void main() {
     tex = vPosition;
