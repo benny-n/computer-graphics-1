@@ -602,11 +602,12 @@ void Scene::drawSkybox() {
 		}
 	}
 	glUniformMatrix4fv(transformLoc, 1, GL_TRUE, transform);
-	// bind the box
+	// fit the skybox to the viewing window size (1.5 to ensure camera doesn't slip out of the skybox)
 	float maxSide = 1.5 * activeCamera->getMaxSideLength();
 	vector<GLfloat> skyboxFittedBuffer(mSkyboxBuffer.size());
 	for (int i = 0; i < mSkyboxBuffer.size(); i++)
 		skyboxFittedBuffer[i] = maxSide * mSkyboxBuffer[i];
+	// bind the box
 	GLuint skyboxBuffer;
 	glGenBuffers(1, &skyboxBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, skyboxBuffer);
