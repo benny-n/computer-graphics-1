@@ -87,7 +87,9 @@
 
 // skybos menu
 #define OCEAN 1
-#define NO_SKYBOX 2
+#define FIELD 2
+#define	SPACE 3
+#define NO_SKYBOX 6
 
 
 // define for sensetivity

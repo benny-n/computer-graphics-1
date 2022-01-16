@@ -13,3 +13,4 @@ CG_skel_2019/CG_skel_w_MFC/*
 !CG_skel_2019/CG_skel_w_MFC/*.glsl
 !CG_skel_2019/CG_skel_w_MFC/objs
 !CG_skel_2019/CG_skel_w_MFC/textures
+!CG_skel_2019/CG_skel_w_MFC/skyboxes

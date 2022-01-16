@@ -579,6 +579,12 @@ void changeSkyboxMenu(int id) {
 	case OCEAN:
 		gScene->loadSkybox("ocean");
 		break;
+	case FIELD:
+		gScene->loadSkybox("field");
+		break;
+	case SPACE:
+		gScene->loadSkybox("space");
+		break;
 	case NO_SKYBOX:
 		gScene->removeSkybox();
 		break;
@@ -764,6 +770,8 @@ void initMenu()
 	//create skybox menu
 	int menuChangeSkybox = glutCreateMenu(changeSkyboxMenu);
 	glutAddMenuEntry("Ocean", OCEAN);
+	glutAddMenuEntry("Field", FIELD);
+	glutAddMenuEntry("Space", SPACE);
 	glutAddMenuEntry("None", NO_SKYBOX);
 
 
