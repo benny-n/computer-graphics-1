@@ -6,6 +6,7 @@ enum class RotationAxis {
 };
 
 class Camera {
+	float mMaxSideLength;
 	vec4 mEye;
 	vec4 mAt;
 	vec4 mUp;
@@ -22,6 +23,7 @@ public:
 	void transform(const mat4& m); // for scaling
 	void transform(const float degrees, const RotationAxis& axis); // for rotating
 	void transform(const vec3& v); // for translatin
+	float getMaxSideLength();
 	mat4 getTransform();
 	mat4 getRotations();
 	mat4 getProjection();

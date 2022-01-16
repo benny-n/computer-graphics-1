@@ -32,12 +32,15 @@ void Camera::transform(const float degrees, const RotationAxis& axis) {
 	switch (axis) {
 	case RotationAxis::X:
 		rotation = rotateX(degrees);
+		mRotations = rotation * mRotations;
 		break;
 	case RotationAxis::Y:
 		rotation = rotateY(degrees);
+		mRotations = rotation * mRotations;
 		break;
 	case RotationAxis::Z:
 		rotation = rotateZ(degrees);
+		mRotations = rotateZ(-degrees) * mRotations;
 		break;
 	}
 	// We transform from normal axes to the camera axes, then 
@@ -50,6 +53,7 @@ void Camera::transform(const vec3& v) {
 	lookAt(mEye + vec4(v, 0), mAt + vec4(v, 0), mUp);
 }
 
+float Camera::getMaxSideLength() { return mMaxSideLength; }
 mat4 Camera::getTransform() { return mLookAt * mCameraTransform; }
 mat4 Camera::getRotations() { return mRotations; }
 mat4 Camera::getProjection() { return mProjection; }
@@ -69,6 +73,7 @@ void Camera::lookAt(const vec4& eye, const vec4& at, const vec4& up) {
 void Camera::ortho(const float left, const float right,
 	const float bottom, const float top,
 	const float zNear, const float zFar) {
+	mMaxSideLength = MAX3(right - left, top - bottom, zFar);
 	mat4 ortho;
 	ortho[0][0] = 2 / (right - left);
 	ortho[1][1] = 2 / (top - bottom);

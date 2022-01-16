@@ -71,10 +71,6 @@ Scene::Scene() : mRenderCameras(false), mControlledElement(SceneElement::Camera)
 		-1.0f, -1.0f,  1.0f,
 		 1.0f, -1.0f,  1.0f
 	};
-
-	for (int i = 0; i < mSkyboxBuffer.size(); i++) {
-		mSkyboxBuffer[i] *= 50;
-	}
 }
 
 const vector<ModelPtr>& Scene::getModels() { return mModels; }
@@ -595,9 +591,8 @@ void Scene::drawSkybox() {
 	glUseProgram(program);
 	auto activeCamera = mCameras[mActiveCamera];
 	const mat4 projection = activeCamera->getProjection();
-	const mat4 cameraTransform = activeCamera->getTransform();
-	
-	const mat4 from3dTo2d = projection * cameraTransform;
+	const mat4 rotations = activeCamera->getRotations();
+	const mat4 from3dTo2d = projection * rotations;
 	// send transform
 	GLuint transformLoc = glGetUniformLocation(program, "transform");
 	GLfloat transform[16];
@@ -608,15 +603,19 @@ void Scene::drawSkybox() {
 	}
 	glUniformMatrix4fv(transformLoc, 1, GL_TRUE, transform);
 	// bind the box
+	float maxSide = 1.5 * activeCamera->getMaxSideLength();
+	vector<GLfloat> skyboxFittedBuffer(mSkyboxBuffer.size());
+	for (int i = 0; i < mSkyboxBuffer.size(); i++)
+		skyboxFittedBuffer[i] = maxSide * mSkyboxBuffer[i];
 	GLuint skyboxBuffer;
 	glGenBuffers(1, &skyboxBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, skyboxBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * mSkyboxBuffer.size(), mSkyboxBuffer.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * skyboxFittedBuffer.size(), skyboxFittedBuffer.data(), GL_STATIC_DRAW);
 	GLuint loc = glGetAttribLocation(program, "vPosition");
 	glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	// draw
 	glBindTexture(GL_TEXTURE_CUBE_MAP, mSkyBoxTex);
-	glDrawArrays(GL_TRIANGLES, 0, mSkyboxBuffer.size());
+	glDrawArrays(GL_TRIANGLES, 0, skyboxFittedBuffer.size());
 	// return gl to correct state for models
 	glDepthMask(GL_TRUE);
 	glDisable(GL_DEPTH_CLAMP);
