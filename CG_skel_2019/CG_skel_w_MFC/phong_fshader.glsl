@@ -16,9 +16,11 @@ struct Light {
 uniform int numLights;
 uniform Light lights[MAX_LIGHTS];
 uniform vec3 eye;
+uniform samplerCube skybox;
 uniform sampler2D texSampler;
 uniform bool useTex;
 uniform bool useWood;
+uniform float reflectivity;
 
 varying vec2 fTex;
 varying vec3 fPosition;
@@ -72,5 +74,9 @@ vec3 calcColor() {
 
 void main() {
     vec4 out_color = vec4(calcColor(),1);
-	fColor = useTex? out_color * texture(texSampler, fTex) : useWood? out_color * vec4(woodColor,1) : out_color;
+	vec4 base_color = useTex? out_color * texture(texSampler, fTex) : useWood? out_color * vec4(woodColor,1) : out_color;
+	vec3 I = normalize(fPosition - eye);
+    vec3 R = reflect(I, normalize(fNormal));
+    vec4 reflective_color = reflectivity != 0? vec4(texture(skybox, R).rgb, 1.0) : vec4(0,0,0,0);
+    fColor = reflectivity * reflective_color + (1 - reflectivity) * base_color;
 }

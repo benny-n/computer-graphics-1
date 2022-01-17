@@ -16,10 +16,12 @@ struct Light {
 uniform int numLights;
 uniform Light lights[MAX_LIGHTS];
 uniform vec3 eye;
+uniform samplerCube skybox;
 uniform sampler2D texSampler;
 uniform bool useTex;
 uniform bool useWood;
 uniform sampler2D normalMap;
+uniform float reflectivity;
 
 varying vec3 fPosition;
 varying vec3 fKa;
@@ -33,7 +35,7 @@ in mat3 TBN;
 
 out vec4 fColor;
 
-vec3 calcColor() {
+vec3 calcColor(vec3 normal) {
 vec3 actualKa = fKa;
 	vec3 actualKd = fKd;
 	vec3 actualKs = fKs;
@@ -44,7 +46,7 @@ vec3 actualKa = fKa;
 	}
 	vec3 color = vec3(0, 0, 0);
 	vec3 v = normalize(eye - fPosition);
-	vec3 n = normalize(TBN * (texture(normalMap, fTex).rgb * 2.0 - 1.0));
+	vec3 n = normal;
 	vec3 l, r;
 
 	for (int i = 0; i < numLights; i++) {
@@ -72,6 +74,11 @@ vec3 actualKa = fKa;
 }
 
 void main() {
-    vec4 out_color = vec4(calcColor(),1);
-	fColor = useTex? out_color * texture(texSampler, fTex) : useWood? out_color * vec4(woodColor,1) : out_color;
+	vec3 normal = normalize(TBN * (texture(normalMap, fTex).rgb * 2.0 - 1.0));
+    vec4 out_color = vec4(calcColor(normal),1);
+	vec4 base_color = useTex? out_color * texture(texSampler, fTex) : useWood? out_color * vec4(woodColor,1) : out_color;
+	vec3 I = normalize(fPosition - eye);
+    vec3 R = reflect(I, normalize(normal));
+    vec4 reflective_color = reflectivity != 0? vec4(texture(skybox, R).rgb, 1.0) : vec4(0,0,0,0);
+    fColor = reflectivity * reflective_color + (1 - reflectivity) * base_color;
 }

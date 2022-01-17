@@ -16,7 +16,7 @@ const char pathSeparator =
 // Scene
 
 Scene::Scene() : mRenderCameras(false), mControlledElement(SceneElement::Camera), mControlWorld(false),
-				 mActiveModel(0), mActiveLight(0), mActiveCamera(0), mSkyBoxTex(0), mUseSkybox(false) {
+				 mActiveModel(0), mActiveLight(0), mActiveCamera(0), mSkyboxTex(0), mUseSkybox(false) {
 	initOpenGLRendering();
 	createBuffers(512, 512);
 	auto defaultCamera = make_shared<Camera>();
@@ -157,8 +157,8 @@ void Scene::loadSkybox(string title) {
 		"skyboxes\\" + title + "\\front.jpg",
 		"skyboxes\\" + title + "\\back.jpg" };
 
-	glGenTextures(1, &mSkyBoxTex);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, mSkyBoxTex);
+	glGenTextures(1, &mSkyboxTex);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mSkyboxTex);
 
 	int width, height, nrChannels;
 	for (unsigned int i = 0; i < faces.size(); i++)
@@ -187,10 +187,18 @@ void Scene::loadSkybox(string title) {
 }
 
 void Scene::removeSkybox() { 
-	if (mSkyBoxTex) {
-		glDeleteTextures(1, &mSkyBoxTex);
+	if (mSkyboxTex != 0) {
+		glDeleteTextures(1, &mSkyboxTex);
+		mSkyboxTex = 0;
+	}
+	for each (auto model in mModels) {
+		model->setReflectivity(0);
 	}
 	mUseSkybox = false; 
+}
+
+bool Scene::skyboxActive() {
+	return mUseSkybox;
 }
 
 void Scene::addCubeModel() {
@@ -615,11 +623,16 @@ void Scene::drawSkybox() {
 	GLuint loc = glGetAttribLocation(program, "vPosition");
 	glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	// draw
-	glBindTexture(GL_TEXTURE_CUBE_MAP, mSkyBoxTex);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mSkyboxTex);
 	glDrawArrays(GL_TRIANGLES, 0, skyboxFittedBuffer.size());
 	// return gl to correct state for models
 	glDepthMask(GL_TRUE);
 	glDisable(GL_DEPTH_CLAMP);
+	// bind the box texture to other programs
+	glUseProgram(mRasterizer->getActiveProgram());
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mSkyboxTex);
+	glUseProgram(mRasterizer->getNMProgram());
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mSkyboxTex);
 }
 
 void Scene::draw() {

@@ -139,6 +139,29 @@ protected:
 };
 
 // -------------------------
+//    Class CReflectivityDialog
+// -------------------------
+
+class CReflectivityDialog : public CInputDialog
+{
+public:
+    CReflectivityDialog(CString title = "Input Dialog");
+    virtual ~CReflectivityDialog();
+
+    float getReflectivity();
+
+protected:
+    float mReflectivity;
+    CEdit mReflectivityEdit;
+
+    virtual void DoDataExchange(CDataExchange* pDX);
+
+    afx_msg int OnCreate(LPCREATESTRUCT lpcs);
+    afx_msg void OnPaint();
+    DECLARE_MESSAGE_MAP()
+};
+
+// -------------------------
 //    Class CBoxDialog
 // -------------------------
 

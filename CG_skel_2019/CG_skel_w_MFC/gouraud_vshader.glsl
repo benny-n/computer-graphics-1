@@ -31,6 +31,8 @@ in vec2 tex;
 
 
 varying vec4 out_color;
+out vec3 fPosition;
+out vec3 fNormal;
 out vec2 fTex;
 
 float rand3D(in vec3 co){
@@ -130,7 +132,7 @@ vec3 calcColor(vec3 position, vec3 normal) {
 		color = color + Ia + Id + Is;
 	}
 
-	if (useTex) color += emission;
+	if (!useTex && !useWood) color += emission;
 	return color;
 }
 
@@ -141,5 +143,7 @@ void main()
     gl_Position = vec4(modifiedPosition,1);
     vec4 base_color = vec4(calcColor(modifiedPosition,modifiedNormal),1);
 	out_color = useWood? base_color * vec4(wood(),1) : base_color;
+	fPosition = vPosition;
+	fNormal = modifiedNormal;
 	fTex = tex;
 }

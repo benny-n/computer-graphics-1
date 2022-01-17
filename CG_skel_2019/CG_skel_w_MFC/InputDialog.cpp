@@ -12,39 +12,41 @@
 #define IDC_G_EDIT 205
 #define IDC_B_EDIT 206
 
-#define IDC_LEFT_EDIT 207
-#define IDC_RIGHT_EDIT 208
-#define IDC_BOTTOM_EDIT 209
-#define IDC_TOP_EDIT 210
-#define IDC_ZNEAR_EDIT 211
-#define IDC_ZFAR_EDIT 212
+#define IDC_REFLECTIVITY_EDIT 207
 
-#define IDC_FOVY_EDIT 213
-#define IDC_ASPECT_EDIT 214
+#define IDC_LEFT_EDIT 208
+#define IDC_RIGHT_EDIT 209
+#define IDC_BOTTOM_EDIT 210
+#define IDC_TOP_EDIT 211
+#define IDC_ZNEAR_EDIT 212
+#define IDC_ZFAR_EDIT 213
 
-#define IDC_KAR_EDIT 215
-#define IDC_KAG_EDIT 216
-#define IDC_KAB_EDIT 217
-#define IDC_KDR_EDIT 218
-#define IDC_KDG_EDIT 219
-#define IDC_KDB_EDIT 220
-#define IDC_KSR_EDIT 221
-#define IDC_KSG_EDIT 222
-#define IDC_KSB_EDIT 223
-#define IDC_EMISSIONR_EDIT 224
-#define IDC_EMISSIONG_EDIT 225
-#define IDC_EMISSIONB_EDIT 226
-#define IDC_ALPHA_EDIT 227
+#define IDC_FOVY_EDIT 214
+#define IDC_ASPECT_EDIT 215
 
-#define IDC_LAR_EDIT 228
-#define IDC_LAG_EDIT 229
-#define IDC_LAB_EDIT 230
-#define IDC_LDR_EDIT 231
-#define IDC_LDG_EDIT 232
-#define IDC_LDB_EDIT 233
-#define IDC_LSR_EDIT 234
-#define IDC_LSG_EDIT 235
-#define IDC_LSB_EDIT 236
+#define IDC_KAR_EDIT 216
+#define IDC_KAG_EDIT 217
+#define IDC_KAB_EDIT 218
+#define IDC_KDR_EDIT 219
+#define IDC_KDG_EDIT 220
+#define IDC_KDB_EDIT 221
+#define IDC_KSR_EDIT 222
+#define IDC_KSG_EDIT 223
+#define IDC_KSB_EDIT 224
+#define IDC_EMISSIONR_EDIT 225
+#define IDC_EMISSIONG_EDIT 226
+#define IDC_EMISSIONB_EDIT 227
+#define IDC_ALPHA_EDIT 228
+
+#define IDC_LAR_EDIT 229
+#define IDC_LAG_EDIT 230
+#define IDC_LAB_EDIT 231
+#define IDC_LDR_EDIT 232
+#define IDC_LDG_EDIT 233
+#define IDC_LDB_EDIT 234
+#define IDC_LSR_EDIT 235
+#define IDC_LSG_EDIT 236
+#define IDC_LSB_EDIT 237
 
 
 #define CMD_EDIT_TITLE "Command"
@@ -55,6 +57,8 @@
 #define R_EDIT_TITLE "R ="
 #define G_EDIT_TITLE "G ="
 #define B_EDIT_TITLE "B ="
+
+#define REFLECTIVITY_EDIT_TITLE "Reflectivity ="
 
 #define LEFT_EDIT_TITLE "Left ="
 #define RIGHT_EDIT_TITLE "Right ="
@@ -321,6 +325,45 @@ void CRGBDialog::OnPaint() {
     dc.DrawText(CString(B_EDIT_TITLE), -1, &b_rect, DT_SINGLELINE);
 
     mREdit.SetFocus();
+}
+
+// -------------------------
+//    Class CReflectivityDialog
+// -------------------------
+
+CReflectivityDialog::CReflectivityDialog(CString title) : CInputDialog(title), mReflectivity(0.0) {}
+
+CReflectivityDialog::~CReflectivityDialog() {}
+
+float CReflectivityDialog::getReflectivity() { return mReflectivity; }
+
+void CReflectivityDialog::DoDataExchange(CDataExchange* pDX) {
+    CInputDialog::DoDataExchange(pDX);
+    DDX_Text(pDX, IDC_REFLECTIVITY_EDIT, mReflectivity);
+    DDV_MinMaxFloat(pDX, mReflectivity, 0, 1);
+}
+
+// CRGBDialog message handlers
+BEGIN_MESSAGE_MAP(CReflectivityDialog, CInputDialog)
+    ON_WM_CREATE()
+    ON_WM_PAINT()
+END_MESSAGE_MAP()
+
+int CReflectivityDialog::OnCreate(LPCREATESTRUCT lpcs) {
+    mReflectivityEdit.Create(ES_MULTILINE | WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
+        CRect(210, 70, 250, 90), this, IDC_REFLECTIVITY_EDIT);
+
+   return 0;
+}
+
+void CReflectivityDialog::OnPaint() {
+    CPaintDC dc(this);
+    dc.SetBkMode(TRANSPARENT);
+
+    CRect reflectivity_rect(100, 72, 210, 100);
+    dc.DrawText(CString(REFLECTIVITY_EDIT_TITLE), -1, &reflectivity_rect, DT_SINGLELINE);
+
+    mReflectivityEdit.SetFocus();
 }
 
 // -------------------------

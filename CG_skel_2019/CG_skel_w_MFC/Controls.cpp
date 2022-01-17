@@ -273,6 +273,17 @@ void changeMaterialMenu(int id) {
 	case NON_UNIFORM_MATERIAL:
 		gScene->changeActiveModelMaterial();
 		break;
+	case REFLECTIVITY: {
+		if (!gScene->skyboxActive()) {
+			AfxMessageBox(_T("Reflectivity has no effect without a skybox"));
+			break;
+		}
+		CReflectivityDialog dlg;
+		if (dlg.DoModal() == IDOK) {
+			gScene->getModels()[gScene->mActiveModel]->setReflectivity(dlg.getReflectivity());
+		}
+		break;
+	}
 	}
 	glutPostRedisplay();
 }
@@ -649,20 +660,6 @@ void initMenu()
 		counter++;
 	}
 
-	//create change material menu
-	int menuChangeMaterial = glutCreateMenu(changeMaterialMenu);
-	glutAddMenuEntry("Uniform Material", UNIFORM_MATERIAL);
-	glutAddMenuEntry("Non-Uniform Material", NON_UNIFORM_MATERIAL);
-
-	//create change model color menu
-	int menuChangeModelColor = glutCreateMenu(changeModelColorMenu);
-	glutAddMenuEntry("White", WHITE);
-	glutAddMenuEntry("Red", RED);
-	glutAddMenuEntry("Green", GREEN);
-	glutAddMenuEntry("Blue", BLUE);
-	glutAddMenuEntry("Yellow", YELLOW);
-	glutAddMenuEntry("Choose custom color", CUSTOM_COLOR);
-
 	//create change texture coords menu
 	int menuChangeTexCoords = glutCreateMenu(changeTexCoordsMenu);
 	glutAddMenuEntry("Project on Plain", PROJECTION_ON_PLAIN);
@@ -678,6 +675,26 @@ void initMenu()
 	glutAddSubMenu("From File", menuTexFile);
 	glutAddMenuEntry("Wood", WOOD);
 	glutAddMenuEntry("No Texture", NO_TEX);
+
+	int menuTexture = glutCreateMenu(nullptr); // has only sub menus so needs no function
+	glutAddSubMenu("Change Texture", menuChangeTex);
+	glutAddSubMenu("Change Texture Coordinates", menuChangeTexCoords);
+
+	//create change material menu
+	int menuChangeMaterial = glutCreateMenu(changeMaterialMenu);
+	glutAddMenuEntry("Uniform Material", UNIFORM_MATERIAL);
+	glutAddMenuEntry("Non-Uniform Material", NON_UNIFORM_MATERIAL);
+	glutAddSubMenu("Texture Settings", menuTexture);
+	glutAddMenuEntry("Change Reflectivity", REFLECTIVITY);
+
+	//create change model color menu
+	int menuChangeModelColor = glutCreateMenu(changeModelColorMenu);
+	glutAddMenuEntry("White", WHITE);
+	glutAddMenuEntry("Red", RED);
+	glutAddMenuEntry("Green", GREEN);
+	glutAddMenuEntry("Blue", BLUE);
+	glutAddMenuEntry("Yellow", YELLOW);
+	glutAddMenuEntry("Choose custom color", CUSTOM_COLOR);
 
 	//create normal map file menu
 	int menuNormalMapFile = glutCreateMenu(normalMapFileMenu);
@@ -696,8 +713,6 @@ void initMenu()
 	glutAddMenuEntry("Move To", MOVE_MODEL_TO);
 	glutAddSubMenu("Change Material", menuChangeMaterial);
 	glutAddSubMenu("Change Color", menuChangeModelColor);
-	glutAddSubMenu("Change Texture Coordinates", menuChangeTexCoords);
-	glutAddSubMenu("Change Texture", menuChangeTex);
 	glutAddSubMenu("Change Normal Map", menuChangeNormalMap);
 	glutAddMenuEntry("Remove Active Model", REMOVE_ACTIVE_MODEL);
 

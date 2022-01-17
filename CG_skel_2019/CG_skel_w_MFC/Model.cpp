@@ -152,6 +152,8 @@ void Model::setTexture(GLuint tex) {
 	mUseWood = false;
 }
 
+void Model::setReflectivity(float reflectivity) { mReflectivity = reflectivity; }
+
 void Model::setNormalMap() { 
 	if (mNormalMap != 0) {
 		glDeleteTextures(1, &mNormalMap);
@@ -582,10 +584,7 @@ int MeshModel::initShaderBuffer(RasterizerPtr rasterizer) {
 	}
 }
 
-const Material& MeshModel::getMaterial()
-{
-	return mVertexMaterials[0];
-}
+const Material& MeshModel::getMaterial() { return mVertexMaterials[0]; }
 
 void MeshModel::growVertex(int vertexIndex) {
 	for (int i = 3 * vertexIndex; i < 3 * vertexIndex + 3; i++) {
@@ -629,6 +628,9 @@ void MeshModel::draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) {
 	// sending turbulent texture
 	GLuint useWoodLoc = glGetUniformLocation(program, "useWood");
 	glUniform1i(useWoodLoc, GLint(mUseWood));
+	// sending reflectivity
+	GLuint reflectivityLoc = glGetUniformLocation(program, "reflectivity");
+	glUniform1f(reflectivityLoc, GLfloat(mReflectivity));
 	glDrawArrays(GL_TRIANGLES, 0, bufferSize);
 	if (mDrawBoundryBox || mDrawVertexNormals || mDrawFaceNormals) {
 		glUseProgram(miscProgram);

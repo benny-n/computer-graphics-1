@@ -31,17 +31,6 @@
 #define MOVE_MODEL_TO 4
 #define REMOVE_ACTIVE_MODEL 5
 
-// change material menu
-#define UNIFORM_MATERIAL 1
-#define NON_UNIFORM_MATERIAL 2
-
-// change color menu
-#define WHITE 1
-#define RED 2
-#define GREEN 3
-#define BLUE 4
-#define YELLOW 5
-#define CUSTOM_COLOR 6
 
 // change texture coords menu
 #define PROJECTION_ON_PLAIN 1
@@ -51,6 +40,19 @@
 // change texture menu
 #define NO_TEX 1
 #define WOOD 2
+
+// change material menu
+#define UNIFORM_MATERIAL 1
+#define NON_UNIFORM_MATERIAL 2
+#define REFLECTIVITY 3
+
+// change color menu
+#define WHITE 1
+#define RED 2
+#define GREEN 3
+#define BLUE 4
+#define YELLOW 5
+#define CUSTOM_COLOR 6
 
 // change normal map menu
 #define	NO_NORMAL_MAP 1	
