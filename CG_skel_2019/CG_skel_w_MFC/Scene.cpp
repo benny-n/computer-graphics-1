@@ -148,7 +148,10 @@ void Scene::loadNormalMap(string fileName) {
 }
 
 void Scene::loadSkybox(string title) {
-	removeSkybox();
+	if (mSkyboxTex != 0) {
+		glDeleteTextures(1, &mSkyboxTex);
+		mSkyboxTex = 0;
+	}
 	vector<std::string> faces = { 
 		"skyboxes\\" + title + "\\right.jpg",
 		"skyboxes\\" + title + "\\left.jpg",

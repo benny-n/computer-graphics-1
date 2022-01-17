@@ -570,17 +570,18 @@ int MeshModel::initNMBuffer(GLuint program) {
 	return buffer.size();
 }
 
-int MeshModel::initShaderBuffer(RasterizerPtr rasterizer) {
+int MeshModel::initShaderBuffer(RasterizerPtr rasterizer, const mat4& transform) {
 	if (mUseNormalMap) return initNMBuffer(rasterizer->getNMProgram());
 	GLuint program = rasterizer->getActiveProgram();
 	switch (rasterizer->getShaderType()) {
 		case ShaderType::Flat:
 			return initFlatBuffer(program);
+		case ShaderType::Toon:
+			drawSilhouette(rasterizer->getSilhouetteProgram(), transform);
+			glUseProgram(program);
 		case ShaderType::Gouraud:
-			return initSmoothBuffer(program);
 		case ShaderType::Phong:
-			return initSmoothBuffer(program);
-			break;
+			return initSmoothBuffer(program);	
 	}
 }
 
@@ -604,10 +605,10 @@ void MeshModel::draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) {
 		glBindTexture(GL_TEXTURE_2D, mNormalMap);
 	}
 	else glUseProgram(program);
-	int bufferSize = initShaderBuffer(rasterizer);
+	mat4 finalTransform = from3dTo2d * mWorldTransform * mModelTransform;
+	int bufferSize = initShaderBuffer(rasterizer, finalTransform);
 	// sending model view
 	GLuint modelviewLoc = glGetUniformLocation(program, "modelview");
-	mat4 finalTransform = from3dTo2d * mWorldTransform * mModelTransform;
 	GLfloat modelView[16];
 	for (size_t i = 0; i < 4; i++) {
 		for (size_t j = 0; j < 4; j++) {
@@ -638,6 +639,42 @@ void MeshModel::draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) {
 		if (mDrawVertexNormals) drawVertexNormals(miscProgram, finalTransform);
 		if (mDrawFaceNormals) drawFaceNormals(miscProgram, from3dTo2d);
 	}
+}
+
+void MeshModel::drawSilhouette(GLuint program, const mat4& transform) {
+	glUseProgram(program);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+	vector<GLfloat> buffer;
+	for (int i = 0; i < mVertexPositions.size(); i += 3) {
+		// position
+		buffer.push_back(mVertexPositions[i]);
+		buffer.push_back(mVertexPositions[i + 1]);
+		buffer.push_back(mVertexPositions[i + 2]);
+		// normal
+		buffer.push_back(mVertexNormals[i * 2 + 3] - mVertexPositions[i]);
+		buffer.push_back(mVertexNormals[i * 2 + 4] - mVertexPositions[i + 1]);
+		buffer.push_back(mVertexNormals[i * 2 + 5] - mVertexPositions[i + 2]);
+	}
+	GLuint silhouetteBuffer;
+	glGenBuffers(1, &silhouetteBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, silhouetteBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * buffer.size(), buffer.data(), GL_STATIC_DRAW);
+
+	int stride = 6;
+	setGlAttribute(program, "vPosition", 3, stride, 0);
+	setGlAttribute(program, "vNormal", 3, stride, 3);
+
+	GLuint modelviewLoc = glGetUniformLocation(program, "modelview");
+	GLfloat modelView[16];
+	for (size_t i = 0; i < 4; i++) {
+		for (size_t j = 0; j < 4; j++) {
+			modelView[i * 4 + j] = transform[i][j];
+		}
+	}
+	glUniformMatrix4fv(modelviewLoc, 1, GL_TRUE, modelView);
+	glDrawArrays(GL_TRIANGLES, 0, buffer.size());
+	glDisable(GL_CULL_FACE);
 }
 
 void MeshModel::drawVertexNormals(GLuint miscProgram, const mat4& finalTransform) {

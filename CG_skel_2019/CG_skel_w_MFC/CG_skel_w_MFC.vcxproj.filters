@@ -151,5 +151,17 @@
     <None Include="skybox_vshader.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="toon_fshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="toon_vshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="silhouette_fshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="silhouette_vshader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

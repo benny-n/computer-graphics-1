@@ -3,7 +3,7 @@
 #include "gl/glew.h"
 
 enum class ShaderType {
-	Flat, Gouraud, Phong
+	Flat, Gouraud, Phong, Toon
 };
 
 class Rasterizer {
@@ -11,6 +11,8 @@ class Rasterizer {
 	GLuint mFlatProgram;
 	GLuint mGouraudProgram;
 	GLuint mPhongProgram;
+	GLuint mToonProgram;
+	GLuint mSilhouetteProgram;
 	GLuint mNMProgram;
 	GLuint mSkyboxProgram;
 	GLuint mActiveProgram;
@@ -20,6 +22,7 @@ public:
 	Rasterizer();
 
 	GLuint getMiscProgram();
+	GLuint getSilhouetteProgram();
 	GLuint getNMProgram();
 	GLuint getSkyboxProgram();
 	GLuint getActiveProgram();

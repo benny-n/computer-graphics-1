@@ -553,6 +553,9 @@ void pickRasterizerMenu(int id) {
 	case PHONG:
 		gScene->setRasterizer(ShaderType::Phong);
 		break;
+	case TOON:
+		gScene->setRasterizer(ShaderType::Toon);
+		break;
 	}
 	glutPostRedisplay();
 }
@@ -771,6 +774,7 @@ void initMenu()
 	glutAddMenuEntry("Flat", FLAT);
 	glutAddMenuEntry("Gouraud", GOURAUD);
 	glutAddMenuEntry("Phong", PHONG);
+	glutAddMenuEntry("Toon", TOON);
 
 	// create color animations menu
 	int menuColorAnimations = glutCreateMenu(colorAnimationsMenu);

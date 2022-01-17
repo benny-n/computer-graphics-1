@@ -87,10 +87,11 @@ public:
 	int initFlatBuffer(GLuint program);
 	int initSmoothBuffer(GLuint program);
 	int initNMBuffer(GLuint program);
-	int initShaderBuffer(RasterizerPtr rasterizer);
+	int initShaderBuffer(RasterizerPtr rasterizer, const mat4& transform);
 	const Material& getMaterial() override;
 	void growVertex(int VertexIndex) override;
 	void draw(RasterizerPtr rasterizer, const mat4& from3dTo2d) override;
+	void drawSilhouette(GLuint program, const mat4& transform);
 	void drawVertexNormals(GLuint miscProgram, const mat4& finalTransform);
 	void drawFaceNormals(GLuint miscProgram, const mat4& from3dTo2d);
 	void setMaterialProperties() override;

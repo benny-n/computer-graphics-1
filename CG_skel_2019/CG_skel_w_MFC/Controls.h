@@ -79,6 +79,7 @@
 #define FLAT 1
 #define GOURAUD 2
 #define PHONG 3
+#define TOON 4
 
 // animations menu
 #define HULK_OUT 1
